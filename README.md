@@ -7,7 +7,7 @@ If you have any feautres to suggest please use the discussions tab on our Github
 
 Feel free to contact us on our Discord server @ [https://discord.gg/2AJPbyNwbQ](https://discord.gg/2AJPbyNwbQ)
 
-View our guides @ 
+View our guides @ https://tovy.gitbook.io/tovy/
 
 If you contribute to us you will get a role on our discord server
 
@@ -29,3 +29,6 @@ If you contribute to us you will get a role on our discord server
     
 
 and more!
+
+# Important
+Tovy is still in its early beta stage, please report any bugs!
