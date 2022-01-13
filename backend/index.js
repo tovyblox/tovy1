@@ -274,4 +274,4 @@ function chooseRandom(arr, num) {
 }
 
 
-app.listen(process.env.port || 8080)
+app.listen(process.env.PORT || process.env.port || 8080)

@@ -19,17 +19,24 @@ if (!process.env.MONGO_URI) {
         {
             type: 'input',
             name: 'MongoDB',
-            message: 'Please provide a mongodb link (learn more @ https://google.com)',
+            message: 'Please provide a mongodb link (learn more @ https://tovy.gitbook.io/tovy/hosting/creating-a-mongodb-database)',
             validatingText: 'Checking URI',
             validate: async (answer) => {
                 console.log(answer)
                 if (!answer.includes('mongodb+srv://')) return 'Please enter a valid mongodb srv URI '
                 return true
             },
+        },
+        {
+            type: 'input',
+            name: 'Port',
+            message: 'If you would like to run tovy on a custom port please enter that port below!',
+            default: 8080
         }
     ]).then(answers => {
         const envobj = {
-            MONGO_URI: answers.MongoDB
+            MONGO_URI: answers.MongoDB,
+            PORT: answers.port || 8080
         }
         fs.writeFile('./backend/.env', envfile.stringify(envobj), (err) => {
             if (err) throw err;
