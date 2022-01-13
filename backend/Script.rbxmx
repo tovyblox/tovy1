@@ -1,0 +1,68 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Script" referent="RBX046E2B5D402B445297798827394C79A1">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<bool name="Disabled">false</bool>
+			<Content name="LinkedSource"><null></null></Content>
+			<string name="Name">Script</string>
+			<string name="ScriptGuid">{844F5DF7-9291-472A-AAC2-1A0E555F826A}</string>
+			<ProtectedString name="Source"><![CDATA[local httpservice = game:GetService('HttpService')
+local players = game:GetService('Players')
+local config = {
+	url = "<ip>",
+	auth = '<api>'
+}
+
+local function createsession  (player)
+	print(player.UserId)
+	local request = httpservice:RequestAsync({
+		Url =  config.url .. '/createsession',
+		Method = "POST",
+		Body = httpservice:JSONEncode({ userid = player.UserId }),
+		Headers = {
+			["Content-Type"] = "application/json",
+			['authorization'] = config.auth
+		}
+	})
+	
+	if (request.status == 400)  then
+		print('already session')
+	end
+	
+	local rdata = httpservice:JSONDecode(request.Body);
+	print(rdata)
+end
+
+local function endsession  (player)
+	print(player.UserId)
+	local request = httpservice:RequestAsync({
+		Url =  config.url .. '/endsession',
+		Method = "POST",
+		Body = httpservice:JSONEncode({ userid = player.UserId }),
+		Headers = {
+			["Content-Type"] = "application/json",
+			['authorization'] = config.auth-- When sending JSON, set this!
+		}
+	})
+
+	if (request.status == 400)  then
+		print('no session')
+	end
+
+	local rdata = httpservice:JSONDecode( request.Body);
+	print(rdata)
+end
+
+players.PlayerAdded:Connect(createsession)
+players.PlayerRemoving:Connect(endsession)
+
+
+]]></ProtectedString>
+			<int64 name="SourceAssetId">-1</int64>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+	</Item>
+</roblox>
