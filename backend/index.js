@@ -202,7 +202,6 @@ app.post('/api/signup/finish', async (req, res) => {
     if (!req.session.verify.success) return res.status(401).json({ message: 'Please finish first!' });
 
     let hash = await bcrypt.hash(req.body.password, 10);
-    console.log
     let invite;
     if (req.body.invite) {
         let invites = await db.config.findOne({ name: 'invites' });
@@ -239,7 +238,6 @@ app.post('/api/login', async (req, res) => {
     if (!target) return res.status(400).json({ message: 'User not found' });
     let user = await db.user.findOne({ userid: target });
     if (!user) return res.status(401).json({ message: 'User not found' });
-    console.log(req.body.password, user)
     if (!user.passwordhash) return res.status(401).json({ message: 'User not found' });
 
     if (!bcrypt.compareSync(req.body.password, user.passwordhash)) {
@@ -253,12 +251,10 @@ app.post('/api/login', async (req, res) => {
 
 async function fetchpfp(uid) {
     if (pfps.get(uid)) {
-        console.log(pfps.get(uid))
         return pfps.get(uid);
     }
     let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
     pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-    console.log(pfp[0].imageUrl)
 
     return pfp[0].imageUrl
 }
