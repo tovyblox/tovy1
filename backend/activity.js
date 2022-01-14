@@ -225,6 +225,32 @@ const erouter = (usernames, pfps, settings) => {
         }
     });
 
+    router.get('/stats', async (req, res) => {
+        if (!checkperms(req.session.userid, 'view_staff_activity')) {
+            return res.status(401).json({ message: 'Not logged in' });
+        };
+
+        let sessions = await db.session.find({});
+        if (!sessions.length) return res.status(200).json({});
+        let e = _.groupBy(sessions, (i => i.uid));
+        let arr = sessions.map(c => {
+            const d2 = new Date(c.start);
+            const d1 = new Date(c.end);
+            const diffMs = d1.getTime() - d2.getTime();
+            const diffMins = (diffMs / 1000) / 60;
+            return { ...c._doc, time: diffMins }
+        })
+        let sorted = arr.sort((a, b) => b.l - a.l).slice(0, 10);
+        let s = [];
+        let grouped = _.groupBy(sorted, (i => i.uid));
+
+        res.status(200).json({
+            staff: Object.keys(grouped).length,
+            sessions: arr.length,
+            mins: Math.floor(_.sumBy(arr, (i => i.time)))
+        })
+    });
+
     router.get('/off', async (req, res) => {
         if (!checkperms(req.session.userid, 'view_staff_activity')) {
             return res.status(401).json({ message: 'Not logged in' });
@@ -233,14 +259,14 @@ const erouter = (usernames, pfps, settings) => {
         if (!req.session.userid) {
             return res.status(401).json({ message: 'Not logged in' });
         };
-    
+
         let e = await db.ia.find({
             end: { $gte: Date.now() },
             start: { $lte: Date.now() },
             status: 'accepted'
         });
         let s = [];
-    
+
         for (ia of e) {
             let g = ia.toObject()
             let uname = await fetchusername(ia.uid)
@@ -260,10 +286,10 @@ const erouter = (usernames, pfps, settings) => {
         }
         let userinfo = await noblox.getUsernameFromId(uid);
         usernames.set(parseInt(uid), userinfo, 10000);
-    
+
         return userinfo;
     }
-    
+
     function chooseRandom(arr, num) {
         const res = [];
         for (let i = 0; i < num;) {
@@ -283,7 +309,7 @@ const erouter = (usernames, pfps, settings) => {
         }
         let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-    
+
         return pfp[0].imageUrl
     }
 
@@ -297,7 +323,7 @@ const erouter = (usernames, pfps, settings) => {
         if (!role) return false;
         return role.permissions.includes(perm);
     }
-    
+
 
     return router;
 }

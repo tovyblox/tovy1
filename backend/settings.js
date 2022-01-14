@@ -27,6 +27,8 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully added user!', uid: robloxusername });
     });
 
+
+
     router.get('/settings/users', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
@@ -66,6 +68,64 @@ const erouter = (usernames, pfps, settings) => {
         await user.save();
 
         res.status(200).json({ message: 'Successfully updated user!' });
+    });
+
+    router.post('/settings/setpolicy', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        const config = await db.config.findOne({ name: 'noticetext' });
+        if (config) {
+            config.value = req.body.text;
+            config.save();
+        } else {
+            await db.config.create({
+                name: 'noticetext',
+                value: req.body.text
+            });
+        }
+
+        settings.noticetext = req.body.text;
+
+        res.status(200).json({ message: 'Updated!' });
+    });
+
+    router.post('/settings/setpolicy', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        const config = await db.config.findOne({ name: 'noticetext' });
+        if (config) {
+            config.value = req.body.text;
+            config.save();
+        } else {
+            await db.config.create({
+                name: 'noticetext',
+                value: req.body.text
+            });
+        }
+
+        settings.noticetext = req.body.text;
+
+        res.status(200).json({ message: 'Updated!' });
+    });
+
+    router.post('/settings/resetactivity', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        await db.session.deleteMany({ active: false });
+        
+        res.status(200).json({ message: 'Updated!' });
+    });
+
+    router.get('/settings/other', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+
+        const config = await db.config.find({});
+        if (!config) return res.status(400).json({ message: 'No config!' });
+        let c = {
+            noticetext: config.find(c => c.name == 'noticetext'),
+        }
+        res.status(200).json({ message: 'Successfully fetched config!', config: c });
     })
 
     router.get('/settings/roles', async (req, res) => {

@@ -6,9 +6,11 @@ import axios from 'axios'
 import main from './layouts/main.vue'
 import def from './layouts/default.vue'
 import VueCookies from 'vue-cookies'
+require('dotenv').config()
 Vue.use(VueCookies)
+console.log(process.env.VUE_APP_BASE)
 let api = axios.create({
-  baseURL: `/api`,
+  baseURL: `${process.env.VUE_APP_BASE ? `http://${process.env.VUE_APP_BASE}` : ''}/api`,
   headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
@@ -32,6 +34,8 @@ const store = new Vuex.Store({
       state.user = user
     }, setcolor(state, color) {
       state.group.color = color;
+    }, netntext(state, text) {
+      state.group.noticetext = text;
     }
   }
 })
