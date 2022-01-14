@@ -79,7 +79,7 @@
         <v-card>
           <v-card-title>New notice </v-card-title>
           <v-card-text class="mt-n5"
-            >Our policy allows unlimited days off if submitted prop
+            >{{ this.$store.state.group.noticetext || 'No notice policy' }}
           </v-card-text>
           <v-alert
             type="error"

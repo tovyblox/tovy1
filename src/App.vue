@@ -48,6 +48,12 @@ export default {
           this.$router.push(`/login${this.invite ? `?invite=${this.invite}` : ''}`);
         }
 
+        if (error.response.status === 404) {
+          this.loading = false;
+          if (this.$route.path == "/error") return;
+          this.$router.push("/error");
+        }
+
         if (error.response.status === 403) {
           if (this.$route.path == "/forbidden") return;
           this.$router.push("/forbidden");
@@ -70,6 +76,7 @@ export default {
         }
         response.data.info.pfp = response.data.pfp;
         this.$store.commit("setuser", response.data.info);
+        this.$store.commit("netntext", response.data.group.noticetext);
         this.$store.commit("setcolor", response.data.group.color);
 
         setTimeout(() => {

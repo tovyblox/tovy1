@@ -37,7 +37,7 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
-              mdi-clipboard
+              mdi-list-status
             </v-icon>
             <v-expansion-panel-header> Roles </v-expansion-panel-header>
           </v-layout>
@@ -108,7 +108,7 @@
               @keyup.enter="createuser"
               required
             ></v-text-field>
-            <v-card v-for="user in users" :key="user.userid"  outlined class="mb-2">
+            <v-card v-for="user in users" :key="user.userid" outlined class="mb-2">
               <v-layout>
                 <v-card-title> {{ user.username }} </v-card-title>
                 <v-spacer> </v-spacer>
@@ -147,7 +147,7 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
-              mdi-account-multiple
+              mdi-playlist-plus
             </v-icon>
             <v-expansion-panel-header> Invites </v-expansion-panel-header>
           </v-layout>
@@ -226,6 +226,30 @@
             <v-btn @click="downlodloader" color="info mt-2"> Download loader </v-btn>
           </v-expansion-panel-content>
         </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-clipboard
+            </v-icon>
+            <v-expansion-panel-header> Notice management </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">Inactivity notice policy</p>
+            <v-text-field
+              outlined
+              hide-details="auto"
+              v-model="notice.text"
+              class="mt-n2"
+              label="Inactivity notice"
+              placeholder="You have 50 days off"
+            />
+
+            <v-divider></v-divider>
+            <v-btn @click="setpolicy" color="info mt-2"> Save </v-btn>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
   </div>
@@ -248,6 +272,10 @@ export default {
       invalidusername: false,
       loading: false,
     },
+    other: {},
+    notice: {
+      text: "",
+    },
     users: [],
     permissions: [
       {
@@ -261,6 +289,9 @@ export default {
       {
         name: "Manage notices",
         value: "manage_notices",
+      }, {
+        name: "Manage staff activity",
+        value: "manage_staff_activity",
       },
       {
         name: "Update shout",
@@ -323,15 +354,28 @@ export default {
     });
 
     this.$http.get("/settings/users", { withCredentials: true }).then((response) => {
-      this.users = response.data.users.filter(u => u.role);
+      this.users = response.data.users.filter((u) => u.role);
+    });
+
+    this.$http.get("/settings/other", { withCredentials: true }).then((response) => {
+      this.other = response.data.config;
+      if (response.data.config.noticetext) {
+        this.notice.text = response.data.config.noticetext.value;
+      }
     });
   },
   methods: {
     goto: function (url) {
       this.$router.push(url);
+    }, setpolicy: function () {
+      this.$http.post(
+        "/settings/setpolicy",
+        { text: this.notice.text },
+        { withCredentials: true }
+      );
     },
     downlodloader: function () {
-      window.open(this.$http.defaults.baseURL + '/settings/loader');
+      window.open(this.$http.defaults.baseURL + "/settings/loader");
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);
@@ -342,7 +386,7 @@ export default {
         { role: role },
         { withCredentials: true }
       );
-    },
+    }, 
     setperm: function (role, perm, value) {
       if (value) {
         role.permissions.push(perm);
@@ -405,20 +449,19 @@ export default {
     },
     updateuserroles: function (user, newrole) {
       user.role = newrole.id;
-      this.$http
-        .post(
-          "/settings/updateuserroles",
-          { userid: user.userid, role: newrole.id },
-          { withCredentials: true }
-        )
-    }, deleteuser: function (user) {
+      this.$http.post(
+        "/settings/updateuserroles",
+        { userid: user.userid, role: newrole.id },
+        { withCredentials: true }
+      );
+    },
+    deleteuser: function (user) {
       this.users.splice(this.users.indexOf(user), 1);
-      this.$http
-        .post(
-          "/settings/updateuserroles",
-          { userid: user.userid, role: 'delete' },
-          { withCredentials: true }
-        )
+      this.$http.post(
+        "/settings/updateuserroles",
+        { userid: user.userid, role: "delete" },
+        { withCredentials: true }
+      );
     },
     newrole: function () {
       this.roles.push({
@@ -435,8 +478,11 @@ export default {
       color.selected = true;
       this.$store.commit("setcolor", color.value);
 
-      this.$http
-        .post("/settings/setcolor", { color: color.value }, { withCredentials: true })
+      this.$http.post(
+        "/settings/setcolor",
+        { color: color.value },
+        { withCredentials: true }
+      );
     },
   },
 };

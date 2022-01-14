@@ -59,8 +59,10 @@ app.use(cookieSession({
     settings.activity = configforactivity.value;
 
     let configforuser = await db.config.findOne({ name: 'roles' });
-    if (!configforuser) return;
-    settings.roles = configforuser.value;
+    if (configforuser) settings.roles = configforuser.value;
+
+    let configfornotice = await db.config.findOne({ name: 'noticetext' });
+    if (configfornotice) settings.noticetext = configfornotice.value;
 })();
 
 app.use('/api/', require('./activity')(usernames, pfps, settings))
@@ -134,7 +136,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout"];
+    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity'];
     info.perms = role;
 
     let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
@@ -142,7 +144,8 @@ app.get('/api/profile', async (req, res) => {
         pfp: pfp[0].imageUrl,
         info: info,
         group: {
-            color: color ? color.value : 'grey lighten-2'
+            color: color ? color.value : 'grey lighten-2',
+            noticetext: settings.noticetext,
         }
     });
 });

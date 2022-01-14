@@ -5,9 +5,7 @@
         <p class="text-h4 font-weight-bold mt-14">
           Hi {{ this.$store.state.user.displayName }},
         </p>
-        <p class="text-body-1 font-weight-bold mt-n5 gray">
-          Lets track some activity!
-        </p>
+        <p class="text-body-1 font-weight-bold mt-n5 gray">Lets track some activity!</p>
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
@@ -23,7 +21,7 @@
             indeterminate
           ></v-progress-circular>
         </v-row>
-        <p class="ml-4 mt-n4" v-if="!active.length"> No data </p>
+        <p class="ml-4 mt-n4" v-if="!active.length">No data</p>
         <div v-if="!loading.igame" class="mt-n2 ml-4 mb-3">
           <v-tooltip v-for="session in active" :key="session.uid" bottom>
             <template v-slot:activator="{ on, attrs }">
@@ -37,7 +35,7 @@
       </v-card>
       <v-row>
         <v-col order="last">
-          <v-card outlined class="mb-2 pb-2">
+          <v-card outlined class="mb-2">
             <v-card-title> The best </v-card-title>
             <v-card-text class="mt-n6">
               Staff In-game most since the last activity reset
@@ -50,7 +48,7 @@
                 indeterminate
               ></v-progress-circular>
             </v-row>
-            <p class="ml-4 mb-2 mt-n4" v-if="!best.length"> No data </p>
+            <p class="ml-4 mb-2 mt-n4" v-if="!best.length">No data</p>
 
             <div v-if="!loading.best" class="mt-n2 ml-4 mb-4">
               <v-tooltip v-for="user in best" :key="user.uid" bottom>
@@ -65,7 +63,7 @@
           </v-card>
         </v-col>
         <v-col order="last">
-          <v-card outlined class="mb-2">
+          <v-card outlined class="pb-1 mb-2">
             <v-card-title> Inactive </v-card-title>
             <v-card-text class="mt-n6">
               People with approved inactivity notices that are active
@@ -78,7 +76,7 @@
                 indeterminate
               ></v-progress-circular>
             </v-row>
-                    <p class="ml-4 mt-n4" v-if="!off.length"> No data </p>
+            <p class="ml-4 mt-n4" v-if="!off.length">No data</p>
 
             <div v-if="!loading.off" class="mt-n2 ml-4 mb-3">
               <v-tooltip v-for="ia of off" :key="ia.uid" bottom>
@@ -87,12 +85,41 @@
                     <img size="36" v-bind="attrs" v-on="on" :src="ia.pfp" alt="John" />
                   </v-avatar>
                 </template>
-                <span>{{ ia.username }}, {{ getTime(ia.start) }} - {{ getTime(ia.end) }}</span>
+                <span
+                  >{{ ia.username }}, {{ getTime(ia.start) }} -
+                  {{ getTime(ia.end) }}</span
+                >
               </v-tooltip>
             </div>
           </v-card>
         </v-col>
       </v-row>
+      <v-row class="mt-n6">
+        <v-col order="last">
+          <v-card outlined class="">
+            <p class="ml-3 mb-2 mt-5 text-h2">{{ stats.mins }}</p>
+            <v-card-text class="mt-n6"> Minutes spent in-game </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col order="last">
+          <v-card outlined class="">
+            <p class="ml-3 mb-2 mt-5 text-h2">{{ stats.sessions }}</p>
+            <v-card-text class="mt-n6"> Sessions </v-card-text>
+          </v-card>
+        </v-col>
+        <v-col order="last">
+          <v-card outlined class="">
+            <p class="ml-3 mb-2 mt-5 text-h2">{{ stats.staff }}</p>
+            <v-card-text class="mt-n6"> Unique staff </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      <div v-if="this.$store.state.user.perms.includes('manage_staff_activity')" class="mt-2">
+        <v-card @click.stop="reset" ripple class="mt-2">
+          <v-card-title> 📋 Reset activity </v-card-title>
+          <v-card-text class="mt-n6"> Reset all activity in the database </v-card-text>
+        </v-card>
+      </div>
     </v-container>
   </div>
 </template>
@@ -107,6 +134,9 @@ export default {
     host: location.host,
 
     active: [],
+    stats: {
+      loading: true
+    },
     off: [],
     best: [],
     groups: "dog",
@@ -131,13 +161,23 @@ export default {
       let d = new Date(date);
       let day = d.getDate();
 
-      return `${d.toLocaleString("en", { month: "short" })} ${day + nth(day)}`
+      return `${d.toLocaleString("en", { month: "short" })} ${day + nth(day)}`;
+    },
+    reset: function () {
+      this.best = [];
+
+      this.$http.post("/settings/resetactivity", {}, { withCredentials: true });
     },
   },
   mounted: function () {
     this.$http.get("/activityinfo", { withCredentials: true }).then((response) => {
       this.loading.igame = false;
       this.active = response.data;
+    });
+
+    this.$http.get("/stats", { withCredentials: true }).then((response) => {
+      response.data.loading = false
+      this.stats = response.data;
     });
 
     this.$http.get("/best", { withCredentials: true }).then((response) => {
