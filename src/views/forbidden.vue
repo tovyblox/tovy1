@@ -92,7 +92,7 @@ export default {
             if (!response) return;
             response.data.info.pfp = response.data.pfp;
             this.$store.commit("setuser", response.data.info);
-            this.$store.commit("setcolor", response.data.group.color);
+            this.$store.commit("setgroup", response.data.group);
 
             setTimeout(() => {
               this.$router.push("/");

@@ -44,6 +44,14 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+         <v-list-item class="mt-2" link @click="goto(`https://roblox.com/groups/${$store.state.group.id}`)">
+          <v-list-item-icon>
+            <v-icon>mdi-open-in-new</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ this.$store.state.group.id }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-divider class="mt-2"> </v-divider>
         <v-list-item link class="mt-2" :to="`/youractivity`">
           <v-list-item-icon>
@@ -101,6 +109,8 @@ export default {
     },
     fetchusername() {
       return this.$store.state.user;
+    }, goto: function (url) {
+      window.open(url, '_blank');
     },
     logout() {
       this.$cookies.remove("session.sig");

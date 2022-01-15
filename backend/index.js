@@ -146,6 +146,7 @@ app.get('/api/profile', async (req, res) => {
         group: {
             color: color ? color.value : 'grey lighten-2',
             noticetext: settings.noticetext,
+            id: settings.group
         }
     });
 });

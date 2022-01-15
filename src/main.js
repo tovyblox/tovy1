@@ -26,14 +26,15 @@ const store = new Vuex.Store({
       name: null,
       signedin: false
     }, group: {
-      color: 'red'
+      color: 'red',
+      id: null
     }
   },
   mutations: {
     setuser(state, user) {
       state.user = user
-    }, setcolor(state, color) {
-      state.group.color = color;
+    }, setgroup(state, group) {
+      state.group = group;
     }, netntext(state, text) {
       state.group.noticetext = text;
     }
