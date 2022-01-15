@@ -29,7 +29,7 @@ if (!process.env.MONGO_URI) {
         },
         {
             type: 'input',
-            name: 'Port',
+            name: 'port',
             message: 'If you would like to run tovy on a custom port please enter that port below!',
             default: 8080
         }
