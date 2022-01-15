@@ -29,14 +29,14 @@ if (!process.env.MONGO_URI) {
         },
         {
             type: 'input',
-            name: 'Port',
+            name: 'port',
             message: 'If you would like to run tovy on a custom port please enter that port below!',
             default: 8080
         }
     ]).then(answers => {
         const envobj = {
             MONGO_URI: answers.MongoDB,
-            PORT: answers.port || 8080
+            PORT: answers.port
         }
         fs.writeFile('./backend/.env', envfile.stringify(envobj), (err) => {
             if (err) throw err;
