@@ -1,18 +1,12 @@
-var argv = require('minimist')(process.argv.slice(2));
-let spath = false;
-if (argv['same-path'] || argv.s) spath = true;
+const argv = require('minimist')(process.argv.slice(2));
+const path = require('path')
 
-if (!spath) {
-    require('dotenv').config({ path: './backend/.env' });
-} else {
-    require('dotenv').config({ path: '.env'})
-}
+require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const express = require('express');
 const app = express();
 const db = require('./db/db');
 const noblox = require('noblox.js');
-const path = require('path')
 const history = require('connect-history-api-fallback');
 const ora = require('ora');
 const fs = require('fs');
@@ -20,6 +14,9 @@ const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
 let backendonly = false;
 
 if (argv['backend-only'] || argv.b) backendonly = true;
+if (backendonly) {
+    console.log('Running tovy on the backend')
+}
 
 const _ = require('lodash');
 const bcrypt = require('bcrypt');
@@ -67,14 +64,13 @@ app.use(cookieSession({
 
 app.use('/api/', require('./activity')(usernames, pfps, settings))
 if (!backendonly) {
-    let staticFileMiddleware = express.static(spath ? '../dist' : './dist');
+    let staticFileMiddleware = express.static(path.join(__dirname, '../dist'));
 
     app.use(history({
         rewrites: [
             {
                 from: '/api/',
                 to: function (context) {
-                    console.log(context.parsedUrl.pathname)
                     return context.parsedUrl.pathname;
                 }
             }

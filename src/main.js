@@ -8,9 +8,8 @@ import def from './layouts/default.vue'
 import VueCookies from 'vue-cookies'
 require('dotenv').config()
 Vue.use(VueCookies)
-console.log(process.env.VUE_APP_BASE)
 let api = axios.create({
-  baseURL: `${process.env.VUE_APP_BASE ? `http://${process.env.VUE_APP_BASE}` : ''}/api`,
+  baseURL: `${process.env.VUE_APP_BASE ? `//${process.env.VUE_APP_BASE}` : ''}/api`,
   headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'

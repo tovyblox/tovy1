@@ -2,6 +2,7 @@ const db = require('./db/db');
 const noblox = require('noblox.js');
 const bcrypt = require('bcrypt');
 const fs = require('fs')
+const path = require('path')
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
@@ -282,7 +283,7 @@ const erouter = (usernames, pfps, settings) => {
     router.get('/settings/loader', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
-        let xml_string = fs.readFileSync("Script.rbxmx", "utf8");
+        let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
         let xx = xml_string.replace('<api>', settings.activity.key).replace('<ip>', `http://${req.headers.host}/api`);
 
