@@ -23,7 +23,7 @@ if (!process.env.MONGO_URI) {
             validatingText: 'Checking URI',
             validate: async (answer) => {
                 console.log(answer)
-                if (!answer.includes('mongodb://')) return 'Please enter a valid mongodb URI '
+                if (!answer.includes('mongodb://') || !answer.includes('mongodb-srv://')) return 'Please enter a valid mongodb URI '
                 return true
             },
         },
