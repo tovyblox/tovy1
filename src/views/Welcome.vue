@@ -40,7 +40,7 @@
                   outlined
                   v-model="group"
                   label="Group ID"
-                  :rules="[(v) => !!v || 'Username is required']"
+                  :rules="[(v) => !!v || 'Group ID is required']"
                 ></v-text-field>
                 <v-text-field
                   v-model="name"
