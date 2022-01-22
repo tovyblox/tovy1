@@ -39,9 +39,9 @@
               >
               <v-progress-linear v-if="loading" indeterminate class="mb-3 rounded-xl"/>
               <h3 class="text-center">Please paste the below into your roblox profile</h3>
-              <p class="text-center mb-10">
+              <div class="text-h5 mb-10 text-center">
                 <code> {{ vstring }} </code>
-              </p>
+              </div>
 
               <v-btn color="primary" @click="verify" elevation="0"> Done </v-btn>
               <v-btn class="float-right" @click="e1 = 1" text> Back </v-btn>
