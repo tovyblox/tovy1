@@ -14,7 +14,7 @@
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">Choose a color to fit your group!</p>
+            <p class="ml-2">Theme Color</p>
             <v-row class="ml-2 mb-2" wrap>
               <v-sheet
                 v-for="color in colors"
