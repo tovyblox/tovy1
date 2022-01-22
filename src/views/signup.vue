@@ -60,7 +60,7 @@
                   type="password"
                   label="Password"
                   required
-                  :rules="[(v) => !!v || 'Passwords required']"
+                  :rules="[(v) => !!v || 'Password required']"
                 ></v-text-field>
                  <v-text-field
                   outlined
@@ -71,7 +71,7 @@
                   hide-details="auto"
                   label="Confirm password"
                   required
-                  :rules="[(v) => v === password || 'Passwords don\'t match']"
+                  :rules="[(v) => v === password || 'Password don\'t match']"
                 ></v-text-field>
                 <v-btn elevation="0" class="mt-2 ml-auto" @click="dog" color="success">
                   Next
