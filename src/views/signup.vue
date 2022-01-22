@@ -38,7 +38,7 @@
                 I could not find the code in your profile </v-alert
               >
               <v-progress-linear v-if="loading" indeterminate class="mb-3 rounded-xl"/>
-              <h3 class="text-center">Please paste the below into your roblox profile</h3>
+              <h3 class="text-center">Please paste the below into your Roblox profile</h3>
               <div class="text-h5 mb-10 text-center">
                 <code> {{ vstring }} </code>
               </div>
