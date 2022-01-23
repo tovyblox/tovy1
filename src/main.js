@@ -34,6 +34,8 @@ const store = new Vuex.Store({
       state.user = user
     }, setgroup(state, group) {
       state.group = group;
+    }, setcolor(state, color) {
+      state.group.color = color;
     }, netntext(state, text) {
       state.group.noticetext = text;
     }

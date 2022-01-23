@@ -14,7 +14,7 @@ const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
 let backendonly = false;
 
 if (argv['backend-only'] || argv.b) backendonly = true;
-if (backendonly) {
+if (backendonly) { 
     console.log('Running tovy on the backend')
 }
 

@@ -231,7 +231,6 @@ const erouter = (usernames, pfps, settings) => {
         };
 
         let sessions = await db.session.find({});
-        if (!sessions.length) return res.status(200).json({});
         let e = _.groupBy(sessions, (i => i.uid));
         let arr = sessions.map(c => {
             const d2 = new Date(c.start);

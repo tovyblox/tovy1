@@ -26,7 +26,7 @@
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item @click="logout" link class="mt-2" >
+        <v-list-item @click="logout" link class="mt-2">
           <v-list-item-icon>
             <v-icon>mdi-exit-to-app</v-icon>
           </v-list-item-icon>
@@ -44,39 +44,31 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-         <v-list-item class="mt-2" link @click="goto(`https://roblox.com/groups/${$store.state.group.id}`)">
+        <v-list-item
+          class="mt-2"
+          link
+          @click="goto(`https://roblox.com/groups/${$store.state.group.id}`)"
+        >
           <v-list-item-icon>
             <v-icon>mdi-open-in-new</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>{{ this.$store.state.group.id }}</v-list-item-title>
+            <v-list-item-title>Group</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-divider class="mt-2"> </v-divider>
-        <v-list-item link class="mt-2" :to="`/youractivity`">
-          <v-list-item-icon>
-            <v-icon>mdi-format-list-bulleted</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Your activity</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item v-if="this.$store.state.user.perms.includes('view_staff_activity')" link class="mt-2" :to="`/activity`">
-          <v-list-item-icon>
-            <v-icon>mdi-clock</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Activity</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item v-if="this.$store.state.user.perms.includes('manage_notices')"  link class="mt-2" :to="`/reviewa`">
-          <v-list-item-icon>
-            <v-icon>mdi-clipboard-check</v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Review notices</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+
+        <div v-for="page in pages" :key="page.path">
+          <v-list-item link class="mt-2" v-if="page.permission ? $store.state.user.perms.includes(page.permission) : true" :to="page.path">
+            <v-list-item-icon>
+              <v-icon>{{ page.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title> {{ page.name }} </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </div>
+
         <v-divider class="mt-2"> </v-divider>
 
         <v-list-item
@@ -102,6 +94,25 @@ export default {
   data: () => ({
     drawer: false,
     mini: true,
+    pages: [
+      {
+        name: "Activity",
+        icon: "mdi-clock",
+        path: "/activity",
+        permission: "view_staff_activity",
+      },
+      {
+        name: "Your activity",
+        icon: "mdi-format-list-bulleted",
+        path: "/youractivity",
+      },
+      {
+        name: "Review notices",
+        icon: "mdi-clipboard-check",
+        path: "/reviewa",
+        permission: "manage_notices",
+      },
+    ],
   }),
   methods: {
     isSmall: function () {
@@ -109,14 +120,15 @@ export default {
     },
     fetchusername() {
       return this.$store.state.user;
-    }, goto: function (url) {
-      window.open(url, '_blank');
+    },
+    goto: function (url) {
+      window.open(url, "_blank");
     },
     logout() {
       this.$cookies.remove("session.sig");
-      this.$cookies.remove("session"); 
+      this.$cookies.remove("session");
 
-      this.$router.go('/')
+      this.$router.go("/");
     },
     isMobile: function () {
       if (

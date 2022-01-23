@@ -5,7 +5,8 @@
     "serve": "vue-cli-service serve --host localhost",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "backend": "node backend/index.js -b"
+    "backend": "node backend/index.js -b",
+    "start": "node backend/index.js"
   },
   "dependencies": {
     "axios": "^0.24.0",
@@ -35,11 +36,16 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
+    "shelljs": ">=0.8.5",
+    "follow-redirects": ">=1.14.7",
+    "glob-parent": ">=5.1.2",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
+    "postcss": ">=8.2.13",
+    "node-forge": ">=1.0.0",
     "eslint-plugin-vue": "^6.2.2",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
