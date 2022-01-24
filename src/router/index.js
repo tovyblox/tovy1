@@ -8,6 +8,7 @@ import yourActivity from '../views/yourActivity'
 import activeNotices from '@/views/activeNotices'
 import settings from '@/views/settings'
 import err from '@/views/err'
+import staff from '@/views/staff'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
 
@@ -73,6 +74,12 @@ const routes = [
     name: 'Revuiew notices',
     meta: { layout: 'main' },
     component: activeNotices
+  },
+  {
+    path: '/staff',
+    name: 'Staff',
+    meta: { layout: 'main' },
+    component: staff
   }
 ]
 

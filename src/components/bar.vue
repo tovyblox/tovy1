@@ -111,6 +111,11 @@ export default {
         icon: "mdi-clipboard-check",
         path: "/reviewa",
         permission: "manage_notices",
+      }, {
+        name: "View staff",
+        icon: "mdi-account-multiple",
+        path: "/staff",
+        permission: "manage_notices",
       },
     ],
   }),

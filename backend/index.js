@@ -197,6 +197,18 @@ app.post('/api/signup/verify', async (req, res) => {
     res.status(200).json({});
 });
 
+router.get('/api/group/members', async (req, res) => {
+    let members = await noblox.getRole(settings.group, req.query.role);
+    let memberlist = members.map(member => {
+        return {
+            username: member.userid,
+            role: member.role
+        }
+    });
+    res.status(200).json({ members: memberlist });
+
+})
+
 app.post('/api/signup/finish', async (req, res) => {
     if (!req.session.verify) return res.status(400).json({ message: 'No verification code!' });
     if (!req.session.verify.success) return res.status(401).json({ message: 'Please finish first!' });
