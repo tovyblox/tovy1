@@ -17,7 +17,7 @@
           <v-dialog v-model="dialog.active" max-width="600px">
             <v-card>
               <v-card-title>Invite code </v-card-title>
-              <v-card-text class="mt-n5">Enter plsss </v-card-text>
+              <v-card-text class="mt-n5">Enter please </v-card-text>
               <v-alert
                 type="error"
                 v-if="dialog.incorrect"
