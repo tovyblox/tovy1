@@ -90,21 +90,21 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.post('/settings/setpolicy', async (req, res) => {
+    router.post('/settings/setproxy', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'noticetext' });
+        const config = await db.config.findOne({ name: 'wproxy' });
         if (config) {
-            config.value = req.body.text;
+            config.value = req.body.enabled;
             config.save();
         } else {
             await db.config.create({
-                name: 'noticetext',
-                value: req.body.text
+                name: 'wproxy',
+                value: req.body.enabled
             });
         }
 
-        settings.noticetext = req.body.text;
+        settings.proxy = req.body.enabled;
 
         res.status(200).json({ message: 'Updated!' });
     });
@@ -125,6 +125,8 @@ const erouter = (usernames, pfps, settings) => {
         if (!config) return res.status(400).json({ message: 'No config!' });
         let c = {
             noticetext: config.find(c => c.name == 'noticetext'),
+            role: settings.activity.role,
+            proxy: settings.proxy
         }
         res.status(200).json({ message: 'Successfully fetched config!', config: c });
     })

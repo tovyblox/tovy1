@@ -8,6 +8,8 @@ import yourActivity from '../views/yourActivity'
 import activeNotices from '@/views/activeNotices'
 import settings from '@/views/settings'
 import err from '@/views/err'
+import staff from '@/views/staff'
+import profile from '@/views/profile'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
 
@@ -52,6 +54,12 @@ const routes = [
     component: settings
   },
   {
+    path: '/profile/:id',
+    name: 'Profile',
+    meta: { layout: 'main' },
+    component: profile
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login
@@ -73,6 +81,12 @@ const routes = [
     name: 'Revuiew notices',
     meta: { layout: 'main' },
     component: activeNotices
+  },
+  {
+    path: '/staff',
+    name: 'Staff',
+    meta: { layout: 'main' },
+    component: staff
   }
 ]
 

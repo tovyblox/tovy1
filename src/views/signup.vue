@@ -8,7 +8,7 @@
           <v-stepper-items>
             <v-stepper-content class="mx-n2 mt-n6" step="1">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Lets start with your login info
+                Let's start with your login info
               </v-card-text>
               <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 Please enter a valid username</v-alert
@@ -38,10 +38,10 @@
                 I could not find the code in your profile </v-alert
               >
               <v-progress-linear v-if="loading" indeterminate class="mb-3 rounded-xl"/>
-              <h3 class="text-center">Please paste the below into your roblox profile</h3>
-              <p class="text-center mb-10">
+              <h3 class="text-center">Please paste the below into your Roblox blurb</h3>
+              <div class="text-h5 mb-10 text-center">
                 <code> {{ vstring }} </code>
-              </p>
+              </div>
 
               <v-btn color="primary" @click="verify" elevation="0"> Done </v-btn>
               <v-btn class="float-right" @click="e1 = 1" text> Back </v-btn>
@@ -60,7 +60,7 @@
                   type="password"
                   label="Password"
                   required
-                  :rules="[(v) => !!v || 'Passwords required']"
+                  :rules="[(v) => !!v || 'Password required']"
                 ></v-text-field>
                  <v-text-field
                   outlined
@@ -71,7 +71,7 @@
                   hide-details="auto"
                   label="Confirm password"
                   required
-                  :rules="[(v) => v === password || 'Passwords don\'t match']"
+                  :rules="[(v) => v === password || 'Password don\'t match']"
                 ></v-text-field>
                 <v-btn elevation="0" class="mt-2 ml-auto" @click="dog" color="success">
                   Next

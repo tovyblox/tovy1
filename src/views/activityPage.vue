@@ -9,18 +9,10 @@
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
-      <v-card outlined class="mx-auto mb-2 pb-2">
+      <v-card :loading="loading.igame" outlined class="mx-auto mb-2 pb-2">
         <v-card-title> Activity </v-card-title>
         <v-card-text class="mt-n6"> Currently ingame </v-card-text>
 
-        <v-row v-if="loading.igame" class="mx-auto mb-4">
-          <v-progress-circular
-            :size="40"
-            color="amber"
-            class="mx-auto"
-            indeterminate
-          ></v-progress-circular>
-        </v-row>
         <p class="ml-4 mt-n4" v-if="!active.length">No data</p>
         <div v-if="!loading.igame" class="mt-n2 ml-4 mb-3">
           <v-tooltip v-for="session in active" :key="session.uid" bottom>
@@ -35,19 +27,12 @@
       </v-card>
       <v-row>
         <v-col order="last">
-          <v-card outlined class="mb-2">
+          <v-card :loading="loading.best" outlined class="mb-2">
             <v-card-title> The best </v-card-title>
             <v-card-text class="mt-n6">
               Staff In-game most since the last activity reset
             </v-card-text>
-            <v-row v-if="loading.best" class="mx-auto mt-1 mb-4">
-              <v-progress-circular
-                :size="40"
-                color="amber"
-                class="mx-auto"
-                indeterminate
-              ></v-progress-circular>
-            </v-row>
+           
             <p class="ml-4 mb-2 mt-n4" v-if="!best.length">No data</p>
 
             <div v-if="!loading.best" class="mt-n2 ml-4 mb-4">
@@ -63,19 +48,12 @@
           </v-card>
         </v-col>
         <v-col order="last">
-          <v-card outlined class="pb-1 mb-2">
+          <v-card :loading="loading.out" outlined class="pb-1 mb-2">
             <v-card-title> Inactive </v-card-title>
             <v-card-text class="mt-n6">
               People with approved inactivity notices that are active
             </v-card-text>
-            <v-row v-if="loading.out" class="mx-auto mt-1 mb-4">
-              <v-progress-circular
-                :size="40"
-                color="amber"
-                class="mx-auto"
-                indeterminate
-              ></v-progress-circular>
-            </v-row>
+
             <p class="ml-4 mt-n4" v-if="!off.length">No data</p>
 
             <div v-if="!loading.off" class="mt-n2 ml-4 mb-3">
@@ -84,7 +62,7 @@
                   <v-avatar :color="$store.state.group.color" size="36">
                     <img size="36" v-bind="attrs" v-on="on" :src="ia.pfp" alt="John" />
                   </v-avatar>
-                </template>
+                </template> 
                 <span
                   >{{ ia.username }}, {{ getTime(ia.start) }} -
                   {{ getTime(ia.end) }}</span

@@ -14,7 +14,7 @@
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">Choose a color to fit your group!</p>
+            <p class="ml-2">Theme Color</p>
             <v-row class="ml-2 mb-2" wrap>
               <v-sheet
                 v-for="color in colors"
@@ -24,13 +24,33 @@
                 height="48"
                 :color="color.value"
                 @click="select(color)"
-                :class="`rounded-circle ${color.selected ? 'selected' : null} mr-2`"
+                :class="`rounded-circle ${color.selected ? 'selectedcolor' : null} mr-2`"
                 elevation="0"
               >
               </v-sheet
             ></v-row>
           </v-expansion-panel-content>
         </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-webhook
+            </v-icon>
+            <v-expansion-panel-header> Webhook proxy </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="ml-2">If enabled this lets you proxy discord webhooks though our server (allows you to use webhooks in roblox)</p>
+            <v-switch
+              v-model="other.proxy"
+              @change="setproxy"
+              label="Enabled?"
+            >
+            </v-switch>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        
       </v-expansion-panels>
 
       <v-expansion-panels class="mt-4">
@@ -227,6 +247,8 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
 
+        
+
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
@@ -252,6 +274,15 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-container>
+    <v-snackbar v-model="toast.visible">
+      {{ toast.message }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn :color="toast.color" text v-bind="attrs" @click="toast.visible = false">
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -277,6 +308,11 @@ export default {
       text: "",
     },
     users: [],
+    toast: {
+      message: "",
+      color: "success",
+      visible: false,
+    },
     permissions: [
       {
         name: "View staff activity",
@@ -289,7 +325,8 @@ export default {
       {
         name: "Manage notices",
         value: "manage_notices",
-      }, {
+      },
+      {
         name: "Manage staff activity",
         value: "manage_staff_activity",
       },
@@ -359,6 +396,7 @@ export default {
 
     this.$http.get("/settings/other", { withCredentials: true }).then((response) => {
       this.other = response.data.config;
+      this.roleconfig.arole = response.data.config.role;
       if (response.data.config.noticetext) {
         this.notice.text = response.data.config.noticetext.value;
       }
@@ -367,12 +405,45 @@ export default {
   methods: {
     goto: function (url) {
       this.$router.push(url);
-    }, setpolicy: function () {
-      this.$http.post(
-        "/settings/setpolicy",
-        { text: this.notice.text },
-        { withCredentials: true }
-      );
+    },
+    setpolicy: function () {
+      this.$http
+        .post(
+          "/settings/setpolicy",
+          { text: this.notice.text },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Notice policy updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating notice policy!";
+            this.toast.visible = true;
+          }
+        );
+    }, setproxy: function () {
+      this.$http
+        .post(
+          "/settings/setproxy",
+          { enabled: this.other.proxy },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Proxy updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating proxy!";
+            this.toast.visible = true;
+          }
+        );
     },
     downlodloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/loader");
@@ -381,12 +452,21 @@ export default {
       return role.permissions.includes(perm.value);
     },
     setgrole: function (role) {
-      this.$http.post(
-        "/settings/setgrouprole",
-        { role: role },
-        { withCredentials: true }
-      );
-    }, 
+      this.$http
+        .post("/settings/setgrouprole", { role: role }, { withCredentials: true })
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Set role!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error setting role!";
+            this.toast.visible = true;
+          }
+        );
+    },
     setperm: function (role, perm, value) {
       if (value) {
         role.permissions.push(perm);
@@ -406,11 +486,15 @@ export default {
           if (err.response.status == 400) {
             this.adduser.invalidusername = true;
             this.$refs.form.validate();
+            this.toast.message = "Error adding user!";
+            this.toast.visible = true;
             this.adduser.loading = false;
           }
         })
         .then((r) => {
           if (!r) return;
+          this.toast.message = "Added user!";
+          this.toast.visible = true;
           this.users.push({
             username: this.adduser.username,
             role: 1,
@@ -425,6 +509,11 @@ export default {
         .post("/settings/updateroles", { roles: this.roles }, { withCredentials: true })
         .then(() => {
           this.sroles = this.roles;
+          this.toast.message = "Updated roles!";
+          this.toast.visible = true;
+        }).catch(() => {
+          this.toast.message = "Error updating roles!";
+          this.toast.visible = true;
         });
     },
     updateinvites: function () {
@@ -435,14 +524,25 @@ export default {
           { withCredentials: true }
         )
         .then((r) => {
+          this.toast.message = "Updated invites!";
+          this.toast.visible = true;
           this.invites = r.data.invites;
+        })
+        .catch(() => {
+          this.toast.message = "Error updating invites!";
+          this.toast.visible = true;
         });
     },
     createnewinvite: function () {
       this.roleconfig.loading = true;
       this.$http
-        .post("/settings/newinvite", {}, { withCredentials: true })
+        .post("/settings/newinvite", {}, { withCredentials: true }).catch(() => {
+          this.toast.message = "Error updating invites!";
+          this.toast.visible = true;
+        })
         .then((response) => {
+                    this.toast.message = "Updated invites!";
+
           this.invites.push(response.data.invite);
           this.roleconfig.loading = false;
         });
@@ -453,7 +553,18 @@ export default {
         "/settings/updateuserroles",
         { userid: user.userid, role: newrole.id },
         { withCredentials: true }
-      );
+      ).then(
+          (r) => {
+            r;
+            this.toast.message = "Set role!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error setting role!";
+            this.toast.visible = true;
+          }
+        );
     },
     deleteuser: function (user) {
       this.users.splice(this.users.indexOf(user), 1);
@@ -461,7 +572,18 @@ export default {
         "/settings/updateuserroles",
         { userid: user.userid, role: "delete" },
         { withCredentials: true }
-      );
+      ).then(
+          (r) => {
+            r;
+            this.toast.message = "Deleted user!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error deleteing users!";
+            this.toast.visible = true;
+          }
+        );
     },
     newrole: function () {
       this.roles.push({
@@ -482,14 +604,25 @@ export default {
         "/settings/setcolor",
         { color: color.value },
         { withCredentials: true }
-      );
+      ).then(
+          (r) => {
+            r;
+            this.toast.message = "Set color!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error setting color!";
+            this.toast.visible = true;
+          }
+        );
     },
   },
 };
 </script>
 
 <style>
-.selected {
+.selectedcolor {
   outline-style: solid;
   outline-color: #000000;
   outline-offset: -2px;

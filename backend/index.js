@@ -14,7 +14,7 @@ const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
 let backendonly = false;
 
 if (argv['backend-only'] || argv.b) backendonly = true;
-if (backendonly) { 
+if (backendonly) {
     console.log('Running tovy on the backend')
 }
 
@@ -32,6 +32,7 @@ let settings = {};
 
 
 const cors = require('cors');
+const { default: axios } = require('axios');
 app.use(cors({
     credentials: true,
     origin: true
@@ -60,9 +61,14 @@ app.use(cookieSession({
 
     let configfornotice = await db.config.findOne({ name: 'noticetext' });
     if (configfornotice) settings.noticetext = configfornotice.value;
+
+    let configforproxy = await db.config.findOne({ name: 'wproxy' });
+    if (configforproxy) settings.proxy = configforproxy.value;
 })();
 
-app.use('/api/', require('./activity')(usernames, pfps, settings))
+app.use('/api/', require('./activity')(usernames, pfps, settings));
+app.use('/api/', require('./staff')(usernames, pfps, settings))
+
 if (!backendonly) {
     let staticFileMiddleware = express.static(path.join(__dirname, '../dist'));
 
@@ -79,7 +85,39 @@ if (!backendonly) {
     app.use('/', staticFileMiddleware);
 }
 
-app.use('/api/', require('./settings')(usernames, pfps, settings))
+app.use('/api/', require('./settings')(usernames, pfps, settings));
+
+app.post('/api/webhooks/:id/:secret', async (req, res) => {
+    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+    await axios.post('https://discord.com/api/webhooks/' + req.params.id + '/' + req.params.secret, req.body).then(r => {
+        res.send({
+            success: true
+        })
+    }).catch(e => {
+        res.status(e.response.status).send(e.response.data)
+    })
+})
+
+app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
+    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+    await axios.patch(`https://discord.com/api/webhooks/${req.params.id}/${req.params.secret}/messages/${req.params.msg}`, req.body).then(r => {
+        res.send(r.data)
+    }).catch(e => {
+        res.status(e.response.status).send(e.response.data)
+    })
+})
+
+app.delete('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
+    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+
+    await axios.delete(`https://discord.com/api/webhooks/${req.params.id}/${req.params.secret}/messages/${req.params.msg}`, req.body).then(r => {
+        res.send({
+            success: true
+        })
+    }).catch(e => {
+        res.status(e.response.status).send(e.response.data)
+    })
+})
 
 app.post('/api/finishSignup', async (req, res) => {
     const hash = bcrypt.hashSync(req.body.password, 10);
@@ -196,6 +234,7 @@ app.post('/api/signup/verify', async (req, res) => {
     req.session.verify.success = true;
     res.status(200).json({});
 });
+
 
 app.post('/api/signup/finish', async (req, res) => {
     if (!req.session.verify) return res.status(400).json({ message: 'No verification code!' });

@@ -147,8 +147,17 @@ const erouter = (usernames, pfps, settings) => {
         if (!userid) return res.status(401).json({ message: 'Get out!' });
         let sessions = await db.session.find({ uid: userid, active: false });
         sessions = [...sessions].map(e => {
-            return { ...e._doc, type: 'session' }
-        })
+            let time;
+            if (!e.mins) {
+                const d2 = new Date(e.start);
+                const d1 = new Date(e.end);
+                const diffMs = d1.getTime() - d2.getTime();
+                const diffMins = (diffMs / 1000) / 60;
+                time = Math.round(diffMins);
+            } else time = e.mins;
+
+            return { ...e._doc, time: time, type: e.type || 'session' }
+        });
         let ias = await db.ia.find({ uid: userid })
         ias = [...ias].map(e => {
             return { ...e._doc, type: 'IA' }
@@ -232,13 +241,18 @@ const erouter = (usernames, pfps, settings) => {
 
         let sessions = await db.session.find({});
         let e = _.groupBy(sessions, (i => i.uid));
-        let arr = sessions.map(c => {
-            const d2 = new Date(c.start);
-            const d1 = new Date(c.end);
-            const diffMs = d1.getTime() - d2.getTime();
-            const diffMins = (diffMs / 1000) / 60;
-            return { ...c._doc, time: diffMins }
-        })
+        let arr = sessions.map(e => {
+            let time;
+            if (!e.mins) {
+                const d2 = new Date(e.start);
+                const d1 = new Date(e.end);
+                const diffMs = d1.getTime() - d2.getTime();
+                const diffMins = (diffMs / 1000) / 60;
+                time = Math.round(diffMins);
+            } else time = e.mins;
+
+            return { ...e._doc, time: time, type: e.type || 'session' }
+        });
         let sorted = arr.sort((a, b) => b.l - a.l).slice(0, 10);
         let s = [];
         let grouped = _.groupBy(sorted, (i => i.uid));
