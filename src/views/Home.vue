@@ -10,7 +10,7 @@
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
       <v-row>
-      <v-col order="last">
+        <v-col order="last">
           <v-card
             min-width="300"
             @click.stop="goto('/activity')"
@@ -19,12 +19,13 @@
             class="mb-n4"
           >
             <v-card-title> 📋 Your notices </v-card-title>
-            <v-card-text class="mt-n6">
-              View your inactivity notices
-            </v-card-text>
+            <v-card-text class="mt-n6"> View your inactivity notices </v-card-text>
           </v-card>
         </v-col>
-        <v-col v-if="this.$store.state.user.perms.includes('view_staff_activity')" order="last">
+        <v-col
+          v-if="this.$store.state.user.perms.includes('view_staff_activity')"
+          order="last"
+        >
           <v-card
             min-width="300"
             @click.stop="goto('/activity')"
@@ -38,8 +39,17 @@
             </v-card-text>
           </v-card>
         </v-col>
-        <v-col v-if="this.$store.state.user.perms.includes('manage_notices')" order="last">
-          <v-card @click.stop="goto('/reviewa')" min-width="300" ripple outlined class="mb-2">
+        <v-col
+          v-if="this.$store.state.user.perms.includes('manage_notices')"
+          order="last"
+        >
+          <v-card
+            @click.stop="goto('/reviewa')"
+            min-width="300"
+            ripple
+            outlined
+            class="mb-2"
+          >
             <v-card-title> ✅ Notices </v-card-title>
             <v-card-text class="mt-n6">
               View the notices from your staff team
@@ -49,7 +59,11 @@
       </v-row>
       <v-card outlined>
         <v-row class="mx-auto mb-5 mt-5">
-         <v-img src="../assets/experimental-sleepy-tiger-coming-out-of-the-cave-in-the-morning.png" class="mx-auto mt-7" max-width="400"></v-img>
+          <v-img
+            src="../assets/experimental-sleepy-tiger-coming-out-of-the-cave-in-the-morning.png"
+            class="mx-auto mt-7"
+            max-width="400"
+          ></v-img>
           <v-card-text class="text-center mt-n5 mb-n4">
             There is nothing here so here is a graphic instead
           </v-card-text>

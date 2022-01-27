@@ -9,6 +9,7 @@ import activeNotices from '@/views/activeNotices'
 import settings from '@/views/settings'
 import err from '@/views/err'
 import staff from '@/views/staff'
+import profile from '@/views/profile'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
 
@@ -51,6 +52,12 @@ const routes = [
     name: 'Settings',
     meta: { layout: 'main' },
     component: settings
+  },
+  {
+    path: '/profile/:id',
+    name: 'Profile',
+    meta: { layout: 'main' },
+    component: profile
   },
   {
     path: '/login',
