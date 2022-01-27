@@ -32,8 +32,7 @@ const erouter = (usernames, pfps, settings) => {
         if (req.headers.authorization !== settings.activity.key) return res.status(401);
         if (settings.activity.role) {
             let userrank = await noblox.getRankInGroup(settings.group, parseInt(req.body.userid));
-            console.log(userrank)
-            if (userrank <= settings.activity.role) {
+            if (userrank < settings.activity.role) {
                 return res.status(200).json({ message: 'User is not high enough rank!' });
             }
         }
