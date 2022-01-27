@@ -58,7 +58,7 @@
           </v-timeline-item>
         </template>
 
-         <template v-if="item.type == 'add'">
+        <template v-if="item.type == 'add'">
           <v-timeline-item icon="mdi-gift">
             <v-row class="my-auto">
               <v-col cols="7"> {{ item.mins }} minutes were added </v-col>
@@ -69,7 +69,7 @@
           </v-timeline-item>
         </template>
 
-         <template v-if="item.type == 'remove'">
+        <template v-if="item.type == 'remove'">
           <v-timeline-item icon="mdi-minus">
             <v-row class="my-auto">
               <v-col cols="7"> {{ Math.abs(item.mins) }} minutes were removed </v-col>
@@ -137,16 +137,14 @@ export default {
     getTimeRange: function (d, d2) {
       let date = new Date(d);
       let date2 = new Date(d2);
-      //get time in date
-      let time = date.getMinutes();
-      let hour = date.getHours();
-
-      let time2 = date2.getMinutes();
-      let hour2 = date2.getHours();
-      if (hour2 - hour == 0) {
-        return `${time2 - time} minutes`;
+      var diffMs = date2 - date;
+      var diffHrs = Math.floor((diffMs % 86400000) / 3600000); 
+      var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); 
+      console.log(diffHrs, diffMins);
+      if (!diffHrs) {
+        return `${diffMins} minutes`;
       } else {
-        return `${hour2 - hour} hour, ${time2 - time} minutes`;
+        return `${diffHrs} hour, ${diffMins} minutes`;
       }
     },
   },
