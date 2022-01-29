@@ -229,8 +229,10 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.get('/group/roles', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
+        let othercp = await checkperms(req.session.userid, 'admin');
+
+        if (!othercp && !cp) return res.status(401).json({ message: 'go away!' });
 
         let group = settings.group;
 

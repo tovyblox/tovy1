@@ -139,7 +139,7 @@ export default {
         name: "View staff",
         icon: "mdi-account-multiple",
         path: "/staff",
-        permission: "manage_notices",
+        permission: "manage_staff_activity",
       },
     ],
   }),
