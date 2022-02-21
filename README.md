@@ -3,7 +3,7 @@ Tovy is an open soruce staff management system that is packed with features. Tov
 
 If you would like to learn how to host Tovy you can learn @
 
-If you have any feautres to suggest please use the discussions tab on our Github!
+If you have any feautres to suggest please use the [Feedback board](https://feedback.tovyblox.xyz)!
 
 Feel free to contact us on our Discord server @ [https://discord.gg/2AJPbyNwbQ](https://discord.gg/2AJPbyNwbQ)
 
