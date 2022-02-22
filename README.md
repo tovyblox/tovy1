@@ -12,22 +12,14 @@ View our guides @ https://tovy.gitbook.io/tovy/
 If you contribute to us you will get a role on our discord server
 
 # Features
-
 -   Custom role system
-    
 -   Invite link system
-    
--   Nice login system
-    
+-   Nice login system 
 -   Activity tracking
-    
--   Nice UI
-    
--   Group Customization
-    
+-   Bulk activity management
+-   Nice UI  
+-   Group Customization 
 -   Fast API that makes using Tovy super fast
-    
-
 and more!
 
 # Important
