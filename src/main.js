@@ -10,6 +10,7 @@ require('dotenv').config()
 Vue.use(VueCookies)
 let api = axios.create({
   baseURL: `${process.env.VUE_APP_BASE ? `//${process.env.VUE_APP_BASE}` : ''}/api`,
+  withCredentials: true,
   headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'

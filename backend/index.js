@@ -64,10 +64,45 @@ app.use(cookieSession({
 
     let configforproxy = await db.config.findOne({ name: 'wproxy' });
     if (configforproxy) settings.proxy = configforproxy.value;
+
+    let configforwall = await db.config.findOne({ name: 'wall' });
+    if (configforwall) settings.wall = configforwall.value;
+
+    let configforranking = await db.config.findOne({ name: 'ranking' });
+    if (configforranking) {
+        let u;
+        try {
+            u = await noblox.setCookie(configforranking.value.cookie);
+        } catch (e) {
+            console.log(e);
+            settings.ranking = {
+                apikey: configforranking.value.hash,
+            };
+        }
+
+        if (u) {
+            settings.ranking = {
+                username: u.UserName,
+                uid: u.UserID,
+                pfp: await fetchpfp(u.UserID),
+                apikey: configforranking.value.hash,
+            };
+        }
+
+    } 
+
+    runload()
 })();
 
-app.use('/api/', require('./activity')(usernames, pfps, settings));
-app.use('/api/', require('./staff')(usernames, pfps, settings))
+async function runload() {
+    console.log('Running tovy!')
+    app.use('/api/', require('./activity')(usernames, pfps, settings));
+    app.use('/api/', require('./wall')(usernames, pfps, settings));
+    app.use('/api/', require('./staff')(usernames, pfps, settings));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings));
+}
+
+
 
 if (!backendonly) {
     let staticFileMiddleware = express.static(path.join(__dirname, '../dist'));
@@ -172,6 +207,7 @@ app.get('/api/profile', async (req, res) => {
 
     let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity'];
     info.perms = role;
+    info.id = req.session.userid;
 
     let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
     res.status(200).json({
