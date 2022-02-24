@@ -68,6 +68,9 @@ app.use(cookieSession({
     let configforwall = await db.config.findOne({ name: 'wall' });
     if (configforwall) settings.wall = configforwall.value;
 
+    let configforsessions = await db.config.findOne({ name: 'sessions' });
+    if (configforsessions) settings.sessions = configforsessions.value;
+
     let configforranking = await db.config.findOne({ name: 'ranking' });
     if (configforranking) {
         let u;

@@ -115,29 +115,33 @@
               Tovy group wall is a customisable wall that can be used to display
               information about your group.
             </p>
-            <v-switch v-model="wall.enabled" @change="setwall" label="Enabled?"></v-switch>
+            <v-switch
+              v-model="wall.enabled"
+              @change="setwall"
+              label="Enabled?"
+            ></v-switch>
 
-                <v-switch
-                  v-if="wall.enabled"
-                  @change="setwall"
-                  v-model="wall.sync"
-                  class="mt-n3"
-                  label="Sync with group shout"
-                ></v-switch>
-                <p class="" v-if="wall.enabled">
-                  The discord webhook synces the wall with a discord webhook leave blank
-                  if you want to disable
-                </p>
-                <v-text-field
-                  v-model="wall.discordhook"
-                  @keydown.enter="setwall"
-                  v-if="wall.enabled"
-                  hide-details="auto"
-                  outlined
-                  class="mt-n2 mb-3"
-                  hint="Press enter to save"
-                  label="Discord webhook"
-                />
+            <v-switch
+              v-if="wall.enabled"
+              @change="setwall"
+              v-model="wall.sync"
+              class="mt-n3"
+              label="Sync with group shout"
+            ></v-switch>
+            <p class="" v-if="wall.enabled">
+              The discord webhook synces the wall with a discord webhook leave blank if
+              you want to disable
+            </p>
+            <v-text-field
+              v-model="wall.discordhook"
+              @keydown.enter="setwall"
+              v-if="wall.enabled"
+              hide-details="auto"
+              outlined
+              class="mt-n2 mb-3"
+              hint="Press enter to save"
+              label="Discord webhook"
+            />
           </v-expansion-panel-content>
         </v-expansion-panel>
 
@@ -156,6 +160,39 @@
             </p>
             <v-switch v-model="other.proxy" @change="setproxy" label="Enabled?">
             </v-switch>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-clipboard
+            </v-icon>
+            <v-expansion-panel-header> Sessions </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">
+              If enabled this lets you proxy discord webhooks though our server (allows
+              you to use webhooks in roblox)
+            </p>
+            <v-list class="mb-5">
+              <v-row v-for="(game, i) in sessions.games" :key="i" class="mb-n14">
+                <v-col>
+                  <v-select
+                    outlined
+                    label="Game"
+                    item-text="name"
+                    item-value="id"
+                    v-model="game.id"
+                    :items="games"
+                  >
+                  </v-select>
+                </v-col>
+                <v-col>
+                  <v-text-field outlined label="Type" v-model="game.type" :items="games">
+                  </v-text-field> </v-col></v-row
+            ></v-list>
+            <v-text-field label="Webhook" v-model="sessions.discohook" outlined> </v-text-field>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -178,7 +215,9 @@
 
             <v-expansion-panels class="mt-4">
               <v-expansion-panel v-for="role in roles" :key="role.id">
-                <v-expansion-panel-header> {{ role.name }} </v-expansion-panel-header>
+                <v-expansion-panel-header>
+                  {{ role.name }}
+                </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-text-field label="Name" v-model="role.name" outlined> </v-text-field>
                   <div
@@ -193,7 +232,9 @@
                         class=""
                       >
                       </v-switch>
-                      <p class="my-auto ml-auto">{{ permission.name }}</p></v-row
+                      <p class="my-auto ml-auto">
+                        {{ permission.name }}
+                      </p></v-row
                     >
                   </div>
                 </v-expansion-panel-content>
@@ -404,6 +445,14 @@ export default {
       sync: false,
       discordhook: "",
     },
+    sessions: {
+      games: [
+        { id: 9, name: "Game 1", type: "Training session" },
+        { id: 9, name: "Game 2", type: "Uuuuuulplplplplp" },
+      ],
+      discohook: "",
+      wall: false,
+    },
     ranking: {
       cookie: "",
       username: "",
@@ -453,9 +502,11 @@ export default {
       },
     ],
     invites: [],
+
     host: location.host,
     roles: [],
     groles: [],
+    games: [],
     sroles: [],
     colors: [
       "red darken-2",
@@ -514,6 +565,7 @@ export default {
     this.$http.get("/settings/other", { withCredentials: true }).then((response) => {
       this.other = response.data.config;
       this.roleconfig.arole = response.data.config.role;
+      this.games = response.data.config.groupgames;
       if (response.data.config.noticetext) {
         this.notice.text = response.data.config.noticetext.value;
       }
@@ -526,9 +578,8 @@ export default {
           apikey: response.data.config.ranking.apikey,
           loading: false,
         };
-      } 
+      }
       if (response.data.config.wall) this.wall = response.data.config.wall;
-      
     });
   },
   methods: {
@@ -536,7 +587,7 @@ export default {
       this.$router.push(url);
     },
     copykey: function () {
-      console.log(this.ranking)
+      console.log(this.ranking);
       navigator.clipboard.writeText(this.ranking.apikey);
       this.toast.message = `Copied the api key to clipboard`;
       this.toast.visible = true;
@@ -590,13 +641,10 @@ export default {
             this.toast.visible = true;
           }
         );
-    },setwall: function () {
+    },
+    setwall: function () {
       this.$http
-        .post(
-          "/settings/setwall",
-          { settings: this.wall },
-          { withCredentials: true }
-        )
+        .post("/settings/setwall", { settings: this.wall }, { withCredentials: true })
         .then(
           (r) => {
             r;

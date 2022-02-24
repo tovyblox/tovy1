@@ -185,6 +185,27 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Updated!' });
     });
 
+    router.post('/settings/setsessions', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        const config = await db.config.findOne({ name: 'sessions' });
+        const body = req.body;
+        console.log(settings)
+        if (config) {
+            config.value = body.settings;
+            config.save();
+        } else {
+            await db.config.create({
+                name: 'sessions',
+                value: body.settings
+            });
+        }
+
+        settings.wall = body.settings;
+
+        res.status(200).json({ message: 'Updated!' });
+    });
+
     router.post('/settings/setproxy', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
@@ -223,7 +244,9 @@ const erouter = (usernames, pfps, settings) => {
             role: settings.activity.role,
             proxy: settings.proxy,
             ranking: settings.ranking,
-            wall: settings.wall
+            wall: settings.wall,
+            sessions: settings.sessions,
+            groupgames: await noblox.getGroupGames('5304522', "Public")
         }
         res.status(200).json({ message: 'Successfully fetched config!', config: c });
     })
