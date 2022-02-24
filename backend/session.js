@@ -20,6 +20,23 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running');
 
+    router.get('/games', async (req, res) => {
+        let games = settings.sessions.games;;
+        let game = await noblox.getUniverseInfo(games.map(m => m.id))
+
+        res.send(games.map(m => {
+            let e = game.find(f => f.id == m.id);
+            return {
+                type: m.type,
+                gameinfo: {
+                    name: e.name,
+                    description: e.description,
+                    
+                }
+            }
+        }));
+    })
+
     async function fetchusername(uid) {
         if (usernames.get(uid)) {
             return usernames.get(uid);

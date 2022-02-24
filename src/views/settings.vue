@@ -175,24 +175,43 @@
               If enabled this lets you proxy discord webhooks though our server (allows
               you to use webhooks in roblox)
             </p>
-            <v-list class="mb-5">
-              <v-row v-for="(game, i) in sessions.games" :key="i" class="mb-n14">
-                <v-col>
-                  <v-select
-                    outlined
-                    label="Game"
-                    item-text="name"
-                    item-value="id"
-                    v-model="game.id"
-                    :items="games"
-                  >
-                  </v-select>
-                </v-col>
-                <v-col>
-                  <v-text-field outlined label="Type" v-model="game.type" :items="games">
-                  </v-text-field> </v-col></v-row
-            ></v-list>
-            <v-text-field label="Webhook" v-model="sessions.discohook" outlined> </v-text-field>
+            <v-switch v-model="sessions.enabled" @change="setsessions" label="Enabled?" />
+            <v-card v-if="sessions.enabled" outlined class="mb-5">
+              <v-card-title> Games </v-card-title>
+              <div class="mb-4 px-4 mt-n6 py-7">
+                <v-row class="px-3">
+                  <v-btn class="success elevation-0" @click="pushgame"> New game </v-btn>
+                  <v-btn class="ml-auto info elevation-0" @click="setsessions">
+                    Save
+                  </v-btn></v-row
+                >
+                <v-row v-for="(game, i) in sessions.games" :key="i" class="mb-n14">
+                  <v-col cols="6">
+                    <v-select
+                      outlined
+                      label="Game"
+                      item-text="name"
+                      item-value="id"
+                      v-model="game.id"
+                      :items="games"
+                    >
+                    </v-select>
+                  </v-col>
+                  <v-col cols="5">
+                    <v-text-field
+                      outlined
+                      label="Type"
+                      v-model="game.type"
+                      :items="games"
+                    >
+                    </v-text-field>
+                  </v-col>
+                  <v-col cols="1">
+                   <div>  <v-btn icon class="mt-2 mx-auto" @click="delgame(game)"> <v-icon> mdi-delete </v-icon></v-btn> </div> </v-col
+                ></v-row></div
+            ></v-card>
+            <v-text-field label="Webhook" v-model="sessions.discohook" outlined>
+            </v-text-field>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -452,6 +471,7 @@ export default {
       ],
       discohook: "",
       wall: false,
+      enabled: false,
     },
     ranking: {
       cookie: "",
@@ -569,6 +589,11 @@ export default {
       if (response.data.config.noticetext) {
         this.notice.text = response.data.config.noticetext.value;
       }
+
+      if (response.data.config.sessions) {
+        this.sessions = response.data.config.sessions;
+      }
+
       if (response.data.config.ranking) {
         this.ranking = {
           cookie: "",
@@ -642,6 +667,12 @@ export default {
           }
         );
     },
+    pushgame: function () {
+      this.sessions.games.push({ id: 0, type: "" });
+    }, delgame: function(game) {
+      this.sessions.games.splice(this.sessions.games.indexOf(game), 1);
+    
+    },
     setwall: function () {
       this.$http
         .post("/settings/setwall", { settings: this.wall }, { withCredentials: true })
@@ -654,6 +685,26 @@ export default {
           (err) => {
             err;
             this.toast.message = "Error updating wall!";
+            this.toast.visible = true;
+          }
+        );
+    },
+    setsessions: function () {
+      this.$http
+        .post(
+          "/settings/setsessions",
+          { settings: this.sessions },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Sessions updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating sessions!";
             this.toast.visible = true;
           }
         );

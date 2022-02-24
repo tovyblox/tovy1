@@ -201,7 +201,7 @@ const erouter = (usernames, pfps, settings) => {
             });
         }
 
-        settings.wall = body.settings;
+        settings.sessions = body.settings;
 
         res.status(200).json({ message: 'Updated!' });
     });

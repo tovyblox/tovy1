@@ -102,6 +102,7 @@ async function runload() {
     app.use('/api/', require('./activity')(usernames, pfps, settings));
     app.use('/api/', require('./wall')(usernames, pfps, settings));
     app.use('/api/', require('./staff')(usernames, pfps, settings));
+    app.use('/api/', require('./session')(usernames, pfps, settings));
     app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings));
 }
 
