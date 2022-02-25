@@ -260,7 +260,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({
             staff: Object.keys(grouped).length,
             sessions: arr.length,
-            mins: Math.floor(_.sumBy(arr, (i => i.time)))
+            mins: Math.floor(_.sumBy(arr, function(i) { if (!isNaN(i.time)) { return i.time } else { return 0 } }))
         })
     });
 
