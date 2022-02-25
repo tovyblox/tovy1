@@ -20,6 +20,17 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running');
 
+    app.post('/session/end', (req, res) => {
+        let session = await db.gsession.findOne({ id: req.body.id });
+        if (!session) res.status(404).send('Session not found');
+
+        session.end = new Date();
+        session.save();
+
+        res.status(200).send({ success: true });
+    })
+
+    //session db is db.gsession
     router.get('/games', async (req, res) => {
         let games = settings.sessions.games;;
         let game = await noblox.getUniverseInfo(games.map(m => m.id))
@@ -28,14 +39,37 @@ const erouter = (usernames, pfps, settings) => {
             let e = game.find(f => f.id == m.id);
             return {
                 type: m.type,
+                id: m.id,
                 gameinfo: {
                     name: e.name,
                     description: e.description,
-                    
+                    rpd: e //u can remove this 
                 }
             }
         }));
+    });
+
+    router.post('/hostsession', async (req, res) => {
+        let data = req.body;
+        let id = parseInt(await db.session.countDocuments({}));
+        let treq = await axios.get(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${req.body.game}&size=768x432&format=Png&isCircular=false`);
+        let thumbnail = treq.data.data[0].thumbnails[0].imageUrl;
+        console.log(thumbnail)
+        let dbdata = {
+            id: id + 1,
+            start: data.start || Date.now(),
+            uid: req.session.userid,
+            thumbnail,
+            started: data.now,
+            type: req.body.type,
+        };
+        await db.session.create(dbdata);
+        console.log(thumbnail)
+
+        res.send(dbdata)
     })
+
+
 
     async function fetchusername(uid) {
         if (usernames.get(uid)) {

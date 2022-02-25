@@ -14,4 +14,5 @@ module.exports = {
     ia: require('./schemas/ia.schema'),
     message: require('./schemas/message.schema'),
     ranklog: require('./schemas/ranklog.schema'),
+    gsession: require('./schemas/gsession.schema'),
 }

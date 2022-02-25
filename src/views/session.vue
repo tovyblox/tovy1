@@ -10,7 +10,7 @@
       <v-card  min-width="300" height="151" class="mb-n6" outlined>
         <v-img
           max-height="200"
-          height="150"
+          height="149"
           gradient="to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1)"
           class="py-auto"
           :src="`https://tr.rbxcdn.com/0322ebe1e26eca7f692972aea1fe80ea/768/432/Image/Png`"
@@ -32,14 +32,14 @@
       </v-card>
       <v-row class="mt-5" wrap>
         <v-col cols="12" sm="12" md="8" xl="10" order="last">
-          <v-card height="109" outlined>
+          <v-card height="110" outlined>
            
             <v-layout v-if="!loading" class="">
               <v-avatar
                 class="my-auto rounded-l mr-3"
                 :color="$store.state.group.color"
                 tile
-                size="108"
+                size="109"
               >
                 <v-img :src="$store.state.user.pfp"></v-img>
               </v-avatar>

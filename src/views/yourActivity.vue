@@ -15,7 +15,6 @@
           Create an inactivity notice for yourself
         </v-card-text>
       </v-card>
-
       <notice v-if="data.length" :data="data" ></notice>
     </v-container>
     <v-row justify="center">
@@ -89,7 +88,6 @@ export default {
     loading: false,
     dates: [],
     reason: null,
-
     dialog: { active: false, loading: false, valid: false },
     data: [],
     groups: "dog",
