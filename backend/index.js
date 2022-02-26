@@ -197,7 +197,10 @@ app.post('/api/finishSignup', async (req, res) => {
 app.get('/api/profile', async (req, res) => {
     if (!await db.config.findOne({ name: 'group' })) return res.status(400).json({ message: 'NGS' });
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
-    let info = await noblox.getPlayerInfo(req.session.userid);
+    let info = await noblox.getPlayerInfo(req.session.userid).catch(err => {
+        return res.status(401).json({ message: 'Not logged in' });
+    });
+    if (!info) return;
     let color = await db.config.findOne({ name: 'color' });
     let user = await db.user.findOne({ userid: req.session.userid });
     if (!user) {
@@ -313,7 +316,7 @@ app.post('/api/signup/finish', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    let target = await noblox.getIdFromUsername(req.body.username).catch(err => { });
+    let target = await noblox.getIdFromUsername(req.body.username).catch(err => {});
     if (!target) return res.status(400).json({ message: 'User not found' });
     let user = await db.user.findOne({ userid: target });
     if (!user) return res.status(401).json({ message: 'User not found' });
