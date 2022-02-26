@@ -20,7 +20,6 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
     router.use((req, res, next) => {
-        console.log(settings.ranking)
         if (req.headers['api'] !== settings.ranking.apikey) return res.status(401).send('Unauthorized');
         next();
     });

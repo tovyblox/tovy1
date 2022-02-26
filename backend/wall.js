@@ -20,7 +20,6 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
     noblox.onShout(parseInt(settings.group)).on('error', err => {}).on('data', async (data) => {
-        console.log(data);
         if (!settings.sync) return;
         let id = parseInt(await db.message.countDocuments({}));
 
@@ -70,7 +69,6 @@ const erouter = (usernames, pfps, settings) => {
     }
 
     router.ws('/wall/socket', async (ws, req) => {
-        console.log(req.session)
         let cp = await checkperms(req.session.userid);
         
         if (!cp) {
@@ -135,10 +133,8 @@ const erouter = (usernames, pfps, settings) => {
         if (!cp) return res.status(401).json({ message: 'go away!' });
 
         const { message, shout } = req.body;
-        console.log(req.body);
         console.log(await db.message.countDocuments({}))
         let id = parseInt(await db.message.countDocuments({}));
-        console.log(id)
 
         let data = {
             id: id + 1,

@@ -56,7 +56,6 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.get('/checkupdates', async (req, res) => {
-        console.log(req.session.userid)
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
         let red;
@@ -67,8 +66,6 @@ const erouter = (usernames, pfps, settings) => {
         }
 
         let ver = parseFloat(package.version.split('.').slice(0, 2).join('.'));
-        console.log(ver);
-        console.log(red.data.version);
         if (ver >= red.data.version) return res.status(200).json({ updates: false });
         return res.status(200).json({ updates: true, ...red.data });
     })
@@ -89,8 +86,6 @@ const erouter = (usernames, pfps, settings) => {
         };
 
         let pfp = await fetchpfp(user.UserID)
-
-        console.log(settings.ranking)
         // generate random hex with crypto
         let hash = crypto.randomBytes(20).toString('hex');
         

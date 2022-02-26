@@ -612,7 +612,6 @@ export default {
       this.$router.push(url);
     },
     copykey: function () {
-      console.log(this.ranking);
       navigator.clipboard.writeText(this.ranking.apikey);
       this.toast.message = `Copied the api key to clipboard`;
       this.toast.visible = true;

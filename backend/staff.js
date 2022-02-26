@@ -53,7 +53,6 @@ const erouter = (usernames, pfps, settings) => {
 
             return m;
         }));
-        console.log(mx)
 
         res.status(200).json({ members: await mx });
     });
@@ -92,7 +91,6 @@ const erouter = (usernames, pfps, settings) => {
 
             return { ...e._doc, time: time, type: e.type || 'session' }
         });
-        console.log(sessions)
         let ias = await db.ia.find({ uid: userid })
         ias = [...ias].map(e => {
             return { ...e._doc, type: 'IA' }

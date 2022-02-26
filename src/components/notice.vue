@@ -96,9 +96,7 @@ export default {
   }),
 
   created: function () {
-    console.log("ismounted");
     const vm = this;
-    console.log("nextTick");
     let data = vm.data;
     console.log(data.filter((e) => e.type == "session"));
     //let sessions = []
@@ -108,7 +106,6 @@ export default {
     });
 
     this.s = d;
-    console.log(d);
   },
   methods: {
     getTime: function (d) {
@@ -140,7 +137,6 @@ export default {
       var diffMs = date2 - date;
       var diffHrs = Math.floor((diffMs % 86400000) / 3600000); 
       var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); 
-      console.log(diffHrs, diffMins);
       if (!diffHrs) {
         return `${diffMins} minutes`;
       } else {

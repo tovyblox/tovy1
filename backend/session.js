@@ -32,7 +32,6 @@ const erouter = (usernames, pfps, settings) => {
         essions.forEach(async (session) => {
             let ssession = await db.gsession.findOne({ id: session.id });
             ssession.started = true;
-            console.log(ssession);
             ssession.did = await sendlog(session);
             await ssession.save();
         });
@@ -63,8 +62,6 @@ const erouter = (usernames, pfps, settings) => {
                 new discord.MessageButton({ style: 'LINK', label: 'Join', url: `https://www.roblox.com/games/${data.type.gid}/-` })
             );
         
-        console.log(settings.sessions.discoping)
-
 
         let msg = await webhookc.send({ content: settings.sessions.discoping.length ? settings.sessions.discoping : null, embeds: [embed], components: [components] }).catch(err => {
             console.log(err);
@@ -117,7 +114,6 @@ const erouter = (usernames, pfps, settings) => {
     router.get('/session/:id', async (req, res) => {
         let session = await db.gsession.findOne({ id: req.params.id });
         if (!session) return res.status(404).send({ success: false, error: 'Session not found' });
-        console.log(session)
 
         let data = {
             ...session._doc,
@@ -188,7 +184,6 @@ const erouter = (usernames, pfps, settings) => {
             },
         };
         if (data.now) dbdata.did = await sendlog(dbdata);
-        console.log(dbdata.did)
 
         await db.gsession.create(dbdata);
 

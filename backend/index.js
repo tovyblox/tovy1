@@ -77,7 +77,6 @@ app.use(cookieSession({
         try {
             u = await noblox.setCookie(configforranking.value.cookie);
         } catch (e) {
-            console.log(e);
             settings.ranking = {
                 apikey: configforranking.value.hash,
             };

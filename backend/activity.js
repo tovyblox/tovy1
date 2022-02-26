@@ -9,7 +9,6 @@ let activews = [];
 
 const erouter = (usernames, pfps, settings) => {
     router.ws('/socket', (ws, req) => {
-        console.log(req.session)
         if (!req.session.userid) {
             ws.close();
             console.log('[-] Socket closing')

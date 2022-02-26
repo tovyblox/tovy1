@@ -209,17 +209,12 @@ export default {
     goto: function (url) {
       this.$router.push(url);
     },
-    settime: function (v) {
-      console.log(v);
-    },
     play: function (session) {
-      console.log(session.type.gid);
       window.open(`https://www.roblox.com/games/${session.type.gid}/-`);
     },
     gettime: function (session) {
       const now = new Date().getTime();
       const start = new Date(session.start).getTime();
-      console.log(start);
       const distance = start - now;
 
       if (distance < 0) {
@@ -235,17 +230,14 @@ export default {
     submit: function () {
       this.prompt.loading = true;
       this.$refs.form.validate();
-      console.log(this.prompt.valid);
       setTimeout(() => {
         if (!this.prompt.valid) {
           this.prompt.loading = false;
           return;
         }
-        console.log(this.prompt);
         let ds = this.prompt.date.split("-");
         let newdate = new Date(ds.join(" "));
         newdate.setHours(this.prompt.time.split(":")[0], this.prompt.time.split(":")[1]);
-        console.log(this.prompt.game);
 
         this.$http
           .post("/hostsession", {
@@ -254,7 +246,6 @@ export default {
             date: newdate,
           })
           .then((res) => {
-            console.log("cteated");
             this.prompt.loading = false;
             this.prompt.active = false;
             this.sessions.push(res.data);
@@ -268,7 +259,6 @@ export default {
           .catch(() => {
             this.prompt.loading = false;
             this.prompt.active = false;
-            console.log("error");
             this.toast = {
               message: "Session not created!",
               color: "error",
@@ -279,7 +269,6 @@ export default {
     },
     getcur: function () {
       let current = new Date();
-      console.log(`${current.getFullYear()}-${current.getMonth() + 1}-${current.getDate()}`)
       return `${current.getFullYear()}-${(current.getMonth() + 1).toString().padStart(2, '0')}-${current.getDate()}`;
     },
     open: function (url) {

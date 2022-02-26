@@ -104,7 +104,6 @@ export default {
     gettime: function () {
       const now = new Date().getTime();
       const start = new Date(this.session.start).getTime();
-      console.log(start);
       const distance = start - now;
 
       if (distance < 0) {

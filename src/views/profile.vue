@@ -206,7 +206,6 @@ export default {
   }),
   components: { notice },
   mounted: function () {
-    console.log(this.$route.params);
 
     this.$http
       .get("/uprofile/" + this.$route.params.id, { withCredentials: true })
