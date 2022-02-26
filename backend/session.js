@@ -67,9 +67,12 @@ const erouter = (usernames, pfps, settings) => {
         console.log(settings.sessions.discoping)
 
 
-        let msg = await webhookc.send({ content: settings.sessions.discoping.length ? settings.sessions.discoping : null, embeds: [embed], components: [components] });
-        console.log(msg.id)
-        return msg.id;
+        let msg = await webhookc.send({ content: settings.sessions.discoping.length ? settings.sessions.discoping : null, embeds: [embed], components: [components] }).catch(err => {
+            console.log(err);
+        });
+        
+        console.log(msg?.id)
+        return msg?.id;
     }
 
     async function unsendlog(data) {
