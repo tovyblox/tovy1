@@ -53,7 +53,7 @@ const erouter = (usernames, pfps, settings) => {
     })
 
     function sendlog(data, username, pfp) {
-        if (!settings.wall.discordhook) return;
+        if (!settings.wall?.discordhook) return;
         let webhook = settings.wall.discordhook;
 
         let webhookc = new WebhookClient({ url: webhook });
