@@ -26,9 +26,9 @@ export default {
     invite: ""
   }),
   mounted: function () {
-    this.loading = false;
-    this.$router.push("/nr");
-    /* if (this.$route.path.includes('/invite/')) {
+   // this.loading = false;
+    //this.$router.push("/nr");
+     if (this.$route.path.includes('/invite/')) {
       this.invite = this.$route.params.code
     }
 
@@ -83,7 +83,7 @@ export default {
         setTimeout(() => {
           this.loading = false;
         }, 300);
-      }); */
+      }); 
   },
 };
 </script>

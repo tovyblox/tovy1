@@ -8,7 +8,7 @@
           <v-stepper-items>
             <v-stepper-content class="mx-n2 mt-n6" step="1">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Loggoigign
+                Login to tovy with your tovy credentials
               </v-card-text>
               <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 We could not find an account with that username and password</v-alert
@@ -25,7 +25,8 @@
                 <v-text-field
                   v-model="password"
                   outlined
-                  label="Password"
+                  label="Password (not roblox password)"
+                  hint="Not your roblox password, the password for this site"
                   class="mt-3"
                   hide-details="auto"
                   :rules="[(v) => !!v || 'Password is required']"

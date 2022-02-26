@@ -209,7 +209,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity'];
+    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
     info.perms = role;
     info.id = req.session.userid;
 
@@ -243,11 +243,11 @@ app.post('/api/invite', async (req, res) => {
 
 app.post('/api/signup/start', async (req, res) => {
     var emojis = [
-        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢'
+        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒','🐴','🐑','🐘','🐼','🐧','🐦','🐤','🐥','🐣','🐔','🐍','🐢','🐛','🐝','🐜','📕','📗','📘','📙','📓','📔','📒','📚','📖','🔖','🎯','🏈','🏀','⚽','⚾','🎾','🎱','🏉','🎳','⛳','🚵','🚴','🏁','🏇'
     ];
 
 
-    let verifys = `%${chooseRandom(emojis, 5).join('')}%`;
+    let verifys = `🤖${chooseRandom(emojis, 11).join('')}`;
     let uid = await noblox.getIdFromUsername(req.body.username).catch(e => {
         res.status(404).json({ message: 'No such user!' });
         return;

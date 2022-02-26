@@ -5,8 +5,10 @@ const session = new mongoose.Schema({
     end: Date,
     uid: Number,
     started: Boolean,
-    type: Number,
+    type: Object,
+    thumbnail: String,
     id: Number,
+    did: String
 })
 
 module.exports = mongoose.models['gsessions'] || mongoose.model('gsessions', session, 'gsessions');

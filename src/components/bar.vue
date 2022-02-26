@@ -136,7 +136,7 @@ export default {
         path: "/youractivity",
       }, {
         name: "Sessions",
-        icon: "mdi-format-list-bulleted",
+        icon: "mdi-bullhorn-outline",
         path: "/sessions",
       },
       {

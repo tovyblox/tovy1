@@ -98,6 +98,9 @@
                       <v-card-text class="mt-n6 grey--text"
                         >@{{ item.username }}</v-card-text
                       >
+                      <v-card-text class="mt-n6 grey--text"
+                        >{{ item.time }}</v-card-text
+                      >
                     </div></v-layout
                   >
                 </div>

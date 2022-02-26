@@ -1,0 +1,294 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Script" referent="RBX9FEAC9DD168D4EEC9DB078F58BC1E8CD">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<bool name="Disabled">false</bool>
+			<Content name="LinkedSource"><null></null></Content>
+			<string name="Name">TovyRankingLoader</string>
+			<string name="ScriptGuid">{1A747CCE-24C7-43A2-8CFA-6F8479E2699A}</string>
+			<ProtectedString name="Source"><![CDATA[--[[
+████████  ██████  ██    ██ ██    ██ 
+   ██    ██    ██ ██    ██  ██  ██  
+   ██    ██    ██ ██    ██   ████   
+   ██    ██    ██  ██  ██     ██    
+   ██     ██████    ████      ██    
+                                    
+
+		© 2022 Tovy
+		
+		Property of ItsWHOOOP (https://www.roblox.com/users/469981094/profile) [WHOOOP#0001]
+		
+		Module created by UhTrue [UhTrue#8084]
+		
+	Documentation:
+	
+	TovyModule.new(URL, API_KEY) -- Sets the URL and API Key (This should be setup when you download the script.)
+	
+	TovyModule.promote(UserId) -- Promotes the specified user in the set group.
+	TovyModule.demote(UserId)  -- Demotes the specified user in the set group.
+	
+	TovyModule.setrank(UserId, RoleId)  -- Sets the rank of the specified user in the set group.
+	
+	TovyModule.shout(message)  -- Sets the groups shout.
+	
+	Example:
+	
+	local TovyModule = require(script.ModuleScript)
+
+	TovyModule.new("https://tovy.com","kajsduyatwuygauhjsdfgyta923d")
+
+	TovyModule.shout("Welcome to my group!!!")
+]]
+
+local TovyModule = require(script.TovyModule)
+
+TovyModule.new("<url>","<key>")
+
+-- Put your stuff below.]]></ProtectedString>
+			<int64 name="SourceAssetId">-1</int64>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+		<Item class="ModuleScript" referent="RBXA8FF0504EF2F4E909B41A505EC7B477D">
+			<Properties>
+				<BinaryString name="AttributesSerialize"></BinaryString>
+				<Content name="LinkedSource"><null></null></Content>
+				<string name="Name">TovyModule</string>
+				<string name="ScriptGuid">{664AA067-8A42-4A3F-8961-CDF5CEB756CB}</string>
+				<ProtectedString name="Source"><![CDATA[--[[
+                                                                                     
+                                                                                     
+TTTTTTTTTTTTTTTTTTTTTTT                                                              
+T:::::::::::::::::::::T                                                              
+T:::::::::::::::::::::T                                                              
+T:::::TT:::::::TT:::::T                                                              
+TTTTTT  T:::::T  TTTTTTooooooooooo vvvvvvv           vvvvvvvyyyyyyy           yyyyyyy
+        T:::::T      oo:::::::::::oov:::::v         v:::::v  y:::::y         y:::::y 
+        T:::::T     o:::::::::::::::ov:::::v       v:::::v    y:::::y       y:::::y  
+        T:::::T     o:::::ooooo:::::o v:::::v     v:::::v      y:::::y     y:::::y   
+        T:::::T     o::::o     o::::o  v:::::v   v:::::v        y:::::y   y:::::y    
+        T:::::T     o::::o     o::::o   v:::::v v:::::v          y:::::y y:::::y     
+        T:::::T     o::::o     o::::o    v:::::v:::::v            y:::::y:::::y      
+        T:::::T     o::::o     o::::o     v:::::::::v              y:::::::::y       
+      TT:::::::TT   o:::::ooooo:::::o      v:::::::v                y:::::::y        
+      T:::::::::T   o:::::::::::::::o       v:::::v                  y:::::y         
+      T:::::::::T    oo:::::::::::oo         v:::v                  y:::::y          
+      TTTTTTTTTTT      ooooooooooo            vvv                  y:::::y           
+                                                                  y:::::y            
+                                                                 y:::::y             
+                                                                y:::::y              
+                                                               y:::::y               
+                                                              yyyyyyy                
+                                                                                     
+										© 2022 Tovy
+	Property of ItsWHOOOP (https://www.roblox.com/users/469981094/profile) [WHOOOP#0001]
+	Module created by UhTrue [UhTrue#8084]
+]]
+
+-- Services
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+-- Variables
+local Prefix = "[TOVY]"
+
+local TOVY_URL = nil
+local API_KEY = nil
+local DebugMode = false
+local DisableDebugLogs = false
+
+local Endpoints = {
+	["Promote"] = "/promote";
+	["Demote"] = "/demote";
+	["Shout"] = "/shout";
+	["SetRank"] = "/setrank";
+}
+
+-- Module
+local TovyModule = {}
+
+-- Functions
+
+function CheckStatus(URL)
+	if not URL then
+		if TOVY_URL then
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL, Method="GET"});
+			if DebugMode then
+				if StatusResponse.StatusCode == 404 then
+					if not DisableDebugLogs then
+						warn(Prefix, "Status 404, Ignored as ran in debug mode.")
+					end
+					return true
+				end
+			end
+			
+			if StatusResponse.StatusCode == 200 then
+				return true
+			else
+				warn(Prefix, "Failed to connect to", TOVY_URL)
+				return false
+			end
+		else
+			warn(Prefix, "Tried to check status with no URL set.")
+		end
+	else
+		local StatusResponse = HttpService:GetAsync(URL)
+		if StatusResponse.Status == 200 then
+			return true
+		else
+			warn(Prefix, "Failed to connect to", URL)
+			return false
+		end
+	end
+	return false
+end
+
+function TovyModule.promote(UserId)
+	if not Players:GetNameFromUserIdAsync(UserId) then return warn(Prefix, "Invalid UserId provided!") end
+	if API_KEY then
+		if CheckStatus() then
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL..Endpoints["Promote"], Method="POST", Headers = {["Content-Type"] = "application/json", ["api"] = API_KEY}, Body = HttpService:JSONEncode({user = UserId})});
+			if StatusResponse.StatusCode == 200 then
+				return true, 'Promoted '..UserId..'!'
+			elseif StatusResponse.StatusCode == 401 then
+				warn(Prefix, "Invalid API_KEY!")
+				return false
+			else
+				warn(Prefix, "Failed to promote".. Players:GetNameFromUserIdAsync(UserId) .." ("..UserId..") Status:", StatusResponse.StatusCode)
+				return false
+			end
+		end
+	else
+		warn(Prefix, "API_KEY has not been set!")
+		return false
+	end
+end
+
+
+function TovyModule.demote(UserId)
+	if not Players:GetNameFromUserIdAsync(UserId) then return warn(Prefix, "Invalid UserId provided!") end
+	if API_KEY then
+		if CheckStatus() then
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL..Endpoints["Demote"], Method="POST", Headers = {["Content-Type"] = "application/json", ["api"] = API_KEY}, Body = HttpService:JSONEncode({user = UserId})});
+			if StatusResponse.StatusCode == 200 then
+				return true, 'Demoted '..UserId..'!'
+			elseif StatusResponse.StatusCode == 401 then
+				warn(Prefix, "Invalid API_KEY!")
+				return false
+			else
+				warn(Prefix, "Failed to demote".. Players:GetNameFromUserIdAsync(UserId) .." ("..UserId..") Status:", StatusResponse.StatusCode)
+				return false
+			end
+		end
+	else
+		warn(Prefix, "API_KEY has not been set!")
+		return false
+	end
+end
+
+function TovyModule.shout(message)
+	if not message then return warn(Prefix, "No message provided!") end
+	if string.len(message) > 255 then return warn(Prefix,"Shout's cannot exceed 255 characters!") end
+	if API_KEY then
+		if CheckStatus() then
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL..Endpoints["Shout"], Method="POST", Headers = {["Content-Type"] = "application/json", ["api"] = API_KEY}, Body = HttpService:JSONEncode({shout = message})});
+			if StatusResponse.StatusCode == 200 then
+				return true, 'Successfully shouted; "'..message..'"!'
+			elseif StatusResponse.StatusCode == 401 then
+				warn(Prefix, "Invalid API_KEY!")
+				return false
+			else
+				warn(Prefix, "Failed to create a shout! Status:", StatusResponse.StatusCode)
+				return false
+			end
+		end
+	else
+		warn(Prefix, "API_KEY has not been set!")
+		return false
+	end
+end
+
+function TovyModule.setrank(UserId, RoleId)
+	if not Players:GetNameFromUserIdAsync(UserId) then return warn(Prefix, "Invalid UserId provided!") end
+	if not RoleId then return warn(Prefix,"No RoleId provided") end
+	if API_KEY then
+		if CheckStatus() then
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL..Endpoints["SetRank"], Method="POST", Headers = {["Content-Type"] = "application/json", ["api"] = API_KEY}, Body = HttpService:JSONEncode({user = UserId, rank = RoleId})});
+			if StatusResponse.StatusCode == 200 then
+				return true, 'Successfully ranked!'
+			elseif StatusResponse.StatusCode == 401 then
+				warn(Prefix, "Invalid API_KEY!")
+				return false
+			else
+				warn(Prefix, "Failed to rank ".. Players:GetNameFromUserIdAsync(UserId) .." ("..UserId..") to "..RoleId..". Status:", StatusResponse.StatusCode)
+				return false
+			end
+		end
+	else
+		warn(Prefix, "API_KEY has not been set!")
+		return false
+	end
+end
+
+function TovyModule.new(URL, API_Key , DMode, DisableLogging)
+	if URL and API_Key then
+		warn([[                                                                                
+                                                                                     
+TTTTTTTTTTTTTTTTTTTTTTT                                                              
+T:::::::::::::::::::::T                                                              
+T:::::::::::::::::::::T                                                              
+T:::::TT:::::::TT:::::T                                                              
+TTTTTT  T:::::T  TTTTTTooooooooooo vvvvvvv           vvvvvvvyyyyyyy           yyyyyyy
+        T:::::T      oo:::::::::::oov:::::v         v:::::v  y:::::y         y:::::y 
+        T:::::T     o:::::::::::::::ov:::::v       v:::::v    y:::::y       y:::::y  
+        T:::::T     o:::::ooooo:::::o v:::::v     v:::::v      y:::::y     y:::::y   
+        T:::::T     o::::o     o::::o  v:::::v   v:::::v        y:::::y   y:::::y    
+        T:::::T     o::::o     o::::o   v:::::v v:::::v          y:::::y y:::::y     
+        T:::::T     o::::o     o::::o    v:::::v:::::v            y:::::y:::::y      
+        T:::::T     o::::o     o::::o     v:::::::::v              y:::::::::y       
+      TT:::::::TT   o:::::ooooo:::::o      v:::::::v                y:::::::y        
+      T:::::::::T   o:::::::::::::::o       v:::::v                  y:::::y         
+      T:::::::::T    oo:::::::::::oo         v:::v                  y:::::y          
+      TTTTTTTTTTT      ooooooooooo            vvv                  y:::::y           
+                                                                  y:::::y            
+                                                                 y:::::y             
+                                                                y:::::y              
+                                                               y:::::y               
+                                                              yyyyyyy                
+                                                                                     
+                                 © 2022 Tovy
+                            Property of ItsWHOOOP
+                    Module created by UhTrue [UhTrue#8084]
+]])
+
+		TOVY_URL = URL
+		
+		API_KEY = API_Key
+		
+		DebugMode = DMode
+		DisableDebugLogs = DisableLogging
+		
+		if DebugMode then
+			warn(Prefix,'Debug mode is enabled, if this is for production make sure to disable it.')
+		end
+		
+		if DisableDebugLogs then
+			warn(Prefix,'You will not see the 404 debug log as you disabled DebugLogging.')
+		end
+
+	else
+		error(Prefix.." Missing parameters. TovyModule.new(URL, API_KEY)")
+	end
+end
+
+
+-- Export
+return TovyModule]]></ProtectedString>
+				<int64 name="SourceAssetId">-1</int64>
+				<BinaryString name="Tags"></BinaryString>
+			</Properties>
+		</Item>
+	</Item>
+</roblox>

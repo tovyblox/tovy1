@@ -94,7 +94,7 @@
               </v-btn></v-card
             >
             <div v-if="ranking.id">
-              <v-btn class="mt-3" elevation="0" color="info"> Download module </v-btn>
+              <v-btn @click="downlodrloader" class="mt-3" elevation="0" color="info"> Download module </v-btn>
               <v-btn @click="copykey" class="ml-1 mt-3" elevation="0" color="error">
                 Copy API key
               </v-btn>
@@ -115,14 +115,8 @@
               Tovy group wall is a customisable wall that can be used to display
               information about your group.
             </p>
-            <v-switch
-              v-model="wall.enabled"
-              @change="setwall"
-              label="Enabled?"
-            ></v-switch>
 
             <v-switch
-              v-if="wall.enabled"
               @change="setwall"
               v-model="wall.sync"
               class="mt-n3"
@@ -135,7 +129,6 @@
             <v-text-field
               v-model="wall.discordhook"
               @keydown.enter="setwall"
-              v-if="wall.enabled"
               hide-details="auto"
               outlined
               class="mt-n2 mb-3"
@@ -210,7 +203,10 @@
                    <div>  <v-btn icon class="mt-2 mx-auto" @click="delgame(game)"> <v-icon> mdi-delete </v-icon></v-btn> </div> </v-col
                 ></v-row></div
             ></v-card>
-            <v-text-field label="Webhook" v-model="sessions.discohook" outlined>
+            <v-text-field label="Webhook" v-if="sessions.enabled" hide-details="auto" hint="Press enter to save" @keydown.enter="setsessions" v-model="sessions.discohook" outlined>
+            </v-text-field>
+
+            <v-text-field label="Prefix to message (eg ping)" class="mt-2"  v-if="sessions.enabled && sessions.discohook.length" hide-details="auto" hint="Press enter to save (leave blank for none)" @keydown.enter="setsessions" v-model="sessions.discoping" outlined>
             </v-text-field>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -465,11 +461,9 @@ export default {
       discordhook: "",
     },
     sessions: {
-      games: [
-        { id: 9, name: "Game 1", type: "Training session" },
-        { id: 9, name: "Game 2", type: "Uuuuuulplplplplp" },
-      ],
+      games: [],
       discohook: "",
+      discoping: "",
       wall: false,
       enabled: false,
     },
@@ -519,6 +513,12 @@ export default {
       {
         name: "Update shout",
         value: "update_shout",
+      }, {
+        name: "Post on wall",
+        value: "post_on_wall",
+      }, {
+        name: "Host sessions",
+        value: "host_sessions",
       },
     ],
     invites: [],
@@ -630,6 +630,7 @@ export default {
             r;
             this.ranking = {
               cookie: "",
+              apikey: r.data.info.apikey,
               username: r.data.info.username,
               pfp: r.data.info.pfp,
               id: r.data.info.uid,
@@ -731,6 +732,8 @@ export default {
     },
     downlodloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/loader");
+    }, downlodrloader: function () {
+      window.open(this.$http.defaults.baseURL + "/settings/rloader");
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);

@@ -35,7 +35,7 @@
 
             <p class="ml-4 mb-6 mt-n4" v-if="!best.length">No data</p>
 
-            <div v-if="!loading.best" class="mt-n2 ml-4">
+            <div v-if="!loading.best" class="mt-n2 ml-4 mb-3">
               <v-tooltip v-for="user in best" :key="user.uid" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar :color="$store.state.group.color" class="mr-1" size="36">
@@ -82,7 +82,7 @@
         <v-col order="last">
           <v-card outlined class="">
             <p class="ml-3 mb-2 mt-5 text-h2">{{ stats.sessions }}</p>
-            <v-card-text class="mt-n6"> Sessions </v-card-text>
+            <v-card-text class="mt-n6"> Play sessions </v-card-text>
           </v-card>
         </v-col>
         <v-col order="last">

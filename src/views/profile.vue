@@ -39,7 +39,7 @@
         </v-col>
         <v-col order="last">
           <v-card outlined class="">
-            <v-card-text class=""> Sessions </v-card-text>
+            <v-card-text class=""> Play sessions </v-card-text>
             <p class="ml-3 mb-2 mt-5 text-h2 mt-n5">{{ stats.session }}</p>
           </v-card>
         </v-col>

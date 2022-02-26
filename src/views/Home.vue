@@ -9,7 +9,7 @@
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
-      <v-card min-width="300" height="auto" v-if="update.version" class="mb-n6" outlined>
+      <v-card min-width="300" height="auto" v-if="update.version" class="mb-4" outlined>
         <v-img
           max-height="100"
           height="78"
@@ -30,7 +30,7 @@
             <v-btn class="my-auto mr-2" @click="open(`${update.url}`)" plain color="info">
               View the log
             </v-btn>
-            <v-btn class="my-auto mr-2" plain color="success">
+            <v-btn class="my-auto mr-2" @click="open(`https://itswhooop.gitbook.io/tovy/hosting/updating-railway`)" plain color="success">
               Learn how <v-icon right dark> mdi-arrow-right </v-icon>
             </v-btn>
           </v-layout>

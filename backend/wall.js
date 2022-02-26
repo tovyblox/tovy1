@@ -19,8 +19,9 @@ let activews = [];
 
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
-    noblox.onShout(parseInt(settings.group)).on('error', err => console.log(err)).on('data', async (data) => {
+    noblox.onShout(parseInt(settings.group)).on('error', err => {}).on('data', async (data) => {
         console.log(data);
+        if (!settings.sync) return;
         let id = parseInt(await db.message.countDocuments({}));
 
 
@@ -68,9 +69,11 @@ const erouter = (usernames, pfps, settings) => {
         webhookc.send({ embeds: [embed] })
     }
 
-    router.ws('/wall/socket', (ws, req) => {
+    router.ws('/wall/socket', async (ws, req) => {
         console.log(req.session)
-        if (!req.session.userid) {
+        let cp = await checkperms(req.session.userid);
+        
+        if (!cp) {
             ws.close();
             console.log('[-] Socket closing')
             return;
@@ -89,6 +92,8 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.get('/wall/messages', async (req, res) => {
+        let cp = await checkperms(req.session.userid);
+        if (!cp) return res.status(401).json({ message: 'go away!' });
         let messages = await db.message.find({ deleted: false }).sort({ date: -1 });
 
         let u = await Promise.all(messages.map(async m => {
@@ -106,6 +111,8 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.post('/wall/delete', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
         const { id } = req.body;
         let message = await db.message.findOne({ id: id });
 
@@ -124,6 +131,9 @@ const erouter = (usernames, pfps, settings) => {
     })
 
     router.post('/wall/send', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'post_on_wall');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+
         const { message, shout } = req.body;
         console.log(req.body);
         console.log(await db.message.countDocuments({}))
@@ -203,6 +213,7 @@ const erouter = (usernames, pfps, settings) => {
         if (user.role == 0) return true;
         let role = roles.find(r => r.id == user.role);
         if (!role) return false;
+        if (!perm) return true;
         return role.permissions.includes(perm);
     }
 

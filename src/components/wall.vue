@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card outlined>
+    <v-card v-if="$store.state.user.perms.includes('post_on_wall')" outlined>
       <v-layout class="">
         <v-avatar tile size="55" class="rounded-l">
           <v-img :src="$store.state.user.pfp"></v-img>
@@ -43,19 +43,44 @@
         </v-tooltip>
         <div class="my-auto ml-3">
           <p class="text-h5 my-auto font-weight-bold">{{ msg.username }}</p>
-          <p class="text-body-1 my-auto grey--text mt-n2 gray">{{ getDate(msg.date) }} at  {{ getTime(msg.date) }}</p>
+          <p class="text-body-1 my-auto grey--text mt-n2 gray">
+            {{ getDate(msg.date) }} at {{ getTime(msg.date) }}
+          </p>
         </div>
-        <v-chip v-if="msg.shout" class="my-auto ml-3 white--text ml-0" color="purple" label small>
+        <v-chip
+          v-if="msg.shout"
+          class="my-auto ml-3 white--text ml-0"
+          color="purple"
+          label
+          small
+        >
           Group shout
         </v-chip>
         <v-spacer></v-spacer>
-        <v-btn icon @click="del(msg.id)" class="mr-2 mt-2"> <v-icon> mdi-delete </v-icon> </v-btn>
+        <v-btn
+          icon
+          @click="del(msg.id)"
+          v-if="$store.state.user.perms.includes('admin')"
+          class="mr-2 mt-2"
+        >
+          <v-icon> mdi-delete </v-icon>
+        </v-btn>
       </v-layout>
       <p class="my-auto grey--text mx-3 py-3">
         {{ msg.message }}
       </p></v-card
     >
-    <v-layout v-if="ishome"> <v-btn plain elevation="0" color="blue" class="mx-auto mt-3" @click="$router.push('/wall')"> View all posts </v-btn> </v-layout>
+    <v-layout v-if="ishome">
+      <v-btn
+        plain
+        elevation="0"
+        color="blue"
+        class="mx-auto mt-3"
+        @click="$router.push('/wall')"
+      >
+        View all posts
+      </v-btn>
+    </v-layout>
   </div>
 </template>
 
@@ -65,14 +90,15 @@ export default {
     messages: [],
     message: "",
     loading: false,
-  }), props: ['ishome'],
-  methods: { 
+  }),
+  props: ["ishome"],
+  methods: {
     fetchposts() {
-        if (this.ishome) {
-          return this.messages.slice(0, 4)
-        }
+      if (this.ishome) {
+        return this.messages.slice(0, 4);
+      }
 
-        return this.messages
+      return this.messages;
     },
     send: function () {
       this.loading = true;
@@ -83,7 +109,8 @@ export default {
           this.message = "";
           this.loading = false;
         });
-    }, getTime: function (d) {
+    },
+    getTime: function (d) {
       let date = new Date(d);
       //get time in date
       let time = date.getMinutes();
@@ -100,11 +127,14 @@ export default {
     },
     del: function (id) {
       this.messages.splice(
-      this.messages.findIndex((i) => i.id == id), 1);
+        this.messages.findIndex((i) => i.id == id),
+        1
+      );
       this.$http.post("/wall/delete", { id: id }, { withCredentials: true });
     },
-  }, beforeDestroy() {
-      this.connection?.close();
+  },
+  beforeDestroy() {
+    this.connection?.close();
   },
   mounted() {
     this.$http
@@ -117,7 +147,6 @@ export default {
       });
     let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/wall/socket`);
     this.connection = connection;
-
 
     connection.onopen = () => {
       console.log("[-] Connected to WS");
@@ -136,7 +165,10 @@ export default {
 
       if (data.type == "delete") {
         if (data.data.actor === this.$store.state.user.id) return;
-        this.messages.splice( this.messages.findIndex((i) => i.id == data.data.id), 1);
+        this.messages.splice(
+          this.messages.findIndex((i) => i.id == data.data.id),
+          1
+        );
       }
     };
   },
