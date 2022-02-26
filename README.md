@@ -15,6 +15,9 @@ If you contribute to us you will get a role on our discord server
 -   Custom role system
 -   Invite link system
 -   Nice login system 
+-   Sessions
+-   Ranking
+-   Group wall
 -   Activity tracking
 -   Bulk activity management
 -   Nice UI  
