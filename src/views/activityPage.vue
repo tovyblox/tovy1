@@ -27,15 +27,15 @@
       </v-card>
       <v-row>
         <v-col order="last">
-          <v-card :loading="loading.best" outlined class="mb-2">
-            <v-card-title> The best </v-card-title>
+          <v-card :loading="loading.best" outlined class="pb-1 mb-2">
+            <v-card-title> Best </v-card-title>
             <v-card-text class="mt-n6">
-              Staff In-game most since the last activity reset
+              The staff who spent the most time ingame since the last reset
             </v-card-text>
-           
-            <p class="ml-4 mb-2 mt-n4" v-if="!best.length">No data</p>
 
-            <div v-if="!loading.best" class="mt-n2 ml-4 mb-4">
+            <p class="ml-4 mb-6 mt-n4" v-if="!best.length">No data</p>
+
+            <div v-if="!loading.best" class="mt-n2 ml-4 mb-3">
               <v-tooltip v-for="user in best" :key="user.uid" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar :color="$store.state.group.color" class="mr-1" size="36">
@@ -82,7 +82,7 @@
         <v-col order="last">
           <v-card outlined class="">
             <p class="ml-3 mb-2 mt-5 text-h2">{{ stats.sessions }}</p>
-            <v-card-text class="mt-n6"> Sessions </v-card-text>
+            <v-card-text class="mt-n6"> Play sessions </v-card-text>
           </v-card>
         </v-col>
         <v-col order="last">
@@ -167,7 +167,7 @@ export default {
       this.loading.off = false;
       this.off = response.data;
     });
-    let connection = new WebSocket(`ws://${this.host}/api/socket`);
+    let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/socket`);
 
     connection.onopen = () => {
       console.log("[-] Connected to WS");

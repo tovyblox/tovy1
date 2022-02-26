@@ -9,7 +9,35 @@
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
-      <v-row>
+      <v-card min-width="300" height="auto" v-if="update.version" class="mb-4" outlined>
+        <v-img
+          max-height="100"
+          height="78"
+          gradient="to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1)"
+          class="py-auto"
+          :src="update.img"
+        >
+          <v-layout>
+            <div>
+              <v-card-title class="my-auto">
+                {{ update.title }}
+              </v-card-title>
+              <v-card-text class="mt-n6">
+                Update to Tovy {{ update.version }} for the newest features
+              </v-card-text>
+            </div>
+            <v-spacer />
+            <v-btn class="my-auto mr-2" @click="open(`${update.url}`)" plain color="info">
+              View the log
+            </v-btn>
+            <v-btn class="my-auto mr-2" @click="open(`https://itswhooop.gitbook.io/tovy/hosting/updating-railway`)" plain color="success">
+              Learn how <v-icon right dark> mdi-arrow-right </v-icon>
+            </v-btn>
+          </v-layout>
+        </v-img>
+      </v-card>
+
+      <v-row class="">
         <v-col order="last">
           <v-card
             min-width="300"
@@ -57,23 +85,15 @@
           </v-card>
         </v-col>
       </v-row>
-      <v-card outlined>
-        <v-row class="mx-auto mb-5 mt-5">
-          <v-img
-            src="../assets/experimental-sleepy-tiger-coming-out-of-the-cave-in-the-morning.png"
-            class="mx-auto mt-7"
-            max-width="400"
-          ></v-img>
-          <v-card-text class="text-center mt-n5 mb-n4">
-            There is nothing here so here is a graphic instead
-          </v-card-text>
-        </v-row></v-card
-      >
+
+      <v-divider class="mt-1 mb-3"> </v-divider>
+      <wall :ishome="true"> </wall>
     </v-container>
   </div>
 </template>
 
 <script>
+import wall from "@/components/wall";
 export default {
   name: "HelloWorld",
 
@@ -81,11 +101,31 @@ export default {
     drawer: true,
     loading: false,
     groups: "dog",
+    update: {},
   }),
-  components: {},
+  mounted() {
+    if (this.$store.state.user.perms.includes("admin")) {
+      this.$http
+        .get("/checkupdates")
+        .then((response) => {
+          this.update = response.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      console.log("np");
+    }
+  },
+  components: {
+    wall,
+  },
   methods: {
     goto: function (url) {
       this.$router.push(url);
+    },
+    open: function (url) {
+      window.open(url);
     },
   },
 };

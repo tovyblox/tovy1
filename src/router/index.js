@@ -12,6 +12,10 @@ import staff from '@/views/staff'
 import profile from '@/views/profile'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
+import wall from '@/views/wall'
+import sessions from '@/views/sessions'
+import session from '@/views/session'
+import notReady from '@/views/notReady'
 
 Vue.use(VueRouter)
 
@@ -21,6 +25,27 @@ const routes = [
     name: 'Home',
     meta: { layout: 'main' },
     component: Home
+  }, {
+    path: '/sessions',
+    name: 'Sessions',
+    meta: { layout: 'main' },
+    component: sessions
+  }, {
+    path: '/nr',
+    name: 'Not ready',
+    meta: { layout: 'default' },
+    component: notReady
+  }, {
+    path: '/session/:id',
+    name: 'Session',
+    meta: { layout: 'main' },
+    component: session
+  }, 
+  {
+    path: '/wall',
+    name: 'Wall',
+    meta: { layout: 'main' },
+    component: wall
   },
   {
     path: '/welcome',

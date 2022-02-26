@@ -58,6 +58,7 @@
                   @input="error = false"
                   hide-details="auto"
                   type="password"
+                  hint="Don't use your Roblox password"
                   label="Password"
                   required
                   :rules="[(v) => !!v || 'Password required']"

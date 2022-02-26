@@ -64,10 +64,49 @@ app.use(cookieSession({
 
     let configforproxy = await db.config.findOne({ name: 'wproxy' });
     if (configforproxy) settings.proxy = configforproxy.value;
+
+    let configforwall = await db.config.findOne({ name: 'wall' });
+    if (configforwall) settings.wall = configforwall.value;
+
+    let configforsessions = await db.config.findOne({ name: 'sessions' });
+    if (configforsessions) settings.sessions = configforsessions.value;
+
+    let configforranking = await db.config.findOne({ name: 'ranking' });
+    if (configforranking) {
+        let u;
+        try {
+            u = await noblox.setCookie(configforranking.value.cookie);
+        } catch (e) {
+            console.log(e);
+            settings.ranking = {
+                apikey: configforranking.value.hash,
+            };
+        }
+
+        if (u) {
+            settings.ranking = {
+                username: u.UserName,
+                uid: u.UserID,
+                pfp: await fetchpfp(u.UserID),
+                apikey: configforranking.value.hash,
+            };
+        }
+
+    } 
+
+    runload()
 })();
 
-app.use('/api/', require('./activity')(usernames, pfps, settings));
-app.use('/api/', require('./staff')(usernames, pfps, settings))
+async function runload() {
+    console.log('Running tovy!')
+    app.use('/api/', require('./activity')(usernames, pfps, settings));
+    app.use('/api/', require('./wall')(usernames, pfps, settings));
+    app.use('/api/', require('./staff')(usernames, pfps, settings));
+    app.use('/api/', require('./session')(usernames, pfps, settings));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings));
+}
+
+
 
 if (!backendonly) {
     let staticFileMiddleware = express.static(path.join(__dirname, '../dist'));
@@ -170,8 +209,9 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity'];
+    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
     info.perms = role;
+    info.id = req.session.userid;
 
     let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
     res.status(200).json({
@@ -203,11 +243,11 @@ app.post('/api/invite', async (req, res) => {
 
 app.post('/api/signup/start', async (req, res) => {
     var emojis = [
-        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢'
+        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒','🐴','🐑','🐘','🐼','🐧','🐦','🐤','🐥','🐣','🐔','🐍','🐢','🐛','🐝','🐜','📕','📗','📘','📙','📓','📔','📒','📚','📖','🔖','🎯','🏈','🏀','⚽','⚾','🎾','🎱','🏉','🎳','⛳','🚵','🚴','🏁','🏇'
     ];
 
 
-    let verifys = `%${chooseRandom(emojis, 5).join('')}%`;
+    let verifys = `🤖${chooseRandom(emojis, 11).join('')}`;
     let uid = await noblox.getIdFromUsername(req.body.username).catch(e => {
         res.status(404).json({ message: 'No such user!' });
         return;

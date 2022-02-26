@@ -25,6 +25,32 @@ const erouter = (usernames, pfps, settings) => {
         let mx = await Promise.all(members.map(async m => {
             m.pfp = await fetchpfp(m.userId);
             m.selected = false;
+
+            let sessions = await db.session.find({ uid: m.userId, active: false });
+            sessions = [...sessions].map(e => {
+                let time;
+                if (!e.mins) {
+                    const d2 = new Date(e.start);
+                    const d1 = new Date(e.end);
+                    const diffMs = d1.getTime() - d2.getTime();
+                    const diffMins = (diffMs / 1000) / 60;
+                    time = Math.round(diffMins);
+                } else time = e.mins;
+    
+                return { ...e._doc, time: time, type: e.type || 'session' }
+            });
+            let ias = await db.ia.find({ uid: m.userId })
+            ias = [...ias].map(e => {
+                return { ...e._doc, type: 'IA' }
+            })
+            let d = [...sessions, ...ias].sort((a, b) => b.start - a.start);
+
+            const conv = (mins) => {
+                return `${String(Math.floor(mins / 60)).padStart(1, '0')} hours, ${String(mins % 60).padStart(1, '0')} minutes`;
+              }
+
+            m.time = conv(Math.round(_.sumBy(sessions, 'time')));
+
             return m;
         }));
         console.log(mx)

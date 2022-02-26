@@ -35,22 +35,181 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-cookie
+            </v-icon>
+            <v-expansion-panel-header> Ranking </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <v-card :loading="ranking.loading" v-if="!ranking.id" class="m-6" outlined>
+              <v-card-title> Not logged in! </v-card-title>
+              <p class="ml-4 mt-n6 grey--text">
+                Please enter your roblox secuirty token below
+              </p>
+              <v-text-field
+                v-model="ranking.cookie"
+                hide-details="auto"
+                outlined
+                class="mx-4 mt-n1"
+                label=".ROBLOSECURITY"
+              >
+              </v-text-field>
+              <v-btn class="ml-4 mt-3 mb-4" @click="setcookie" elevation="0" color="info">
+                Set cookie
+              </v-btn></v-card
+            >
+
+            <v-card v-if="ranking.id" :loading="ranking.loading" class="m-6" outlined>
+              <v-card-title> Logged in! </v-card-title>
+              <v-card class="mx-4" outlined>
+                <v-layout v-if="!loading" class="">
+                  <v-avatar
+                    class="my-auto rounded-l mr-3"
+                    :color="$store.state.group.color"
+                    size="80"
+                    tile
+                  >
+                    <v-img :src="ranking.pfp"></v-img>
+                  </v-avatar>
+                  <div class="my-auto">
+                    <p class="text-h4 my-auto font-weight-bold">
+                      {{ ranking.username }}
+                    </p>
+                  </div></v-layout
+                ></v-card
+              >
+              <p class="ml-4 mt-4 grey--text">
+                You can enter your ROBLOSECURITY token below if you wish to update it
+              </p>
+              <v-text-field
+                v-model="ranking.cookie"
+                hide-details="auto"
+                outlined
+                class="mx-4 mt-n2"
+                label=".ROBLOSECURITY"
+              >
+              </v-text-field>
+              <v-btn class="ml-4 mt-3 mb-6" elevation="0" @click="setcookie" color="info">
+                Set cookie
+              </v-btn></v-card
+            >
+            <div v-if="ranking.id">
+              <v-btn @click="downlodrloader" class="mt-3" elevation="0" color="info"> Download module </v-btn>
+              <v-btn @click="copykey" class="ml-1 mt-3" elevation="0" color="error">
+                Copy API key
+              </v-btn>
+            </div>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-wall
+            </v-icon>
+            <v-expansion-panel-header> Wall </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">
+              Tovy group wall is a customisable wall that can be used to display
+              information about your group.
+            </p>
+
+            <v-switch
+              @change="setwall"
+              v-model="wall.sync"
+              class="mt-n3"
+              label="Sync with group shout"
+            ></v-switch>
+            <p class="" v-if="wall.enabled">
+              The discord webhook synces the wall with a discord webhook leave blank if
+              you want to disable
+            </p>
+            <v-text-field
+              v-model="wall.discordhook"
+              @keydown.enter="setwall"
+              hide-details="auto"
+              outlined
+              class="mt-n2 mb-3"
+              hint="Press enter to save"
+              label="Discord webhook"
+            />
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
               mdi-webhook
             </v-icon>
             <v-expansion-panel-header> Webhook proxy </v-expansion-panel-header>
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">If enabled this lets you proxy discord webhooks though our server (allows you to use webhooks in roblox)</p>
-            <v-switch
-              v-model="other.proxy"
-              @change="setproxy"
-              label="Enabled?"
-            >
+            <p class="">
+              If enabled this lets you proxy discord webhooks though our server (allows
+              you to use webhooks in roblox)
+            </p>
+            <v-switch v-model="other.proxy" @change="setproxy" label="Enabled?">
             </v-switch>
           </v-expansion-panel-content>
         </v-expansion-panel>
-        
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-clipboard
+            </v-icon>
+            <v-expansion-panel-header> Sessions </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">
+              If enabled this lets you proxy discord webhooks though our server (allows
+              you to use webhooks in roblox)
+            </p>
+            <v-switch v-model="sessions.enabled" @change="setsessions" label="Enabled?" />
+            <v-card v-if="sessions.enabled" outlined class="mb-5">
+              <v-card-title> Games </v-card-title>
+              <div class="mb-4 px-4 mt-n6 py-7">
+                <v-row class="px-3">
+                  <v-btn class="success elevation-0" @click="pushgame"> New game </v-btn>
+                  <v-btn class="ml-auto info elevation-0" @click="setsessions">
+                    Save
+                  </v-btn></v-row
+                >
+                <v-row v-for="(game, i) in sessions.games" :key="i" class="mb-n14">
+                  <v-col cols="6">
+                    <v-select
+                      outlined
+                      label="Game"
+                      item-text="name"
+                      item-value="id"
+                      v-model="game.id"
+                      :items="games"
+                    >
+                    </v-select>
+                  </v-col>
+                  <v-col cols="5">
+                    <v-text-field
+                      outlined
+                      label="Type"
+                      v-model="game.type"
+                      :items="games"
+                    >
+                    </v-text-field>
+                  </v-col>
+                  <v-col cols="1">
+                   <div>  <v-btn icon class="mt-2 mx-auto" @click="delgame(game)"> <v-icon> mdi-delete </v-icon></v-btn> </div> </v-col
+                ></v-row></div
+            ></v-card>
+            <v-text-field label="Webhook" v-if="sessions.enabled" hide-details="auto" hint="Press enter to save" @keydown.enter="setsessions" v-model="sessions.discohook" outlined>
+            </v-text-field>
+
+            <v-text-field label="Prefix to message (eg ping)" class="mt-2"  v-if="sessions.enabled && sessions.discohook.length" hide-details="auto" hint="Press enter to save (leave blank for none)" @keydown.enter="setsessions" v-model="sessions.discoping" outlined>
+            </v-text-field>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
       </v-expansion-panels>
 
       <v-expansion-panels class="mt-4">
@@ -71,7 +230,9 @@
 
             <v-expansion-panels class="mt-4">
               <v-expansion-panel v-for="role in roles" :key="role.id">
-                <v-expansion-panel-header> {{ role.name }} </v-expansion-panel-header>
+                <v-expansion-panel-header>
+                  {{ role.name }}
+                </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <v-text-field label="Name" v-model="role.name" outlined> </v-text-field>
                   <div
@@ -86,7 +247,9 @@
                         class=""
                       >
                       </v-switch>
-                      <p class="my-auto ml-auto">{{ permission.name }}</p></v-row
+                      <p class="my-auto ml-auto">
+                        {{ permission.name }}
+                      </p></v-row
                     >
                   </div>
                 </v-expansion-panel-content>
@@ -247,8 +410,6 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
 
-        
-
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
@@ -294,6 +455,25 @@ export default {
     drawer: true,
     loading: false,
     valid: true,
+    wall: {
+      enabled: false,
+      sync: false,
+      discordhook: "",
+    },
+    sessions: {
+      games: [],
+      discohook: "",
+      discoping: "",
+      wall: false,
+      enabled: false,
+    },
+    ranking: {
+      cookie: "",
+      username: "",
+      pfp: "",
+      id: 0,
+      loading: false,
+    },
     roleconfig: {
       loading: false,
       arole: 1,
@@ -333,12 +513,20 @@ export default {
       {
         name: "Update shout",
         value: "update_shout",
+      }, {
+        name: "Post on wall",
+        value: "post_on_wall",
+      }, {
+        name: "Host sessions",
+        value: "host_sessions",
       },
     ],
     invites: [],
+
     host: location.host,
     roles: [],
     groles: [],
+    games: [],
     sroles: [],
     colors: [
       "red darken-2",
@@ -397,14 +585,68 @@ export default {
     this.$http.get("/settings/other", { withCredentials: true }).then((response) => {
       this.other = response.data.config;
       this.roleconfig.arole = response.data.config.role;
+      this.games = response.data.config.groupgames;
       if (response.data.config.noticetext) {
         this.notice.text = response.data.config.noticetext.value;
       }
+
+      if (response.data.config.sessions) {
+        this.sessions = response.data.config.sessions;
+      }
+
+      if (response.data.config.ranking) {
+        this.ranking = {
+          cookie: "",
+          username: response.data.config.ranking.username,
+          pfp: response.data.config.ranking.pfp,
+          id: response.data.config.ranking.uid,
+          apikey: response.data.config.ranking.apikey,
+          loading: false,
+        };
+      }
+      if (response.data.config.wall) this.wall = response.data.config.wall;
     });
   },
   methods: {
     goto: function (url) {
       this.$router.push(url);
+    },
+    copykey: function () {
+      console.log(this.ranking);
+      navigator.clipboard.writeText(this.ranking.apikey);
+      this.toast.message = `Copied the api key to clipboard`;
+      this.toast.visible = true;
+    },
+    setcookie: function () {
+      this.ranking.loading = true;
+      this.$http
+        .post(
+          "/settings/setcookie",
+          { cookie: this.ranking.cookie },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.ranking = {
+              cookie: "",
+              apikey: r.data.info.apikey,
+              username: r.data.info.username,
+              pfp: r.data.info.pfp,
+              id: r.data.info.uid,
+              loading: false,
+            };
+            this.toast.message = `Logged in as ${r.data.info.username}`;
+            this.toast.visible = true;
+          },
+          (err) => {
+            this.ranking.loading = false;
+
+            err;
+            this.toast.message = "Error logging in! Did you enter the right cookie?";
+            this.toast.visible = true;
+          }
+        );
     },
     setpolicy: function () {
       this.$http
@@ -425,7 +667,50 @@ export default {
             this.toast.visible = true;
           }
         );
-    }, setproxy: function () {
+    },
+    pushgame: function () {
+      this.sessions.games.push({ id: 0, type: "" });
+    }, delgame: function(game) {
+      this.sessions.games.splice(this.sessions.games.indexOf(game), 1);
+    
+    },
+    setwall: function () {
+      this.$http
+        .post("/settings/setwall", { settings: this.wall }, { withCredentials: true })
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Wall updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating wall!";
+            this.toast.visible = true;
+          }
+        );
+    },
+    setsessions: function () {
+      this.$http
+        .post(
+          "/settings/setsessions",
+          { settings: this.sessions },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Sessions updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating sessions!";
+            this.toast.visible = true;
+          }
+        );
+    },
+    setproxy: function () {
       this.$http
         .post(
           "/settings/setproxy",
@@ -447,6 +732,8 @@ export default {
     },
     downlodloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/loader");
+    }, downlodrloader: function () {
+      window.open(this.$http.defaults.baseURL + "/settings/rloader");
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);
@@ -511,7 +798,8 @@ export default {
           this.sroles = this.roles;
           this.toast.message = "Updated roles!";
           this.toast.visible = true;
-        }).catch(() => {
+        })
+        .catch(() => {
           this.toast.message = "Error updating roles!";
           this.toast.visible = true;
         });
@@ -536,12 +824,13 @@ export default {
     createnewinvite: function () {
       this.roleconfig.loading = true;
       this.$http
-        .post("/settings/newinvite", {}, { withCredentials: true }).catch(() => {
+        .post("/settings/newinvite", {}, { withCredentials: true })
+        .catch(() => {
           this.toast.message = "Error updating invites!";
           this.toast.visible = true;
         })
         .then((response) => {
-                    this.toast.message = "Updated invites!";
+          this.toast.message = "Updated invites!";
 
           this.invites.push(response.data.invite);
           this.roleconfig.loading = false;
@@ -549,11 +838,13 @@ export default {
     },
     updateuserroles: function (user, newrole) {
       user.role = newrole.id;
-      this.$http.post(
-        "/settings/updateuserroles",
-        { userid: user.userid, role: newrole.id },
-        { withCredentials: true }
-      ).then(
+      this.$http
+        .post(
+          "/settings/updateuserroles",
+          { userid: user.userid, role: newrole.id },
+          { withCredentials: true }
+        )
+        .then(
           (r) => {
             r;
             this.toast.message = "Set role!";
@@ -568,11 +859,13 @@ export default {
     },
     deleteuser: function (user) {
       this.users.splice(this.users.indexOf(user), 1);
-      this.$http.post(
-        "/settings/updateuserroles",
-        { userid: user.userid, role: "delete" },
-        { withCredentials: true }
-      ).then(
+      this.$http
+        .post(
+          "/settings/updateuserroles",
+          { userid: user.userid, role: "delete" },
+          { withCredentials: true }
+        )
+        .then(
           (r) => {
             r;
             this.toast.message = "Deleted user!";
@@ -600,11 +893,9 @@ export default {
       color.selected = true;
       this.$store.commit("setcolor", color.value);
 
-      this.$http.post(
-        "/settings/setcolor",
-        { color: color.value },
-        { withCredentials: true }
-      ).then(
+      this.$http
+        .post("/settings/setcolor", { color: color.value }, { withCredentials: true })
+        .then(
           (r) => {
             r;
             this.toast.message = "Set color!";

@@ -1,10 +1,13 @@
 const db = require('./db/db');
 const noblox = require('noblox.js');
+const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const fs = require('fs')
 const path = require('path')
 const _ = require('lodash');
 const express = require('express');
+let package = require('../package.json');
+const axios = require('axios')
 const router = express.Router();
 
 const erouter = (usernames, pfps, settings) => {
@@ -52,11 +55,83 @@ const erouter = (usernames, pfps, settings) => {
         }
     });
 
+    router.get('/checkupdates', async (req, res) => {
+        console.log(req.session.userid)
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        let red;
+        try {
+            red = await axios.get('https://bot.tovyblox.xyz/changes/latestupdate');
+        } catch(e) {
+            return res.status(200).json({ updates: false });
+        }
+
+        let ver = parseFloat(package.version.split('.').slice(0, 2).join('.'));
+        console.log(ver);
+        console.log(red.data.version);
+        if (ver >= red.data.version) return res.status(200).json({ updates: false });
+        return res.status(200).json({ updates: true, ...red.data });
+    })
+
+    router.post('/settings/setcookie', async (req, res) => {
+        const { cookie } = req.body;
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+
+        let user;
+
+        try {
+            user = await noblox.setCookie(cookie);
+
+        } catch (e) {
+            res.status(400).json({ message: 'Invalid cookie!' });
+            return;
+        };
+
+        let pfp = await fetchpfp(user.UserID)
+
+        console.log(settings.ranking)
+        // generate random hex with crypto
+        let hash = crypto.randomBytes(20).toString('hex');
+        
+        let config = await db.config.findOne({ name: 'ranking'});
+        
+        if (config) {
+            settings.ranking = {
+                username: user.UserName,
+                uid: user.UserID,
+                pfp,
+                apikey: config.value.hash
+            };
+            config.value.cookie = cookie
+            await config.save();
+        } else {
+            await db.config.create({
+                name: 'ranking',
+                value: { 
+                    cookie: cookie,
+                    hash
+                }
+            });
+
+            settings.ranking = {
+                username: user.UserName,
+                uid: user.UserID,
+                pfp,
+                apikey: hash
+            };
+        }
+
+        res.status(200).json({ message: 'Successfully set cookie!', info: settings.ranking });
+    });
+
+
     router.post('/settings/updateuserroles', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
         let user = await db.user.findOne({ userid: parseInt(req.body.userid) });
         if (!user) return res.status(400).json({ message: 'No such user!' });
+        if (user.role == 0) return res.status(400).json({ message: 'No such user!' });
         if (req.body.role == 'delete') {
             user.role = undefined;
             await user.save();
@@ -90,6 +165,46 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Updated!' });
     });
 
+    router.post('/settings/setwall', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        const config = await db.config.findOne({ name: 'wall' });
+        const body = req.body;
+        if (config) {
+            config.value = body.settings;
+            config.save();
+        } else {
+            await db.config.create({
+                name: 'wall',
+                value: body.settings
+            });
+        }
+
+        settings.wall = body.settings;
+
+        res.status(200).json({ message: 'Updated!' });
+    });
+
+    router.post('/settings/setsessions', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        const config = await db.config.findOne({ name: 'sessions' });
+        const body = req.body;
+        if (config) {
+            config.value = body.settings;
+            config.save();
+        } else {
+            await db.config.create({
+                name: 'sessions',
+                value: body.settings
+            });
+        }
+
+        settings.sessions = body.settings;
+
+        res.status(200).json({ message: 'Updated!' });
+    });
+
     router.post('/settings/setproxy', async (req, res) => {
         let cp = await checkperms(req.session.userid, 'admin');
         if (!cp) return res.status(401).json({ message: 'go away!' });
@@ -113,7 +228,7 @@ const erouter = (usernames, pfps, settings) => {
         let cp = await checkperms(req.session.userid, 'manage_staff_activity');
         if (!cp) return res.status(401).json({ message: 'go away!' });
         await db.session.deleteMany({ active: false });
-        
+
         res.status(200).json({ message: 'Updated!' });
     });
 
@@ -125,8 +240,12 @@ const erouter = (usernames, pfps, settings) => {
         if (!config) return res.status(400).json({ message: 'No config!' });
         let c = {
             noticetext: config.find(c => c.name == 'noticetext'),
-            role: settings.activity.role,
-            proxy: settings.proxy
+            role: settings.activity?.role,
+            proxy: settings.proxy,
+            ranking: settings.ranking,
+            wall: settings.wall,
+            sessions: settings.sessions,
+            groupgames: await noblox.getGroupGames(settings.group, "Public")
         }
         res.status(200).json({ message: 'Successfully fetched config!', config: c });
     })
@@ -249,7 +368,7 @@ const erouter = (usernames, pfps, settings) => {
             key: curconfig.value.key,
             role: req.body.role
         }
-        
+
         settings.activity = {
             key: curconfig.value.key,
             role: req.body.role
@@ -290,6 +409,17 @@ const erouter = (usernames, pfps, settings) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
         let xx = xml_string.replace('<api>', settings.activity.key).replace('<ip>', `http://${req.headers.host}/api`);
+
+        res.type('rbxmx')
+        res.send(xx);
+    })
+
+    router.get('/settings/rloader', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'admin');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+        let xml_string = fs.readFileSync(path.join(__dirname, 'Tovy_RankingLoader.rbxmx'), "utf8");
+        res.setHeader('Content-Disposition', 'attachment; filename=Tovy_RankingLoader.rbxmx');
+        let xx = xml_string.replace('<key>', settings.ranking.apikey).replace('<url>', `http://${req.headers.host}/api/ranking`);
 
         res.type('rbxmx')
         res.send(xx);

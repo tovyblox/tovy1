@@ -6,10 +6,13 @@ import axios from 'axios'
 import main from './layouts/main.vue'
 import def from './layouts/default.vue'
 import VueCookies from 'vue-cookies'
+import VueCountdown from '@chenfengyuan/vue-countdown';
 require('dotenv').config()
 Vue.use(VueCookies)
+Vue.component(VueCountdown.name, VueCountdown);
 let api = axios.create({
   baseURL: `${process.env.VUE_APP_BASE ? `//${process.env.VUE_APP_BASE}` : ''}/api`,
+  withCredentials: true,
   headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
