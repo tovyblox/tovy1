@@ -114,7 +114,7 @@ local TovyModule = {}
 function CheckStatus(URL)
 	if not URL then
 		if TOVY_URL then
-			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL, Method="GET"});
+			local StatusResponse = HttpService:RequestAsync({Url = TOVY_URL, Method="GET", Headers = {["Content-Type"] = "application/json", ["api"] = API_KEY} });
 			if DebugMode then
 				if StatusResponse.StatusCode == 404 then
 					if not DisableDebugLogs then
@@ -127,7 +127,7 @@ function CheckStatus(URL)
 			if StatusResponse.StatusCode == 200 then
 				return true
 			else
-				warn(Prefix, "Failed to connect to", TOVY_URL)
+				warn(Prefix, "Failed to connect to", TOVY_URL, "Status Code:", StatusResponse.StatusCode")
 				return false
 			end
 		else
