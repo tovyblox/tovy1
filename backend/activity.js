@@ -9,7 +9,6 @@ let activews = [];
 
 const erouter = (usernames, pfps, settings) => {
     router.ws('/socket', (ws, req) => {
-        console.log(req.session)
         if (!req.session.userid) {
             ws.close();
             console.log('[-] Socket closing')
@@ -163,7 +162,7 @@ const erouter = (usernames, pfps, settings) => {
             return { ...e._doc, type: 'IA' }
         })
         let d = [...sessions, ...ias];
-        res.status(200).json({ sessions: d });
+        res.status(200).json({ sessions: d, totaltime: Math.round(_.sumBy(sessions, 'time')) });
     });
 
     router.post('/createia', async (req, res) => {

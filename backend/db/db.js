@@ -12,4 +12,7 @@ module.exports = {
     session: require('./schemas/session.schema'),
     config: require('./schemas/config.schema'),
     ia: require('./schemas/ia.schema'),
+    message: require('./schemas/message.schema'),
+    ranklog: require('./schemas/ranklog.schema'),
+    gsession: require('./schemas/gsession.schema'),
 }

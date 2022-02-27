@@ -44,6 +44,14 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+         <v-list-item link class="mt-2" :to="`/wall`">
+          <v-list-item-icon>
+            <v-icon>mdi-wall</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Wall</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-list-item
           class="mt-2"
           link
@@ -92,21 +100,19 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item-group class="fixedBottom ml-n2">
-          <v-list-item
-            link
-            v-if="this.$store.state.user.perms.includes('admin')"
-            class="mt-2 fixedBottom"
-            :href="`https://github.com/ItsWHOOOP/tovy`"
-          >
-            <v-list-item-icon class="ml-2">
-              <v-icon>mdi-github</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>Github</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-item-group>
+        <v-list-item
+          link
+          v-if="this.$store.state.user.perms.includes('admin')"
+          class="mt-2"
+          :href="`https://github.com/ItsWHOOOP/tovy`"
+        >
+          <v-list-item-icon class="">
+            <v-icon>mdi-github</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Github</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
   </div>
@@ -128,6 +134,10 @@ export default {
         name: "Your activity",
         icon: "mdi-format-list-bulleted",
         path: "/youractivity",
+      }, {
+        name: "Sessions",
+        icon: "mdi-bullhorn-outline",
+        path: "/sessions",
       },
       {
         name: "Review notices",
