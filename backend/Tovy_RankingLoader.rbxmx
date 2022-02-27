@@ -127,7 +127,7 @@ function CheckStatus(URL)
 			if StatusResponse.StatusCode == 200 then
 				return true
 			else
-				warn(Prefix, "Failed to connect to", TOVY_URL, "Status Code:", StatusResponse.StatusCode")
+				warn(Prefix, "Failed to connect to", TOVY_URL, "Status Code:", StatusResponse.StatusCode)
 				return false
 			end
 		else
