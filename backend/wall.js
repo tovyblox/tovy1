@@ -20,7 +20,8 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
     noblox.onShout(parseInt(settings.group)).on('error', err => {}).on('data', async (data) => {
-        if (!settings.sync) return;
+        console.log('New shout');
+        if (!settings.wall.sync) return;
         let id = parseInt(await db.message.countDocuments({}));
 
 
