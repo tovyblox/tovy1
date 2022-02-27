@@ -20,9 +20,15 @@ let activews = [];
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
     router.use((req, res, next) => {
+        console.log(req.headers['api'])
         if (req.headers['api'] !== settings.ranking.apikey) return res.status(401).send('Unauthorized');
+        console.log('uwu')
         next();
     });
+
+    app.get('/', (req, res) => {
+        res.send({ success: true, message: 'Good to go' });
+    })
 
     router.post('/setrank', async (req, res) => {
         if (!req.body.rank) return res.status(400).send({ success: false, message: 'No rank provided'});
