@@ -26,7 +26,7 @@ const erouter = (usernames, pfps, settings) => {
         next();
     });
 
-    app.get('/', (req, res) => {
+    router.get('/', (req, res) => {
         res.send({ success: true, message: 'Good to go' });
     })
 
