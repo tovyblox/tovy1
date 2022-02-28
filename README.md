@@ -34,6 +34,12 @@
         <li>
           Communicate with your members directly in Tovy
         </li>
+        <li>
+          Host sessions without causing a burden
+        </li>
+        <li>
+           Modify member's rank with Tovy's API, and a lot more.
+        </li>
       </ul>
     </li>
     <li>
