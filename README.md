@@ -52,7 +52,7 @@
   <h2>Quicklinks</h2>
   <ul>
     <li>
-      Don't know how to install? –– <a href="https://itswhooop.gitbook.io/tovy/">Visit our documentation!</a>
+      Don't know how to install? –– <a href="https://docs.tovyblox.xyz/">Visit our documentation!</a>
     </li>
     <li>
       Need further assistance? –– <a href="https://discord.gg/2AJPbyNwbQ">Join our Discord server!</a>
