@@ -7,9 +7,8 @@
       indeterminate
       v-if="loading"
     ></v-progress-circular>
-    <component v-if="!loading" :is="layout">
-      <router-view />
-    </component>
+    la
+    <router-view></router-view>
   </v-app>
 </template>
 
@@ -17,23 +16,20 @@
 export default {
   name: "App",
   computed: {
-    layout() {
-      return (this.$route.meta.layout || "default") + "-layout";
-    },
+
   },
   data: () => ({
     loading: true,
     invite: ""
   }),
   mounted: function () {
-   // this.loading = false;
+    console.log('WELCOME BITCh')
+    this.loading = false;
+    // this.loading = false;
     //this.$router.push("/nr");
-     if (this.$route.path.includes('/invite/')) {
-      this.invite = this.$route.params.code
-    }
 
     this.$http
-      .get("/profile", { withCredentials: true })
+      .get("/gprofile?wsid=" + this.$route.params.id, { withCredentials: true })
       .catch(error => {
         if (!error.response) {
           this.loading = false;
@@ -77,6 +73,8 @@ export default {
         }
         response.data.info.pfp = response.data.pfp;
         this.$store.commit("setuser", response.data.info);
+        this.$store.commit("netntext", response.data.group.noticetext);
+        this.$store.commit("setgroup", response.data.group);
 
         setTimeout(() => {
           this.loading = false;

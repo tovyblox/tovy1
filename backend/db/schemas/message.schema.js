@@ -5,6 +5,7 @@ const message = new mongoose.Schema({
     author: Number, 
     message: String,
     date: Date,
+    ws: Number,
     deleted: Boolean,
     shout: Boolean
 })

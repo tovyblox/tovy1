@@ -145,7 +145,7 @@ export default {
       .catch((error) => {
         console.log(error);
       });
-    let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/wall/socket`);
+    let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/wall/socket?wsid=${this.$route.params.id}`);
     this.connection = connection;
 
     connection.onopen = () => {

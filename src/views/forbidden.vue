@@ -7,7 +7,7 @@
         <v-card-text class="mt-n4">
           Looks like you dont have permission to use Tovy in this group!
         </v-card-text>
-        <v-img src="../assets/no-perms.png" class="mx-auto mt-7" max-width="400"></v-img>
+        <v-img src="@/assets/no-perms.png" class="mx-auto mt-7" max-width="400"></v-img>
         <v-row class="mb-3">
           <v-btn @click="dialog.active = true" class="mx-auto mb-4 info">
             I have an invite code

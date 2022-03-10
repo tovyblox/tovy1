@@ -5,6 +5,7 @@ const ia = new mongoose.Schema({
     end: Date,
     status: String,
     uid: Number,
+    ws: Number,
     id: Number,
     reason: String
 })

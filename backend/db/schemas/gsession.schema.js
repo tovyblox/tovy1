@@ -6,6 +6,7 @@ const session = new mongoose.Schema({
     uid: Number,
     started: Boolean,
     type: Object,
+    ws: Number,
     thumbnail: String,
     id: Number,
     did: String
