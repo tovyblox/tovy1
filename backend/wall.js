@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const fs = require('fs')
 const path = require('path')
-const { perms, wsperms } = require('./permissions')
 const _ = require('lodash');
 const express = require('express');
 const { WebhookClient, MessageEmbed } = require('discord.js');
@@ -20,6 +19,38 @@ let activews = [];
 
 const erouter = (usernames, pfps, settings) => {
     console.log('running')
+    noblox.onShout(parseInt(settings.group)).on('error', err => {}).on('data', async (data) => {
+        console.log('New shout');
+        if (!settings.wall.sync) return;
+        let id = parseInt(await db.message.countDocuments({}));
+
+
+        let dbata = {
+            id: id + 1,
+            author: data.poster.userId,
+            message: data.body,
+            date: Date.now(),
+            deleted: false,
+            shout: true
+        };
+
+        await db.message.create(dbata);
+
+        let pfp = await fetchpfp(dbata.author);
+        let username = await fetchusername(dbata.author);
+        sendlog(dbata, username, pfp);
+        let send = {
+            ...dbata,
+            pfp: pfp,
+            username: username,
+        };
+        activews.forEach(ws => {
+            ws.send(JSON.stringify({
+                type: 'send',
+                data: send
+            }));
+        });
+    })
 
     function sendlog(data, username, pfp) {
         if (!settings.wall?.discordhook) return;
@@ -39,7 +70,8 @@ const erouter = (usernames, pfps, settings) => {
     }
 
     router.ws('/wall/socket', async (ws, req) => {
-        let cp = await wsperms('', req.query.wsid, req.session.userid);
+        let cp = await checkperms(req.session.userid);
+        
         if (!cp) {
             ws.close();
             console.log('[-] Socket closing')
@@ -58,7 +90,9 @@ const erouter = (usernames, pfps, settings) => {
         });
     });
 
-    router.get('/wall/messages', perms(''), async (req, res) => {
+    router.get('/wall/messages', async (req, res) => {
+        let cp = await checkperms(req.session.userid);
+        if (!cp) return res.status(401).json({ message: 'go away!' });
         let messages = await db.message.find({ deleted: false }).sort({ date: -1 });
 
         let u = await Promise.all(messages.map(async m => {
@@ -96,6 +130,9 @@ const erouter = (usernames, pfps, settings) => {
     })
 
     router.post('/wall/send', async (req, res) => {
+        let cp = await checkperms(req.session.userid, 'post_on_wall');
+        if (!cp) return res.status(401).json({ message: 'go away!' });
+
         const { message, shout } = req.body;
         console.log(await db.message.countDocuments({}))
         let id = parseInt(await db.message.countDocuments({}));

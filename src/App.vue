@@ -77,6 +77,8 @@ export default {
         }
         response.data.info.pfp = response.data.pfp;
         this.$store.commit("setuser", response.data.info);
+        this.$store.commit("netntext", response.data.group.noticetext);
+        this.$store.commit("setgroup", response.data.group);
 
         setTimeout(() => {
           this.loading = false;

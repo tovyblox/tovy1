@@ -7,7 +7,7 @@
         <v-card-text class="mt-n4">
           This version of tovy is not ready for usage! 
         </v-card-text>
-        <v-img src="@/assets/no-perms.png" class="mx-auto mt-7" max-width="400"></v-img>
+        <v-img src="../assets/no-perms.png" class="mx-auto mt-7" max-width="400"></v-img>
       </v-card>
     </v-container>
   </div>

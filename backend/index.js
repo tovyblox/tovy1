@@ -4,7 +4,6 @@ const path = require('path')
 require('dotenv').config({ path: path.join(__dirname, '.env') })
 
 const express = require('express');
-const { perms } = require('./permissions')
 const app = express();
 const db = require('./db/db');
 const noblox = require('noblox.js');
@@ -50,35 +49,63 @@ app.use(cookieSession({
 }));
 
 (async () => {
-    let c = await db.config.findOne({ name: 'group' });
-    console.log('new group', c.value)
-    if (!c) return;
-    let ct = await db.workspace.findOne({ id: c.value });
-    if (ct) return;
+    let configforgroup = await db.config.findOne({ name: 'group' });
+    if (!configforgroup) return;
+    settings.group = configforgroup.value;
 
-    console.log('Creating workspace');
-    console.log(await db.user.findOne({ role: 0 }).then(u => u._doc.userid));
+    let configforactivity = await db.config.findOne({ name: 'activity' });
+    settings.activity = configforactivity.value;
 
-    db.workspace.create({
-        id: c.value,
-        owner: await db.user.findOne({ role: 0 }).then(u => u._doc.userid),
-        settings: await db.config.find({}),
-        users: await db.user.find({})
-    })
+    let configforuser = await db.config.findOne({ name: 'roles' });
+    if (configforuser) settings.roles = configforuser.value;
+
+    let configfornotice = await db.config.findOne({ name: 'noticetext' });
+    if (configfornotice) settings.noticetext = configfornotice.value;
+
+    let configforproxy = await db.config.findOne({ name: 'wproxy' });
+    if (configforproxy) settings.proxy = configforproxy.value;
+
+    let configforwall = await db.config.findOne({ name: 'wall' });
+    if (configforwall) settings.wall = configforwall.value;
+
+    let configforsessions = await db.config.findOne({ name: 'sessions' });
+    if (configforsessions) settings.sessions = configforsessions.value;
+
+    let configforranking = await db.config.findOne({ name: 'ranking' });
+    if (configforranking) {
+        let u;
+        try {
+            u = await noblox.setCookie(configforranking.value.cookie);
+        } catch (e) {
+            settings.ranking = {
+                apikey: configforranking.value.hash,
+            };
+        }
+
+        if (u) {
+            settings.ranking = {
+                username: u.UserName,
+                uid: u.UserID,
+                pfp: await fetchpfp(u.UserID),
+                apikey: configforranking.value.hash,
+            };
+        }
+
+    } 
+
+    runload()
 })();
 
-const meow = (req, res, next) => {
-    console.log(next);
-    next()
+async function runload() {
+    console.log('Running tovy!')
+    app.use('/api/', require('./activity')(usernames, pfps, settings));
+    app.use('/api/', require('./wall')(usernames, pfps, settings));
+    app.use('/api/', require('./staff')(usernames, pfps, settings));
+    app.use('/api/', require('./session')(usernames, pfps, settings));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings));
 }
 
-async function checkmiddleware (req, res, next, c)  {
-    console.log(next)
 
-}
-
-
-console.log('Running tovy!')
 
 if (!backendonly) {
     let staticFileMiddleware = express.static(path.join(__dirname, '../dist'));
@@ -166,39 +193,23 @@ app.post('/api/finishSignup', async (req, res) => {
  
  */
 
-app.get('/api/groups/@me', async (req, res) => {
-
-})
-
 app.get('/api/profile', async (req, res) => {
-    console.log('thing')
+    if (!await db.config.findOne({ name: 'group' })) return res.status(400).json({ message: 'NGS' });
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
     let info = await noblox.getPlayerInfo(req.session.userid).catch(err => {
         return res.status(401).json({ message: 'Not logged in' });
     });
     if (!info) return;
-    let workspace = await db.workspace.findOne({ id: req.headers['id'] });
-
-    let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
-    res.status(200).json({
-        pfp: pfp[0].imageUrl,
-        info: info,
-    });
-});
-
-app.get('/api/gprofile', perms(''), async (req, res, next) => {
-    await checkmiddleware(req, res, next, '');
-    if (!await db.workspace.findOne({ })) return res.status(400).json({ message: 'NGS' });
-    if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
-    let info = await noblox.getPlayerInfo(req.session.userid).catch(err => {
-        return res.status(401).json({ message: 'Not logged in' });
-    });
-    if (!info) return;
-
-    let workspace = await db.workspace.findOne({ id: req.headers['id'] });
-    console.log(workspace.settings)
-    let color = workspace.settings.find(s => s.name == 'color');
-    let user = await workspace.users.find(u => u.userid == req.session.userid);
+    let color = await db.config.findOne({ name: 'color' });
+    let user = await db.user.findOne({ userid: req.session.userid });
+    if (!user) {
+        res.status(401).json({ message: 'Not logged in' });
+        return;
+    }
+    if (user.role === undefined || user.role === null) {
+        res.status(403).json({ message: 'Not a member' });
+        return;
+    };
 
     let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
     info.perms = role;
@@ -234,7 +245,7 @@ app.post('/api/invite', async (req, res) => {
 
 app.post('/api/signup/start', async (req, res) => {
     var emojis = [
-        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒', '🐴', '🐑', '🐘', '🐼', '🐧', '🐦', '🐤', '🐥', '🐣', '🐔', '🐍', '🐢', '🐛', '🐝', '🐜', '📕', '📗', '📘', '📙', '📓', '📔', '📒', '📚', '📖', '🔖', '🎯', '🏈', '🏀', '⚽', '⚾', '🎾', '🎱', '🏉', '🎳', '⛳', '🚵', '🚴', '🏁', '🏇'
+        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒','🐴','🐑','🐘','🐼','🐧','🐦','🐤','🐥','🐣','🐔','🐍','🐢','🐛','🐝','🐜','📕','📗','📘','📙','📓','📔','📒','📚','📖','🔖','🎯','🏈','🏀','⚽','⚾','🎾','🎱','🏉','🎳','⛳','🚵','🚴','🏁','🏇'
     ];
 
 
@@ -303,14 +314,8 @@ app.post('/api/signup/finish', async (req, res) => {
 
 });
 
-app.use('/api/', require('./activity')(usernames, pfps));
-app.use('/api/', require('./wall')(usernames, pfps));
-app.use('/api/', require('./staff')(usernames, pfps));
-app.use('/api/', require('./session')(usernames, pfps));
-app.use('/api/ranking/', require('./ranking')(usernames, pfps));
-
 app.post('/api/login', async (req, res) => {
-    let target = await noblox.getIdFromUsername(req.body.username).catch(err => { });
+    let target = await noblox.getIdFromUsername(req.body.username).catch(err => {});
     if (!target) return res.status(400).json({ message: 'User not found' });
     let user = await db.user.findOne({ userid: target });
     if (!user) return res.status(401).json({ message: 'User not found' });

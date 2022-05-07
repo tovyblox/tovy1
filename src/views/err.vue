@@ -7,7 +7,7 @@
         <v-card-text class="mt-n4">
           Looks like the server is having some issues! Please try again later
         </v-card-text>
-        <v-img src="@/assets/conifer-access-denied.png" class="mx-auto mt-7" max-width="400"></v-img>
+        <v-img src="../assets/conifer-access-denied.png" class="mx-auto mt-7" max-width="400"></v-img>
         <v-row class="mb-3">
           <v-btn @click="reload" class="mx-auto mb-1 mt-3 info">
             Refersh

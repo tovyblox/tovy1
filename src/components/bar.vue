@@ -44,7 +44,7 @@
             <v-list-item-title>Home</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-         <v-list-item link class="mt-2" :to="`/group/${$route.params.id}/wall`">
+         <v-list-item link class="mt-2" :to="`/wall`">
           <v-list-item-icon>
             <v-icon>mdi-wall</v-icon>
           </v-list-item-icon>
@@ -73,7 +73,7 @@
             v-if="
               page.permission ? $store.state.user.perms.includes(page.permission) : true
             "
-            :to="`/group/${$route.params.id}/${page.path}`"
+            :to="page.path"
           >
             <v-list-item-icon>
               <v-icon>{{ page.icon }}</v-icon>

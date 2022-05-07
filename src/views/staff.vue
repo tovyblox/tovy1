@@ -119,7 +119,7 @@
       <v-card v-if="!srole" outlined>
         <v-row class="mx-auto mb-5 mt-5">
           <v-img
-            src="@/assets/experimental-sleepy-tiger-coming-out-of-the-cave-in-the-morning.png"
+            src="../assets/experimental-sleepy-tiger-coming-out-of-the-cave-in-the-morning.png"
             class="mx-auto mt-7"
             width="300"
             max-width="400"

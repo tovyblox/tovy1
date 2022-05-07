@@ -5,7 +5,6 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import main from './layouts/main.vue'
 import def from './layouts/default.vue'
-import noworkspace from '@/layouts/noworkspace'
 import VueCookies from 'vue-cookies'
 import VueCountdown from '@chenfengyuan/vue-countdown';
 require('dotenv').config()
@@ -19,19 +18,9 @@ let api = axios.create({
       'Content-Type': 'application/json'
   }
 });
-
-api.interceptors.request.use(function (config) {
-  const token = router.currentRoute.params.id;
-  if (!token) return config;
-  config.headers.id =  token;
-
-  return config;
-});
-
-Vue.use(Vuex);
+Vue.use(Vuex)
 Vue.component('main-layout', main)
-Vue.component('default-layout', def);
-Vue.component('noworkspace-layout', noworkspace)
+Vue.component('default-layout', def)
 const store = new Vuex.Store({
   state: {
     user: {
