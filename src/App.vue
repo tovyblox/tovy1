@@ -44,6 +44,7 @@ export default {
           this.loading = false;
         }, 300);
 
+ 
         if (error.response.status === 401) {
           if (this.$route.path == "/login" || this.$route.path == '/signup') return;
           this.$router.push(`/login${this.invite ? `?invite=${this.invite}` : ''}`);
@@ -57,7 +58,7 @@ export default {
 
         if (error.response.status === 403) {
           if (this.$route.path == "/forbidden") return;
-          this.$router.push("/forbidden");
+          this.$router.push(`/forbidden${this.invite ? `?invite=${this.invite}` : ''}`);
         }
 
         if (error.response.status === 400) {

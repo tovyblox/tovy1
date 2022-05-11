@@ -23,12 +23,15 @@ const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const NodeCache = require("node-cache");
+const permissionsManager = require('./util/permissionsManager');
+const settingsManager = require('./util/settingsManager');
+const settings = new settingsManager();
+const permissions = new permissionsManager(settings);
 const usernames = new NodeCache();
 const pfps = new NodeCache();
 const ews = require('express-ws')(app);
 let activews = [];
 
-let settings = {};
 
 
 const cors = require('cors');
@@ -49,36 +52,16 @@ app.use(cookieSession({
 }));
 
 (async () => {
-    let configforgroup = await db.config.findOne({ name: 'group' });
-    if (!configforgroup) return;
-    settings.group = configforgroup.value;
+    await settings.load()
 
-    let configforactivity = await db.config.findOne({ name: 'activity' });
-    settings.activity = configforactivity.value;
-
-    let configforuser = await db.config.findOne({ name: 'roles' });
-    if (configforuser) settings.roles = configforuser.value;
-
-    let configfornotice = await db.config.findOne({ name: 'noticetext' });
-    if (configfornotice) settings.noticetext = configfornotice.value;
-
-    let configforproxy = await db.config.findOne({ name: 'wproxy' });
-    if (configforproxy) settings.proxy = configforproxy.value;
-
-    let configforwall = await db.config.findOne({ name: 'wall' });
-    if (configforwall) settings.wall = configforwall.value;
-
-    let configforsessions = await db.config.findOne({ name: 'sessions' });
-    if (configforsessions) settings.sessions = configforsessions.value;
-
-    let configforranking = await db.config.findOne({ name: 'ranking' });
+    let configforranking = settings.get('ranking');
     if (configforranking) {
         let u;
         try {
-            u = await noblox.setCookie(configforranking.value.cookie);
+            u = await noblox.setCookie(configforranking.cookie);
         } catch (e) {
             settings.ranking = {
-                apikey: configforranking.value.hash,
+                apikey: configforranking.hash,
             };
         }
 
@@ -87,7 +70,7 @@ app.use(cookieSession({
                 username: u.UserName,
                 uid: u.UserID,
                 pfp: await fetchpfp(u.UserID),
-                apikey: configforranking.value.hash,
+                apikey: configforranking.hash,
             };
         }
 
@@ -98,11 +81,12 @@ app.use(cookieSession({
 
 async function runload() {
     console.log('Running tovy!')
-    app.use('/api/', require('./activity')(usernames, pfps, settings));
-    app.use('/api/', require('./wall')(usernames, pfps, settings));
-    app.use('/api/', require('./staff')(usernames, pfps, settings));
-    app.use('/api/', require('./session')(usernames, pfps, settings));
-    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings));
+    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
+    app.use('/api/wall', require('./wall')(usernames, pfps, settings, permissions));
+    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
+    app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions));
+    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions));
 }
 
 
@@ -123,10 +107,9 @@ if (!backendonly) {
     app.use('/', staticFileMiddleware);
 }
 
-app.use('/api/', require('./settings')(usernames, pfps, settings));
 
 app.post('/api/webhooks/:id/:secret', async (req, res) => {
-    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+    if (!settings.get('wproxy')) return res.status(500).send({ success: false, message: 'proxy not set' });
     await axios.post('https://discord.com/api/webhooks/' + req.params.id + '/' + req.params.secret, req.body).then(r => {
         res.send({
             success: true
@@ -137,7 +120,7 @@ app.post('/api/webhooks/:id/:secret', async (req, res) => {
 })
 
 app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
-    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+    if (!settings.get('wproxy')) return res.status(500).send({ success: false, message: 'proxy not set' });
     await axios.patch(`https://discord.com/api/webhooks/${req.params.id}/${req.params.secret}/messages/${req.params.msg}`, req.body).then(r => {
         res.send(r.data)
     }).catch(e => {
@@ -146,7 +129,7 @@ app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
 })
 
 app.delete('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
-    if (!settings.proxy) return res.status(500).send({ success: false, message: 'proxy not set' });
+    if (!settings.get('wproxy')) return res.status(500).send({ success: false, message: 'proxy not set' });
 
     await axios.delete(`https://discord.com/api/webhooks/${req.params.id}/${req.params.secret}/messages/${req.params.msg}`, req.body).then(r => {
         res.send({
@@ -158,6 +141,7 @@ app.delete('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
 })
 
 app.post('/api/finishSignup', async (req, res) => {
+    if (!req.body.password) return res.status(500).send({ success: false, message: 'password not set' });
     const hash = bcrypt.hashSync(req.body.password, 10);
     let uid = await noblox.getIdFromUsername(req.body.username)
 
@@ -169,22 +153,15 @@ app.post('/api/finishSignup', async (req, res) => {
 
     req.session.userid = uid;
 
-    await db.config.create({
-        name: 'group',
-        value: req.body.group
-    });
+
+    settings.set('group', req.body.group)
 
     let a = {
         key: chooseRandom(letters, 18).join(''),
         role: null
     }
 
-    await db.config.create({
-        name: 'activity',
-        value: a
-    });
-    settings.activity = a;
-    settings.group = req.body.group;
+    settings.set('activity', a);
     res.status(200).json({ message: 'Successfully created user!' });
 });
 
@@ -211,7 +188,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.roles.find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
+    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
     info.perms = role;
     info.id = req.session.userid;
 
@@ -221,8 +198,8 @@ app.get('/api/profile', async (req, res) => {
         info: info,
         group: {
             color: color ? color.value : 'grey lighten-2',
-            noticetext: settings.noticetext,
-            id: settings.group
+            noticetext: settings.get('noticetext'),
+            id: settings.get('group')
         }
     });
 });
@@ -301,7 +278,7 @@ app.post('/api/signup/finish', async (req, res) => {
         });
     } else {
         finduser.passwordhash = hash;
-        finduser.role = invite || undefined;
+        finduser.role = invite || finduser.role || undefined;
         await finduser.save()
     }
 
@@ -315,6 +292,8 @@ app.post('/api/signup/finish', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+    if (!req.body.username || !req.body.password) return res.status(400).json({ message: 'No username or password!' });
+    if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') return res.status(400).json({ message: 'Invalid username or password!' });
     let target = await noblox.getIdFromUsername(req.body.username).catch(err => {});
     if (!target) return res.status(400).json({ message: 'User not found' });
     let user = await db.user.findOne({ userid: target });

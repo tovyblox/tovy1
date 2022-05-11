@@ -10,10 +10,13 @@ let package = require('../package.json');
 const axios = require('axios')
 const router = express.Router();
 
-const erouter = (usernames, pfps, settings) => {
-    router.post('/settings/adduser', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+const erouter = (usernames, pfps, settings, permissions) => {
+    let perms = permissions.perms;
+    let checkPerm = permissions.checkPerm
+
+    router.post('/adduser', perms('admin'), async (req, res) => {
+        if (!req.body?.username) return res.status(400).send({ success: false, message: 'No username provided' });
+        if (typeof req.body.username !== 'string') return res.status(400).send({ success: false, message: 'Username must be a string' });
         const robloxusername = await noblox.getIdFromUsername(req.body.username).catch(() => {
             res.status(400).json({ message: 'No such roblox user!' });
         });
@@ -33,9 +36,7 @@ const erouter = (usernames, pfps, settings) => {
 
 
 
-    router.get('/settings/users', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/users', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
@@ -55,9 +56,7 @@ const erouter = (usernames, pfps, settings) => {
         }
     });
 
-    router.get('/checkupdates', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/checkupdates', perms('admin'), async (req, res) => {
         let red;
         try {
             red = await axios.get('https://bot.tovyblox.xyz/changes/latestupdate');
@@ -70,10 +69,10 @@ const erouter = (usernames, pfps, settings) => {
         return res.status(200).json({ updates: true, ...red.data });
     })
 
-    router.post('/settings/setcookie', async (req, res) => {
+    router.post('/setcookie', perms('admin'),  async (req, res) => {
+        if (!req.body?.cookie) return res.status(400).json({ success: false, message: 'No cookie previded' });
+        if (typeof req.body.cookie !== 'string') return res.status(400).json({ success: false, message: 'Cookie must be a string' });
         const { cookie } = req.body;
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
 
         let user;
 
@@ -88,42 +87,26 @@ const erouter = (usernames, pfps, settings) => {
         let pfp = await fetchpfp(user.UserID)
         // generate random hex with crypto
         let hash = crypto.randomBytes(20).toString('hex');
-        
-        let config = await db.config.findOne({ name: 'ranking'});
-        
-        if (config) {
-            settings.ranking = {
-                username: user.UserName,
-                uid: user.UserID,
-                pfp,
-                apikey: config.value.hash
-            };
-            config.value.cookie = cookie
-            await config.save();
-        } else {
-            await db.config.create({
-                name: 'ranking',
-                value: { 
-                    cookie: cookie,
-                    hash
-                }
-            });
+        settings.set('ranking', { 
+            cookie: cookie,
+            hash
+        });
 
-            settings.ranking = {
-                username: user.UserName,
-                uid: user.UserID,
-                pfp,
-                apikey: hash
-            };
-        }
+        settings.settings.ranking =    {
+            username: user.UserName,
+            uid: user.UserID,
+            pfp,
+            apikey: config.value.hash
+        };
+    
 
-        res.status(200).json({ message: 'Successfully set cookie!', info: settings.ranking });
+        res.status(200).json({ message: 'Successfully set cookie!', info: settings.get('ranking') });
     });
 
 
-    router.post('/settings/updateuserroles', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/updateuserroles', perms('admin'),async (req, res) => {
+        if (!req.body?.userid) return res.status(400).json({ success: false, message: 'No user previded' });
+        if (typeof req.body.userid !== 'number') return res.status(400).json({ success: false, message: 'User must be a string' });
         let user = await db.user.findOne({ userid: parseInt(req.body.userid) });
         if (!user) return res.status(400).json({ message: 'No such user!' });
         if (user.role == 0) return res.status(400).json({ message: 'No such user!' });
@@ -133,7 +116,7 @@ const erouter = (usernames, pfps, settings) => {
             res.status(200).json({ message: 'Successfully updated user!' });
             return;
         }
-        if (!settings.roles.find(r => r.id == req.body.role)) return res.status(400).json({ message: 'No such role!' });
+        if (!settings.get('roles').find(r => r.id == req.body.role)) return res.status(400).json({ message: 'No such role!' });
 
         user.role = parseInt(req.body.role);
         await user.save();
@@ -141,153 +124,83 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully updated user!' });
     });
 
-    router.post('/settings/setpolicy', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'noticetext' });
-        if (config) {
-            config.value = req.body.text;
-            config.save();
-        } else {
-            await db.config.create({
-                name: 'noticetext',
-                value: req.body.text
-            });
-        }
-
-        settings.noticetext = req.body.text;
+    router.post('/setpolicy', perms('admin'), async (req, res) => {
+        if (!req.body?.text) return res.status(400).json({ success: false, message: 'No policy previded' });
+        if (typeof req.body.text !== 'string') return res.status(400).json({ success: false, message: 'Policy must be a string' });
+        settings.set('noticetext', req.body.text)
 
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.post('/settings/setwall', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'wall' });
+    router.post('/setwall', perms('admin'), async (req, res) => {
+        settings.set('wall', req.body.wall);
         const body = req.body;
-        if (config) {
-            config.value = body.settings;
-            config.save();
-        } else {
-            await db.config.create({
-                name: 'wall',
-                value: body.settings
-            });
-        }
-
-        settings.wall = body.settings;
 
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.post('/settings/setsessions', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'sessions' });
+    router.post('/setsessions', perms('admin'), async (req, res) => {
         const body = req.body;
-        if (config) {
-            config.value = body.settings;
-            config.save();
-        } else {
-            await db.config.create({
-                name: 'sessions',
-                value: body.settings
-            });
-        }
-
-        settings.sessions = body.settings;
+        settings.set('sessions', body.settings)
 
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.post('/settings/setproxy', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'wproxy' });
-        if (config) {
-            config.value = req.body.enabled;
-            config.save();
-        } else {
-            await db.config.create({
-                name: 'wproxy',
-                value: req.body.enabled
-            });
-        }
-
-        settings.proxy = req.body.enabled;
+    router.post('/setproxy', perms('admin'), async (req, res) => {
+        if (req.body?.enabled == null) return res.status(400).json({ success: false, message: 'No enabled previded' });
+        if (typeof req.body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
+        settings.set('wproxy', req.body.enabled);
 
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.post('/settings/resetactivity', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/resetactivity', perms('admin'), async (req, res) => {
         await db.session.deleteMany({ active: false });
 
         res.status(200).json({ message: 'Updated!' });
     });
 
-    router.get('/settings/other', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-
+    router.get('/other', perms('admin'),  async (req, res) => {
         const config = await db.config.find({});
         if (!config) return res.status(400).json({ message: 'No config!' });
         let c = {
-            noticetext: config.find(c => c.name == 'noticetext'),
-            role: settings.activity?.role,
-            proxy: settings.proxy,
-            ranking: settings.ranking,
-            wall: settings.wall,
-            sessions: settings.sessions,
-            groupgames: await noblox.getGroupGames(settings.group, "Public")
+            noticetext: settings.get('noticetext'),
+            role: settings.get('activity')?.role,
+            proxy: settings.get('wproxy'),
+            ranking: settings.get('ranking'),
+            wall: settings.get('wall'),
+            sessions: settings.get('sessions'),
+            groupgames: await noblox.getGroupGames(settings.get('group'), "Public")
         }
         res.status(200).json({ message: 'Successfully fetched config!', config: c });
     })
 
-    router.get('/settings/roles', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'roles' });
+    router.get('/roles', perms('admin'), async (req, res) => {
+        const config = await settings.get('roles');
 
         if (!config) return res.status(400).json({ message: 'No roles found!' });
-        res.status(200).json({ message: 'Successfully fetched roles!', roles: config.value });
+        res.status(200).json({ message: 'Successfully fetched roles!', roles: config });
     })
 
-    router.get('/settings/invites', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        const config = await db.config.findOne({ name: 'invites' });
+    router.get('/invites', perms('admin'), async (req, res) => {
+        const config = await settings.get('invites');
 
         if (!config) return res.status(400).json({ message: 'No invites found!' });
-        res.status(200).json({ message: 'Successfully fetched invites!', invites: config.value });
+        res.status(200).json({ message: 'Successfully fetched invites!', invites: config });
     })
 
-    router.post('/settings/updateroles', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/updateroles', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
 
         let config = await db.config.findOne({ name: 'roles' });
-        settings.roles = req.body.roles;
-        if (config) {
-            config.value = req.body.roles;
-            await config.save();
-        } else {
-            db.config.create({
-                name: 'roles',
-                value: req.body.roles
-            });
-        };
+        settings.set('roles', req.body.roles);
 
         res.status(200).json({ message: 'Successfully updated roles!' });
     });
 
-    router.post('/settings/updateinvites', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/updateinvites', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
@@ -299,27 +212,17 @@ const erouter = (usernames, pfps, settings) => {
             if (invite.code) continue;
             invite.code = chooseRandom(letters, 12).join('')
         };
-        if (cf) {
-            cf.value = invites;
-            await cf.save();
-        } else {
-            db.config.create({
-                name: 'invites',
-                value: invites
-            });
-        };
+        settings.set('invites', invites);
 
         res.status(200).json({ message: 'Successfully updated invites!', invites: invites });
     });
 
-    router.post('/settings/newinvite', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/newinvite', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
 
-        let cd = await db.config.findOne({ name: 'invites' });
+        let cd = settings.get('invites')
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 
         let zz = {
@@ -328,48 +231,35 @@ const erouter = (usernames, pfps, settings) => {
         }
 
         if (cd) {
-            let e = cd.value;
-            cd.value = [...e, zz];
-            await cd.save();
+            let e = cd;
+            settings.set('invites', [...e, zz]);
         } else {
             let invites = [zz];
-            db.config.create({
-                name: 'invites',
-                value: invites
-            });
+            settings.set('invites', invites);
+
         };
 
         res.status(200).json({ message: 'Successfully updated invites!', invite: zz });
     });
 
-    router.get('/group/roles', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        let othercp = await checkperms(req.session.userid, 'admin');
+    router.get('/groles', async (req, res) => {
+        let cp = await checkPerm(req.session.userid, 'manage_staff_activity');
+        let othercp = await checkPerm(req.session.userid, 'admin');
 
         if (!othercp && !cp) return res.status(401).json({ message: 'go away!' });
 
-        let group = settings.group;
+        let group = settings.get('group');
 
         let roles = await noblox.getRoles(group)
-        res.status(200).json({ message: 'Successfully fetched roles!', roles: roles, currole: settings.activity.role });
+        res.status(200).json({ message: 'Successfully fetched roles!', roles: roles, currole: settings.get('activity').role });
     });
 
-    router.post('/settings/setgrouprole', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        let curconfig = await db.config.findOne({ name: 'activity' });
-
-        curconfig.value = {
-            key: curconfig.value.key,
+    router.post('/setgrouprole', perms('admin'), async (req, res) => {
+        let curconfig = settings.get('activity');
+        settings.set('activity', {
+            key: curconfig.key,
             role: req.body.role
-        }
-
-        settings.activity = {
-            key: curconfig.value.key,
-            role: req.body.role
-        }
-
-        curconfig.save().catch(err => console.log(err)).then(() => console.log('saved'));
+        })
 
         res.status(200).json({
             message: 'ok'
@@ -378,43 +268,29 @@ const erouter = (usernames, pfps, settings) => {
 
 
 
-    router.post('/settings/setcolor', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-        let curcolor = await db.config.findOne({ name: 'color' });
-        if (!curcolor) {
-            await db.config.create({
-                name: 'color',
-                value: req.body.color
-            });
-            return res.status(200).json({ message: 'ok' })
-        };
-
-        curcolor.value = req.body.color;
-        curcolor.save()
+    router.post('/setcolor', perms('admin'), async (req, res) => {
+        if (!req.body?.color) return res.status(400).json({ success: false, message: 'No color previded' });
+        if (typeof req.body.color !== 'string') return res.status(400).json({ success: false, message: 'Colored must be a string' });
+        settings.set('color', req.body.color);
 
         res.status(200).json({
             message: 'ok'
         })
     });
 
-    router.get('/settings/loader', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/loader', perms('admin'), async (req, res) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
-        let xx = xml_string.replace('<api>', settings.activity.key).replace('<ip>', `http://${req.headers.host}/api`);
+        let xx = xml_string.replace('<api>', settings.get('acivity').key).replace('<ip>', `http://${req.headers.host}/api`);
 
         res.type('rbxmx')
         res.send(xx);
     })
 
-    router.get('/settings/rloader', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/rloader', perms('admin'), async (req, res) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'Tovy_RankingLoader.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=Tovy_RankingLoader.rbxmx');
-        let xx = xml_string.replace('<key>', settings.ranking.apikey).replace('<url>', `http://${req.headers.host}/api/ranking`);
+        let xx = xml_string.replace('<key>', settings.get('ranking').apikey).replace('<url>', `http://${req.headers.host}/api/ranking`);
 
         res.type('rbxmx')
         res.send(xx);
@@ -451,17 +327,6 @@ const erouter = (usernames, pfps, settings) => {
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
         return pfp[0].imageUrl
-    }
-
-    async function checkperms(uid, perm) {
-        let roles = settings.roles;
-        let user = await db.user.findOne({ userid: parseInt(uid) });
-        if (!user) return false;
-        if (user.role == null || user.role == undefined) return false;
-        if (user.role == 0) return true;
-        let role = roles.find(r => r.id == user.role);
-        if (!role) return false;
-        return role.permissions.includes(perm);
     }
 
     return router;

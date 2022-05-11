@@ -83,6 +83,11 @@ export default {
       valid: true,
     },
   }),
+  mounted() {
+    if (!this.$route.query.invite) return;
+    this.code = this.$route.query.invite
+    this.sendinvite();
+  },
   methods: {
     sendinvite: function () {
       this.dialog.loading = true;

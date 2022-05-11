@@ -573,7 +573,7 @@ export default {
       this.invites = response.data.invites;
     });
 
-    this.$http.get("/group/roles", { withCredentials: true }).then((response) => {
+    this.$http.get("/settings/groles", { withCredentials: true }).then((response) => {
       this.groles = response.data.roles;
       this.arole = response.data.currole;
     });
@@ -586,8 +586,10 @@ export default {
       this.other = response.data.config;
       this.roleconfig.arole = response.data.config.role;
       this.games = response.data.config.groupgames;
+      console.log(response.data.config)
       if (response.data.config.noticetext) {
-        this.notice.text = response.data.config.noticetext.value;
+        console.log('ua')
+        this.notice.text = response.data.config.noticetext;
       }
 
       if (response.data.config.sessions) {

@@ -208,14 +208,14 @@ export default {
   mounted: function () {
 
     this.$http
-      .get("/uprofile/" + this.$route.params.id, { withCredentials: true })
+      .get("/staff/uprofile/" + this.$route.params.id, { withCredentials: true })
       .then((response) => {
         this.data = response.data;
         this.loading = false;
       });
 
     this.$http
-      .get("/pactivity/" + this.$route.params.id, { withCredentials: true })
+      .get("/staff/pactivity/" + this.$route.params.id, { withCredentials: true })
       .then((response) => {
         this.activity = response.data.sessions.sort((a, b) => {
           return new Date(b.start).getTime() - new Date(a.start).getTime();
@@ -234,7 +234,7 @@ export default {
       this.prompt.loading = true;
       this.$http
         .post(
-          "/mactivity/reset",
+          "/staff/mactivity/reset",
           {
             users: [this.$route.params.id],
           },
@@ -257,9 +257,9 @@ export default {
       this.prompt.loading = true;
       this.$http
         .post(
-          "/mactivity/change",
+          "/staff/mactivity/change",
           {
-            mins: this.prompt.value,
+            mins: parseInt(this.prompt.value),
             users: [this.$route.params.id],
             type: this.prompt.type,
           },

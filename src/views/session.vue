@@ -89,7 +89,7 @@ export default {
     groups: "dog",
   }),
   mounted() {
-    this.$http.get("/session/" + this.$route.params.id).then((response) => {
+    this.$http.get("/sessions/session/" + this.$route.params.id).then((response) => {
       this.session = response.data.data;
     });
   },
@@ -116,7 +116,7 @@ export default {
       this.session.started = true;
     },end: function () {
       this.loading = true;
-      this.$http.post("/session/end", {
+      this.$http.post("/sessions/session/end", {
         id: this.session.id
       }).then(() => {
         this.loading = false;
