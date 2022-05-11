@@ -19,7 +19,7 @@ local config = {
 local function createsession  (player)
 	print(player.UserId)
 	local request = httpservice:RequestAsync({
-		Url =  config.url .. '/createsession',
+		Url =  config.url .. '/activity/createsession',
 		Method = "POST",
 		Body = httpservice:JSONEncode({ userid = player.UserId }),
 		Headers = {
@@ -39,7 +39,7 @@ end
 local function endsession  (player)
 	print(player.UserId)
 	local request = httpservice:RequestAsync({
-		Url =  config.url .. '/endsession',
+		Url =  config.url .. '/activity/endsession',
 		Method = "POST",
 		Body = httpservice:JSONEncode({ userid = player.UserId }),
 		Headers = {
