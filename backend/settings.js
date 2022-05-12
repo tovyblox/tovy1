@@ -156,7 +156,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
 
     router.post('/resetactivity', perms('admin'), async (req, res) => {
         await db.session.deleteMany({ active: false });
-
+hash
         res.status(200).json({ message: 'Updated!' });
     });
 
@@ -279,9 +279,10 @@ const erouter = (usernames, pfps, settings, permissions) => {
     });
 
     router.get('/loader', perms('admin'), async (req, res) => {
+        console.log(settings.get('acivity'))
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
-        let xx = xml_string.replace('<api>', settings.get('acivity').key).replace('<ip>', `http://${req.headers.host}/api`);
+        let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `http://${req.headers.host}/api`);
 
         res.type('rbxmx')
         res.send(xx);

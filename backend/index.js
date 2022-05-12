@@ -52,8 +52,7 @@ app.use(cookieSession({
 }));
 
 (async () => {
-    await settings.load()
-
+    await settings.load();
     let configforranking = settings.get('ranking');
     if (configforranking) {
         let u;
@@ -82,7 +81,7 @@ app.use(cookieSession({
 async function runload() {
     console.log('Running tovy!')
     app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
-    app.use('/api/wall', require('./wall')(usernames, pfps, settings, permissions));
+    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions));
     app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
     app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions));
     app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions));
@@ -177,7 +176,7 @@ app.get('/api/profile', async (req, res) => {
         return res.status(401).json({ message: 'Not logged in' });
     });
     if (!info) return;
-    let color = await db.config.findOne({ name: 'color' });
+    let color = await settings.get('color');
     let user = await db.user.findOne({ userid: req.session.userid });
     if (!user) {
         res.status(401).json({ message: 'Not logged in' });
@@ -197,7 +196,7 @@ app.get('/api/profile', async (req, res) => {
         pfp: pfp[0].imageUrl,
         info: info,
         group: {
-            color: color ? color.value : 'grey lighten-2',
+            color: color || 'grey lighten-2',
             noticetext: settings.get('noticetext'),
             id: settings.get('group')
         }
