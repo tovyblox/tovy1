@@ -121,9 +121,13 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             user.role = undefined;
             await user.save();
             res.status(200).json({ message: 'Successfully updated user!' });
+            logging.newLog(`has removed user **${req.body.userId}** from this instance`, req.session.userid);
             return;
         }
-        if (!settings.get('roles').find(r => r.id == req.body.role)) return res.status(400).json({ message: 'No such role!' });
+        let s = settings.get('roles').find(r => r.id == req.body.role)
+        if (!s) return res.status(400).json({ message: 'No such role!' });
+        logging.newLog(`has updated the role of user **${req.body.userId}** to **${s.name}**`, req.session.userid);
+        
 
         user.role = parseInt(req.body.role);
         await user.save();
