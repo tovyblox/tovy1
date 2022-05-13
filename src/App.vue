@@ -74,7 +74,7 @@ export default {
         }
 
         if (this.$route.path == "/welcome") {
-          this.$router.push("/");
+          //this.$router.push("/");
         }
         response.data.info.pfp = response.data.pfp;
         this.$store.commit("setuser", response.data.info);

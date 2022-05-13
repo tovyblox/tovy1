@@ -23,6 +23,7 @@
     "express-ws": "^5.0.2",
     "inquirer": "^7.3.3",
     "lodash": "^4.17.21",
+    "marked": "^4.0.15",
     "minimist": "^1.2.5",
     "mongoose": "^6.1.4",
     "noblox": "^4.8.5",
@@ -32,7 +33,9 @@
     "vue": "^2.6.14",
     "vue-cookies": "^1.7.4",
     "vue-countdown": "^1.0.4",
+    "vue-markdown": "^2.2.4",
     "vue-router": "^3.2.0",
+    "vue-simple-markdown": "^1.1.5",
     "vuetify": "^2.6.2",
     "vuex": "^3.6.2",
     "winston": "^3.3.3"

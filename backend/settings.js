@@ -10,7 +10,7 @@ let package = require('../package.json');
 const axios = require('axios')
 const router = express.Router();
 
-const erouter = (usernames, pfps, settings, permissions) => {
+const erouter = (usernames, pfps, settings, permissions, logging) => {
     let perms = permissions.perms;
     let checkPerm = permissions.checkPerm
 
@@ -21,6 +21,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
             res.status(400).json({ message: 'No such roblox user!' });
         });
         if (!robloxusername) return;
+        logging.newLog(`has added user **${req.body.username}** to this group`, req.session.userid);
         const finduser = await db.user.findOne({ userid: parseInt(robloxusername) });
         if (finduser) {
             finduser.role = 1;
@@ -86,17 +87,22 @@ const erouter = (usernames, pfps, settings, permissions) => {
 
         let pfp = await fetchpfp(user.UserID)
         // generate random hex with crypto
-        let hash = crypto.randomBytes(20).toString('hex');
+        let config = settings.get('ranking');
+        console.log(config)
+        let hash = config?.hash || crypto.randomBytes(20).toString('hex');
         settings.set('ranking', { 
             cookie: cookie,
             hash
         });
 
+        logging.newLog(`has updated the ranking account to **${user.UserName}**`, req.session.userid);
+        
+
         settings.settings.ranking =    {
             username: user.UserName,
             uid: user.UserID,
             pfp,
-            apikey: config.value.hash
+            apikey: hash
         };
     
 
@@ -110,6 +116,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
         let user = await db.user.findOne({ userid: parseInt(req.body.userid) });
         if (!user) return res.status(400).json({ message: 'No such user!' });
         if (user.role == 0) return res.status(400).json({ message: 'No such user!' });
+        logging.newLog(`has updated the role of user **${req.body.userId}** to **${req.body.userid}**`, req.session.userid);
         if (req.body.role == 'delete') {
             user.role = undefined;
             await user.save();
@@ -128,12 +135,14 @@ const erouter = (usernames, pfps, settings, permissions) => {
         if (!req.body?.text) return res.status(400).json({ success: false, message: 'No policy previded' });
         if (typeof req.body.text !== 'string') return res.status(400).json({ success: false, message: 'Policy must be a string' });
         settings.set('noticetext', req.body.text)
+        logging.newLog(`has updated the inactive notice policy to **${req.body.text}**`, req.session.userid);
 
         res.status(200).json({ message: 'Updated!' });
     });
 
     router.post('/setwall', perms('admin'), async (req, res) => {
         settings.set('wall', req.body.wall);
+        logging.newLog(`has updated the wall`, req.session.userid);
         const body = req.body;
 
         res.status(200).json({ message: 'Updated!' });
@@ -142,6 +151,8 @@ const erouter = (usernames, pfps, settings, permissions) => {
     router.post('/setsessions', perms('admin'), async (req, res) => {
         const body = req.body;
         settings.set('sessions', body.settings)
+        logging.newLog(`has updated session settings`, req.session.userid);
+
 
         res.status(200).json({ message: 'Updated!' });
     });
@@ -150,13 +161,28 @@ const erouter = (usernames, pfps, settings, permissions) => {
         if (req.body?.enabled == null) return res.status(400).json({ success: false, message: 'No enabled previded' });
         if (typeof req.body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
         settings.set('wproxy', req.body.enabled);
+        logging.newLog(`has **${req.body.enabled ? 'enabled' : 'disabled'}** the wall`, req.session.userid);
 
+        res.status(200).json({ message: 'Updated!' });
+    });
+
+    router.post('/settr', perms('admin'), async (req, res) => {
+        if (req.body?.enabled == null) return res.status(400).json({ success: false, message: 'No enabled previded' });
+        if (typeof req.body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
+        try {
+            req.body.enabled ? await settings.regester(req.get('origin')) : await settings.deregester();
+        } catch(e) {
+            console.log(e)
+            return res.status(500).json({ success: false, message: 'Failed to register!' });
+        }
+        logging.newLog(`has **${req.body.enabled ? 'enabled' : 'disabled'}** the Tovy registry`, req.session.userid);
+    
         res.status(200).json({ message: 'Updated!' });
     });
 
     router.post('/resetactivity', perms('admin'), async (req, res) => {
         await db.session.deleteMany({ active: false });
-hash
+        logging.newLog(`has reset activity`, req.session.userid);
         res.status(200).json({ message: 'Updated!' });
     });
 
@@ -166,6 +192,7 @@ hash
         let c = {
             noticetext: settings.get('noticetext'),
             role: settings.get('activity')?.role,
+            tovyr: settings.get('tovyr')?.enabled,
             proxy: settings.get('wproxy'),
             ranking: settings.get('ranking'),
             wall: settings.get('wall'),
@@ -212,6 +239,7 @@ hash
             if (invite.code) continue;
             invite.code = chooseRandom(letters, 12).join('')
         };
+        logging.newLog(`has updated roles`, req.session.userid);
         settings.set('invites', invites);
 
         res.status(200).json({ message: 'Successfully updated invites!', invites: invites });
@@ -238,6 +266,7 @@ hash
             settings.set('invites', invites);
 
         };
+        logging.newLog(`has created a new role`, req.session.userid);
 
         res.status(200).json({ message: 'Successfully updated invites!', invite: zz });
     });
@@ -260,6 +289,7 @@ hash
             key: curconfig.key,
             role: req.body.role
         })
+        logging.newLog(`has updated acitvity settings`, req.session.userid);
 
         res.status(200).json({
             message: 'ok'
@@ -272,6 +302,7 @@ hash
         if (!req.body?.color) return res.status(400).json({ success: false, message: 'No color previded' });
         if (typeof req.body.color !== 'string') return res.status(400).json({ success: false, message: 'Colored must be a string' });
         settings.set('color', req.body.color);
+        logging.newLog(`has updated the color to **${req.body.color}**`, req.session.userid);
 
         res.status(200).json({
             message: 'ok'
@@ -279,7 +310,7 @@ hash
     });
 
     router.get('/loader', perms('admin'), async (req, res) => {
-        console.log(settings.get('acivity'))
+        
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
         let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `http://${req.headers.host}/api`);

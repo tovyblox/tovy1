@@ -29,6 +29,7 @@ module.exports = class permissionsManager {
         let user = await db.user.findOne({ userid: parseInt(uid) });
         if (!user) return false;
         if (user.role == null || user.role == undefined) return false;
+        if (!perm) return true
         if (user.role == 0) return true;
         let role = roles.find(r => r.id == user.role);
         if (!role) return false;

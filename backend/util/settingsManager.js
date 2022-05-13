@@ -1,4 +1,6 @@
 const db = require('../db/db');
+const crypto = require('crypto');
+const axios = require('axios');
 module.exports = class SettingsManager {
     settings = {}
 
@@ -7,7 +9,7 @@ module.exports = class SettingsManager {
         for (let i = 0; i < settings.length; i++) {
             this.settings[settings[i].name] = settings[i].value;
         }
-        console.log('[-] Settings module loaded settings')  
+        console.log('[-] Settings module loaded settings')
     }
 
     get(name) {
@@ -24,5 +26,48 @@ module.exports = class SettingsManager {
             await db.config.create({ name: name, value: value });
         }
     }
-    
+
+    async regester(url) {
+        let isRegestered = this.get('tovyr');
+        console.log(isRegestered)
+        if (isRegestered?.enabled) return;
+        let owner = await db.user.findOne({ role: 0 })
+        let req;
+
+        try {
+           req = await axios.post('http://localhost:2927/registerinstance', {
+                owner: owner.userid,
+                key: isRegestered?.key || undefined,
+                groupId: this.get('group'),
+                url: url || undefined
+            });
+        } catch(e) {
+            console.log(e.response.data)
+            throw new Error('Failed to regester instance');
+        }
+        console.log(req.data)
+
+        this.set('tovyr', {
+            enabled: true,
+            key: req.data.key,
+        });
+    };
+
+    async deregester() {
+        let isRegestered = this.get('tovyr');
+        if (!isRegestered?.enabled) return;
+
+        try {
+            await axios.post('http://localhost:2927/deregisterinstance', {
+                key: isRegestered.key
+            });
+        } catch(e) {
+            console.log(e.response.data)
+            throw new Error('Failed to deregester instance');
+        }
+        isRegestered.enabled = false;
+
+        this.set('tovyr', isRegestered);
+    }
+
 }

@@ -21,7 +21,6 @@ const erouter = (usernames, pfps, settings, permissions) => {
     console.log('running')
     let perms = permissions.perms;
     let checkPerm = permissions.checkPerm
-    console.log(settings.get('group'))
 
     noblox.onShout(parseInt(settings.get('group'))).on('error', err => {}).on('data', async (data) => {
         console.log('New shout');
@@ -76,6 +75,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
     router.ws('/socket', async (ws, req) => {
         console.log(req.session.userid)
         let cp = await checkPerm(req.session.userid);
+        console.log(cp)
         
         if (!cp) {
             ws.close();

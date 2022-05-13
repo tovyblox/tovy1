@@ -9,6 +9,7 @@ const db = require('./db/db');
 const noblox = require('noblox.js');
 const history = require('connect-history-api-fallback');
 const ora = require('ora');
+let package = require('../package.json');
 const fs = require('fs');
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 let backendonly = false;
@@ -19,6 +20,9 @@ if (backendonly) {
 }
 
 const _ = require('lodash');
+const LoggingEngine = require('./util/loggingEngine');
+const logging = new LoggingEngine();
+
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
@@ -59,13 +63,13 @@ app.use(cookieSession({
         try {
             u = await noblox.setCookie(configforranking.cookie);
         } catch (e) {
-            settings.ranking = {
+            settings.settings.ranking = {
                 apikey: configforranking.hash,
             };
         }
 
         if (u) {
-            settings.ranking = {
+            settings.settings.ranking = {
                 username: u.UserName,
                 uid: u.UserID,
                 pfp: await fetchpfp(u.UserID),
@@ -73,7 +77,7 @@ app.use(cookieSession({
             };
         }
 
-    } 
+    }
 
     runload()
 })();
@@ -83,7 +87,7 @@ async function runload() {
     app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
     app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions));
     app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
-    app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions));
+    app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
     app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions));
     app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions));
 }
@@ -117,6 +121,17 @@ app.post('/api/webhooks/:id/:secret', async (req, res) => {
         res.status(e.response.status).send(e.response.data)
     })
 })
+
+app.get('/info', (req, res) => {
+    let tovyr = settings.get('tovyr');
+    if (!tovyr?.enabled) return res.status(500).send({ success: false, message: 'tovyr not enabled' });
+    if (req.headers['api-key'] !== tovyr.key) return res.status(500).send({ success: false, message: 'invalid api key' });
+    res.send({
+        success: true,
+        version: package.version,
+    })
+    
+});
 
 app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
     if (!settings.get('wproxy')) return res.status(500).send({ success: false, message: 'proxy not set' });
@@ -152,7 +167,6 @@ app.post('/api/finishSignup', async (req, res) => {
 
     req.session.userid = uid;
 
-
     settings.set('group', req.body.group)
 
     let a = {
@@ -162,6 +176,67 @@ app.post('/api/finishSignup', async (req, res) => {
 
     settings.set('activity', a);
     res.status(200).json({ message: 'Successfully created user!' });
+    await settings.set('roles', [
+        {
+          "name": "Member",
+          "permissions": [
+            "view_staff_activity"
+          ],
+          "id": 1
+        },
+        {
+          "name": "HR",
+          "permissions": [
+            "view_staff_activity",
+            "host_sessions",
+            "post_on_wall"
+          ],
+          "id": 2
+        },
+        {
+          "name": "Manager",
+          "permissions": [
+            "view_staff_activity",
+            "manage_notices",
+            "update_shout",
+            "post_on_wall",
+            "host_sessions"
+          ],
+          "id": 3
+        },
+        {
+          "name": "Admin",
+          "permissions": [
+            "view_staff_activity",
+            "admin",
+            "manage_notices",
+            "manage_staff_activity",
+            "update_shout",
+            "post_on_wall",
+            "host_sessions"
+          ],
+          "id": 4
+        }
+      ])
+    await db.message.create({
+        id: 1,
+        author: 469981094,
+        message: `## Welcome to Tovy!
+Here are a few things that will help you get started
+- You can customize your Tovy instance in the settings 
+- Download the loader and start tracking activity on the settings page
+- Manage your groups staff on the staff page
+
+**Links**
+Here are some links that may help you in the future
+- [View some features on our website](https://tovyblox.xyz/)
+- [Report feedback or bugs](https://feedback.tovyblox.xyz/)
+- [Get help and chat in our discord](https://discord.gg/nsTHUewP3u)
+- [Contribute to our src code](https://github.com/tovyblox/tovy)`,
+        date: Date.now(),
+        deleted: false
+    })
+    if (req.body.regester) setTimeout(() => settings.regester(req.get('origin')), 2000);
 });
 
 /**
@@ -221,7 +296,7 @@ app.post('/api/invite', async (req, res) => {
 
 app.post('/api/signup/start', async (req, res) => {
     var emojis = [
-        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒','🐴','🐑','🐘','🐼','🐧','🐦','🐤','🐥','🐣','🐔','🐍','🐢','🐛','🐝','🐜','📕','📗','📘','📙','📓','📔','📒','📚','📖','🔖','🎯','🏈','🏀','⚽','⚾','🎾','🎱','🏉','🎳','⛳','🚵','🚴','🏁','🏇'
+        '📋', '🎉', '🎂', '📆', '✔️', '📃', '👍', '➕', '📢', '🐒', '🐴', '🐑', '🐘', '🐼', '🐧', '🐦', '🐤', '🐥', '🐣', '🐔', '🐍', '🐢', '🐛', '🐝', '🐜', '📕', '📗', '📘', '📙', '📓', '📔', '📒', '📚', '📖', '🔖', '🎯', '🏈', '🏀', '⚽', '⚾', '🎾', '🎱', '🏉', '🎳', '⛳', '🚵', '🚴', '🏁', '🏇'
     ];
 
 
@@ -293,7 +368,7 @@ app.post('/api/signup/finish', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     if (!req.body.username || !req.body.password) return res.status(400).json({ message: 'No username or password!' });
     if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') return res.status(400).json({ message: 'Invalid username or password!' });
-    let target = await noblox.getIdFromUsername(req.body.username).catch(err => {});
+    let target = await noblox.getIdFromUsername(req.body.username).catch(err => { });
     if (!target) return res.status(400).json({ message: 'User not found' });
     let user = await db.user.findOne({ userid: target });
     if (!user) return res.status(401).json({ message: 'User not found' });

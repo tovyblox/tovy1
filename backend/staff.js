@@ -104,6 +104,22 @@ const erouter = (usernames, pfps, settings, permissions) => {
         } });
     });
 
+    router.get('/audit', perms('admin'), async (req, res) => {
+        let logs = await db.log.find({});
+
+        let mx = await Promise.all(logs.map(async m => {
+            return {
+                ...m._doc,
+                user: {
+                    username: await fetchusername(m.userId),
+                    pfp: await fetchpfp(m.userId),
+                },
+            };
+        }));
+        res.status(200).send({ success: true, logs: mx.reverse() });
+
+    });
+
 
 
     router.post('/mactivity/change',perms('manage_staff_activity'),  async (req, res) => {
