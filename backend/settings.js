@@ -21,7 +21,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             res.status(400).json({ message: 'No such roblox user!' });
         });
         if (!robloxusername) return;
-        logging.newLog(`has added user **${req.body.username}** to this group`, req.session.userid);
+        logging.newLog(`has added user **${req.body.username}** to this instance`, req.session.userid);
         const finduser = await db.user.findOne({ userid: parseInt(robloxusername) });
         if (finduser) {
             finduser.role = 1;
@@ -116,17 +116,18 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         let user = await db.user.findOne({ userid: parseInt(req.body.userid) });
         if (!user) return res.status(400).json({ message: 'No such user!' });
         if (user.role == 0) return res.status(400).json({ message: 'No such user!' });
-        logging.newLog(`has updated the role of user **${req.body.userId}** to **${req.body.userid}**`, req.session.userid);
+        let username = await fetchusername(user.userid);
         if (req.body.role == 'delete') {
             user.role = undefined;
             await user.save();
             res.status(200).json({ message: 'Successfully updated user!' });
-            logging.newLog(`has removed user **${req.body.userId}** from this instance`, req.session.userid);
+            logging.newLog(`has removed user **${username}** from this instance`, req.session.userid);
             return;
         }
         let s = settings.get('roles').find(r => r.id == req.body.role)
         if (!s) return res.status(400).json({ message: 'No such role!' });
-        logging.newLog(`has updated the role of user **${req.body.userId}** to **${s.name}**`, req.session.userid);
+        console.log(req.body.userId)
+        logging.newLog(`has updated the role of user **${username}** to **${s.name}**`, req.session.userid);
         
 
         user.role = parseInt(req.body.role);
