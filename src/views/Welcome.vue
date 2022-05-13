@@ -69,7 +69,7 @@
                   ></v-img>
                   <v-card-text class="text-center mt-2 mb-1">
                     Enroll your group with tovy to allow support staff to easily pull up
-                    data about your instance and let us know who uses tovy. If you want to
+                    data about your instance and let us know who uses tovy (we log instance url, version, owner, and group). If you want to
                     reenable this you can in serttings
                   </v-card-text>
                 </v-row>

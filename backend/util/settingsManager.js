@@ -35,7 +35,7 @@ module.exports = class SettingsManager {
         let req;
 
         try {
-           req = await axios.post('http://localhost:2927/registerinstance', {
+           req = await axios.post('https://bot.tovyblox.xyz/registerinstance', {
                 owner: owner.userid,
                 key: isRegestered?.key || undefined,
                 groupId: this.get('group'),
