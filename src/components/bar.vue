@@ -34,6 +34,14 @@
             <v-list-item-title>Logout</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item @click="darkmode" link class="mt-2">
+          <v-list-item-icon>
+            <v-icon>mdi-theme-light-dark</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ this.$vuetify.theme.dark ? 'Light mode' : 'Dark mode'}}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-divider class="mt-2 mb-2"> </v-divider>
 
         <v-list-item link :to="`/`">
@@ -104,6 +112,21 @@
           link
           v-if="this.$store.state.user.perms.includes('admin')"
           class="mt-2"
+          :to="`/audit`"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-clipboard</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Logs</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+
+        <v-list-item
+          link
+          v-if="this.$store.state.user.perms.includes('admin')"
+          class="mt-2"
           :href="`https://github.com/ItsWHOOOP/tovy`"
         >
           <v-list-item-icon class="">
@@ -156,6 +179,12 @@ export default {
   methods: {
     isSmall: function () {
       return window.innerWidth < 600;
+    }, darkmode: function () {
+      let nextstatus = !this.$vuetify.theme.dark
+      localStorage.setItem("darkMode", nextstatus);
+      this.$vuetify.theme.dark = nextstatus;
+
+
     },
     fetchusername() {
       return this.$store.state.user;

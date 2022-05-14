@@ -13,6 +13,7 @@ import profile from '@/views/profile'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
 import wall from '@/views/wall'
+import audit from '@/views/audit'
 import sessions from '@/views/sessions'
 import session from '@/views/session'
 import notReady from '@/views/notReady'
@@ -25,7 +26,14 @@ const routes = [
     name: 'Home',
     meta: { layout: 'main' },
     component: Home
-  }, {
+  },
+  {
+    path: '/audit',
+    name: 'audit',
+    meta: { layout: 'main' },
+    component: audit
+  },
+  {
     path: '/sessions',
     name: 'Sessions',
     meta: { layout: 'main' },
@@ -40,7 +48,7 @@ const routes = [
     name: 'Session',
     meta: { layout: 'main' },
     component: session
-  }, 
+  },
   {
     path: '/wall',
     name: 'Wall',

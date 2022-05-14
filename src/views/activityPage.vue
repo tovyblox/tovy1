@@ -148,22 +148,22 @@ export default {
     },
   },
   mounted: function () {
-    this.$http.get("/activityinfo", { withCredentials: true }).then((response) => {
+    this.$http.get("/activity/activityinfo", { withCredentials: true }).then((response) => {
       this.loading.igame = false;
       this.active = response.data;
     });
 
-    this.$http.get("/stats", { withCredentials: true }).then((response) => {
+    this.$http.get("/activity/stats", { withCredentials: true }).then((response) => {
       response.data.loading = false
       this.stats = response.data;
     });
 
-    this.$http.get("/best", { withCredentials: true }).then((response) => {
+    this.$http.get("/activity/best", { withCredentials: true }).then((response) => {
       this.loading.best = false;
       this.best = response.data;
     });
 
-    this.$http.get("/off", { withCredentials: true }).then((response) => {
+    this.$http.get("/activity/off", { withCredentials: true }).then((response) => {
       this.loading.off = false;
       this.off = response.data;
     });

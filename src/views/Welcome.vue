@@ -10,7 +10,7 @@
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
                 Lets start with your login info
               </v-card-text>
-              <v-form ref="form" v-model="valid" lazy-validation>
+              <v-form ref="form" @submit.prevent="next" v-model="valid" lazy-validation>
                 <v-text-field
                   outlined
                   v-model="username"
@@ -31,22 +31,16 @@
                 </v-btn>
               </v-form>
             </v-stepper-content>
-            <v-stepper-content class="mx-n2 mt-n6" step="2">
+            <v-stepper-content  class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
                 Next some info about your group
               </v-card-text>
-              <v-form ref="frm" v-model="valid" lazy-validation>
+              <v-form ref="frm" @submit.prevent="next" v-model="valid" lazy-validation>
                 <v-text-field
                   outlined
                   v-model="group"
                   label="Group ID"
                   :rules="[(v) => !!v || 'Group ID is required']"
-                ></v-text-field>
-                <v-text-field
-                  v-model="name"
-                  outlined
-                  label="Name"
-                  class="mt-n3"
                 ></v-text-field>
 
                 <v-btn elevation="0" class="mt-n4 ml-auto" @click="e1 = 1" plain>
@@ -55,14 +49,52 @@
                 <v-btn
                   elevation="0"
                   class="mt-n4 float-right"
-                  @click="dog()"
+                  @click="next"
                   color="success"
                 >
-                  Done
+                  Next
                 </v-btn>
               </v-form>
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="3">
+              <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
+                Would you like your group to be enrolled with tovy?
+              </v-card-text>
+              <v-form ref="frm" v-model="valid" lazy-validation>
+                <v-row class="mx-auto mb-5 mt-n5">
+                  <v-img
+                    src="../assets/conifer-question.png"
+                    class="mx-auto mt-7"
+                    max-width="30"
+                  ></v-img>
+                  <v-card-text class="text-center mt-2 mb-1">
+                    Enroll your group with tovy to allow support staff to easily pull up
+                    data about your instance and let us know who uses tovy (we log instance url, version, owner, and group). If you want to
+                    reenable this you can in serttings
+                  </v-card-text>
+                </v-row>
+                <v-btn elevation="0" class="mt-n4 ml-auto" @click="e1 = 1" plain>
+                  Back
+                </v-btn>
+                <v-btn
+                  elevation="0"
+                  class="mt-n4 float-right"
+                  @click="dog(true)"
+                  color="info"
+                >
+                  Yes
+                </v-btn>
+                <v-btn
+                  elevation="0"
+                  class="mt-n4 mr-2 float-right"
+                  @click="dog(false)"
+                  color="info"
+                >
+                  No thanks
+                </v-btn>
+              </v-form>
+            </v-stepper-content>
+            <v-stepper-content class="mx-n2 mt-n6" step="4">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
                 Boom!
               </v-card-text>
@@ -74,7 +106,7 @@
                   indeterminate
                 ></v-progress-circular>
                 <v-card-text class="text-center mt-2 mb-n5">
-                  Finishing up setup...
+                  Finishing up setup... (this can take up to a minute)
                 </v-card-text>
               </v-row>
             </v-stepper-content>
@@ -104,10 +136,11 @@ export default {
         this.e1++;
       }, 500);
     },
-    dog() {
-      this.e1 = 3;
+    dog(regester) {
+      this.e1 = 4;
       this.$refs.frm.validate();
       if (!this.valid) return;
+
       this.$http
         .post(
           "/finishSignup",
@@ -115,19 +148,20 @@ export default {
             username: this.username,
             password: this.password,
             group: this.group,
+            regester,
           },
           { withCredentials: true }
         )
         .then(() => {
-          this.$http.get("/profile", { withCredentials: true }).then((response) => {
-            if (!response) return;
-            response.data.info.pfp = response.data.pfp;
-            this.$store.commit("setuser", response.data.info);
-            this.$store.commit("setgroup", response.data.group);
-            setTimeout(() => {
+          setTimeout(() => {
+            this.$http.get("/profile", { withCredentials: true }).then((response) => {
+              if (!response) return;
+              response.data.info.pfp = response.data.pfp;
+              this.$store.commit("setuser", response.data.info);
+              this.$store.commit("setgroup", response.data.group);
               this.$router.push("/");
-            }, 3000);
-          });
+            });
+          }, 3000);
         });
     },
   },

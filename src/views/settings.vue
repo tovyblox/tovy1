@@ -94,7 +94,9 @@
               </v-btn></v-card
             >
             <div v-if="ranking.id">
-              <v-btn @click="downlodrloader" class="mt-3" elevation="0" color="info"> Download module </v-btn>
+              <v-btn @click="downlodrloader" class="mt-3" elevation="0" color="info">
+                Download module
+              </v-btn>
               <v-btn @click="copykey" class="ml-1 mt-3" elevation="0" color="error">
                 Copy API key
               </v-btn>
@@ -158,6 +160,23 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-shield-check
+            </v-icon>
+            <v-expansion-panel-header> Tovy Registry </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">
+              Enroll your group with tovy to allow support staff to easily pull up data
+              about your instance and let us know who uses tovy.
+            </p>
+            <v-switch v-model="other.tovyr" @change="setreg" label="Enabled?">
+            </v-switch>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
               mdi-clipboard
             </v-icon>
             <v-expansion-panel-header> Sessions </v-expansion-panel-header>
@@ -200,13 +219,36 @@
                     </v-text-field>
                   </v-col>
                   <v-col cols="1">
-                   <div>  <v-btn icon class="mt-2 mx-auto" @click="delgame(game)"> <v-icon> mdi-delete </v-icon></v-btn> </div> </v-col
-                ></v-row></div
-            ></v-card>
-            <v-text-field label="Webhook" v-if="sessions.enabled" hide-details="auto" hint="Press enter to save" @keydown.enter="setsessions" v-model="sessions.discohook" outlined>
+                    <div>
+                      <v-btn icon class="mt-2 mx-auto" @click="delgame(game)">
+                        <v-icon> mdi-delete </v-icon></v-btn
+                      >
+                    </div>
+                  </v-col></v-row
+                >
+              </div></v-card
+            >
+            <v-text-field
+              label="Webhook"
+              v-if="sessions.enabled"
+              hide-details="auto"
+              hint="Press enter to save"
+              @keydown.enter="setsessions"
+              v-model="sessions.discohook"
+              outlined
+            >
             </v-text-field>
 
-            <v-text-field label="Prefix to message (eg ping)" class="mt-2"  v-if="sessions.enabled && sessions.discohook.length" hide-details="auto" hint="Press enter to save (leave blank for none)" @keydown.enter="setsessions" v-model="sessions.discoping" outlined>
+            <v-text-field
+              label="Prefix to message (eg ping)"
+              class="mt-2"
+              v-if="sessions.enabled && sessions.discohook.length"
+              hide-details="auto"
+              hint="Press enter to save (leave blank for none)"
+              @keydown.enter="setsessions"
+              v-model="sessions.discoping"
+              outlined
+            >
             </v-text-field>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -335,7 +377,7 @@
             <v-expansion-panel-header> Invites </v-expansion-panel-header>
           </v-layout>
           <v-expansion-panel-content>
-            <v-btn color="success" elevation="0" @click="createnewinvite" class="ml-auto">
+            <v-btn color="success" elevation="0" :disabled="!sroles.length" @click="createnewinvite" class="ml-auto">
               New invite
             </v-btn>
             <v-btn color="info" elevation="0" @click="updateinvites" class="float-right">
@@ -513,10 +555,12 @@ export default {
       {
         name: "Update shout",
         value: "update_shout",
-      }, {
+      },
+      {
         name: "Post on wall",
         value: "post_on_wall",
-      }, {
+      },
+      {
         name: "Host sessions",
         value: "host_sessions",
       },
@@ -573,7 +617,7 @@ export default {
       this.invites = response.data.invites;
     });
 
-    this.$http.get("/group/roles", { withCredentials: true }).then((response) => {
+    this.$http.get("/settings/groles", { withCredentials: true }).then((response) => {
       this.groles = response.data.roles;
       this.arole = response.data.currole;
     });
@@ -586,8 +630,10 @@ export default {
       this.other = response.data.config;
       this.roleconfig.arole = response.data.config.role;
       this.games = response.data.config.groupgames;
+      console.log(response.data.config);
       if (response.data.config.noticetext) {
-        this.notice.text = response.data.config.noticetext.value;
+        console.log("ua");
+        this.notice.text = response.data.config.noticetext;
       }
 
       if (response.data.config.sessions) {
@@ -669,9 +715,9 @@ export default {
     },
     pushgame: function () {
       this.sessions.games.push({ id: 0, type: "" });
-    }, delgame: function(game) {
+    },
+    delgame: function (game) {
       this.sessions.games.splice(this.sessions.games.indexOf(game), 1);
-    
     },
     setwall: function () {
       this.$http
@@ -729,9 +775,26 @@ export default {
           }
         );
     },
+    setreg: function () {
+      this.$http
+        .post("/settings/settr", { enabled: this.other.tovyr }, { withCredentials: true })
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Registry updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating Registry!";
+            this.toast.visible = true;
+          }
+        );
+    },
     downlodloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/loader");
-    }, downlodrloader: function () {
+    },
+    downlodrloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/rloader");
     },
     isperm: function (role, perm) {

@@ -7,21 +7,19 @@ const router = express.Router();
 
 let activews = [];
 
-const erouter = (usernames, pfps, settings) => {
-    router.get('/group/members', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-
+const erouter = (usernames, pfps, settings, permissions) => {
+    let perms = permissions.perms;
+    router.get('/gmembers', perms('manage_staff_activity'), async (req, res) => {
         if (!req.query.role) {
             res.status(200).json({ message: 'No role specified' });
             return;
         }
-        let role = await noblox.getRole(settings.group, parseInt(req.query.role)).catch(err => {
+        let role = await noblox.getRole(settings.get('group'), parseInt(req.query.role)).catch(err => {
             res.status(400).json({ message: 'No such role!' })
             return null;
         });
         if (!role) return;
-        let members = await noblox.getPlayers(settings.group, role.id).catch(err => res.status(500).json({ message: 'Server error!' }));;
+        let members = await noblox.getPlayers(settings.get('group'), role.id).catch(err => res.status(500).json({ message: 'Server error!' }));;
         let mx = await Promise.all(members.map(async m => {
             m.pfp = await fetchpfp(m.userId);
             m.selected = false;
@@ -57,12 +55,15 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ members: await mx });
     });
 
-    router.get('/uprofile/:user', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/uprofile/:user', perms('manage_staff_activity'), async (req, res) => {
 
         let user = parseInt(req.params.user);
-        let ruser = await noblox.getPlayerInfo(user)
+        let ruser;
+        try {
+             ruser = await noblox.getPlayerInfo(user)
+        } catch(e) {
+            return res.status(400).json({ message: 'No such user!' })
+        }
 
         res.status(200).json({
             username: ruser.username,
@@ -71,10 +72,7 @@ const erouter = (usernames, pfps, settings) => {
         })
     })
 
-    router.get('/pactivity/:user', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-
+    router.get('/pactivity/:user', perms('manage_staff_activity'),  async (req, res) => {
         let userid = parseInt(req.params.user);
 
         if (!userid) return res.status(401).json({ message: 'Get out!' });
@@ -106,13 +104,30 @@ const erouter = (usernames, pfps, settings) => {
         } });
     });
 
+    router.get('/audit', perms('admin'), async (req, res) => {
+        let logs = await db.log.find({});
+
+        let mx = await Promise.all(logs.map(async m => {
+            return {
+                ...m._doc,
+                user: {
+                    username: await fetchusername(m.userId),
+                    pfp: await fetchpfp(m.userId),
+                },
+            };
+        }));
+        res.status(200).send({ success: true, logs: mx.reverse() });
+
+    });
 
 
-    router.post('/mactivity/change', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
 
-        let mins = parseInt(req.body.mins);
+    router.post('/mactivity/change',perms('manage_staff_activity'),  async (req, res) => {
+        if (!req.body?.mins) return res.status(400).json({ success: false, message: 'No minutes provides' });
+        if (!req.body?.type) return res.status(400).json({ success: false, message: 'No type provides' });
+        if (typeof req.body.mins !== 'number') return res.status(400).json({ success: false, message: 'Minutes must be a number' });
+
+        let mins = req.body.mins;
         let type = req.body.type;
 
         if (!mins) return res.status(400).json({ message: 'No minutes specified' });
@@ -130,9 +145,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully changed activity' });
     })
 
-    router.post('/mactivity/reset', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'manage_staff_activity');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/mactivity/reset', perms('manage_staff_activity'), async (req, res) => {
         
         req.body.users.forEach(async u => {
             await db.session.deleteMany({ active: false, uid: parseInt(u) });
@@ -173,17 +186,6 @@ const erouter = (usernames, pfps, settings) => {
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
         return pfp[0].imageUrl
-    }
-
-    async function checkperms(uid, perm) {
-        let roles = settings.roles;
-        let user = await db.user.findOne({ userid: parseInt(uid) });
-        if (!user) return false;
-        if (user.role == null || user.role == undefined) return false;
-        if (user.role == 0) return true;
-        let role = roles.find(r => r.id == user.role);
-        if (!role) return false;
-        return role.permissions.includes(perm);
     }
 
 

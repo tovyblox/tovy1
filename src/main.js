@@ -5,6 +5,11 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import main from './layouts/main.vue'
 import def from './layouts/default.vue'
+import VueSimpleMarkdown from 'vue-simple-markdown'
+// You need a specific loader for CSS files like https://github.com/webpack/css-loader
+Vue.use(VueSimpleMarkdown)
+
+
 import VueCookies from 'vue-cookies'
 import VueCountdown from '@chenfengyuan/vue-countdown';
 require('dotenv').config()

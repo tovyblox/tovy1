@@ -106,7 +106,7 @@ export default {
   mounted() {
     if (this.$store.state.user.perms.includes("admin")) {
       this.$http
-        .get("/checkupdates")
+        .get("/settings/checkupdates")
         .then((response) => {
           this.update = response.data;
         })
