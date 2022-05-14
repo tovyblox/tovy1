@@ -50,7 +50,7 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
-    "follow-redirects": ">=1.14.7",
+    "follow-redirects": ">=1.14.8",
     "glob-parent": ">=5.1.2",
     "node-forge": ">=1.0.0",
     "postcss": ">=8.2.13",
