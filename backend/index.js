@@ -155,6 +155,7 @@ app.delete('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
 })
 
 app.post('/api/finishSignup', async (req, res) => {
+    if (settings.get('group')) return res.status(500).send({ success: false, message: 'group signups are disabled' });
     if (!req.body.password) return res.status(500).send({ success: false, message: 'password not set' });
     const hash = bcrypt.hashSync(req.body.password, 10);
     let uid = await noblox.getIdFromUsername(req.body.username)
