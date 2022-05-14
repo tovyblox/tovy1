@@ -282,7 +282,7 @@ app.post('/api/invite', async (req, res) => {
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
 
     let user = await db.user.findOne({ userid: req.session.userid });
-    if (user.role !== undefined && user.role !== null) return res.status(400).json({ message: 'Already a memer' });
+    if (user.role === 0) return res.status(200).json({ message: 'Successfully joined group' });
 
     let invites = await db.config.findOne({ name: 'invites' });
     let invite = invites.value.find(invite => invite.code === req.body.code);

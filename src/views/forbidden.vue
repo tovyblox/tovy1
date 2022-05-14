@@ -86,6 +86,8 @@ export default {
   mounted() {
     if (!this.$route.query.invite) return;
     this.code = this.$route.query.invite
+    this.dialog.active = true
+    this.dialog.loading = true
     this.sendinvite();
   },
   methods: {
