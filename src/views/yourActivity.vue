@@ -137,7 +137,7 @@ export default {
       if (this.dates.length <= 1) return;
       this.$http
         .post(
-          "/createia",
+          "/activity/createia",
           {
             date: this.dates.sort((a, b) => {
               return new Date(a).getTime() - new Date(b).getTime();
