@@ -30,7 +30,7 @@
             <v-btn class="my-auto mr-2" @click="open(`${update.url}`)" plain color="info">
               View the log
             </v-btn>
-            <v-btn class="my-auto mr-2" @click="open(`https://itswhooop.gitbook.io/tovy/hosting/updating-railway`)" plain color="success">
+            <v-btn class="my-auto mr-2" @click="open(`https://docs.tovyblox.xyz/guides/deploy/update.html#table-of-content`)" plain color="success">
               Learn how <v-icon right dark> mdi-arrow-right </v-icon>
             </v-btn>
           </v-layout>
