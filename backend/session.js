@@ -21,7 +21,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
     const perms = permissions.perms;
 
     router.use((req, res, next) => {
-        if (!settings.get('sessions').enabled) {
+        if (!settings.get('sessions')?.enabled) {
             return res.status(403).send('Forbidden');
         }
         next()

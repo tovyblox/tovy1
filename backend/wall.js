@@ -24,7 +24,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
 
     noblox.onShout(parseInt(settings.get('group'))).on('error', err => {}).on('data', async (data) => {
         console.log('New shout');
-        if (!settings.wall.sync) return;
+        if (!settings.get('wall')?.sync) return;
         let id = parseInt(await db.message.countDocuments({}));
 
 
