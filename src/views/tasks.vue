@@ -65,7 +65,7 @@
         ></v-date-picker>
                   <v-card-actions>
 
-        <v-btn class="mb-3" color="primary" @click="nextPage()" block
+        <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
           >Next</v-btn
         >
         </v-card-actions>
@@ -92,10 +92,10 @@
                   <v-card-actions>
 
         <v-row class="mx-auto mt-auto mb-auto">
-                 <v-btn class="mb-3" color="primary" @click="nextPage()" block
+                 <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
             >Next</v-btn
           >
-          <v-btn class="mb-1" color="primary" @click="previousPage()" block
+          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
             >Previous</v-btn>
    
         </v-row>
@@ -113,13 +113,13 @@
                   <v-card-actions>
 
         <v-row class="mx-auto mt-0 mb-auto">
-                            <v-btn class="mb-6" color="primary" @click="addUser()" block
+                            <v-btn class="mb-6" :color="$store.state.group.color" @click="addUser()" block
             >Assign User</v-btn
           >
-                 <v-btn class="mb-3" color="primary" @click="nextPage()" block
+                 <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
             >Review Assigned Users</v-btn
           >
-          <v-btn class="mb-1" color="primary" @click="previousPage()" block
+          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
             >Previous</v-btn>
    
         </v-row>
@@ -129,6 +129,33 @@
       v-if="dialog.page == 4"
       >
       <v-card-title>Review Assigned Users</v-card-title>
+      <v-list dense>
+      <v-list-item
+      v-for="user in newTask.assignedUsers"
+      :key="user.id"
+      >
+      <v-list-item-avatar
+      :color="$store.state.group.color"
+      class="ml-5 mr-0 mt-4 my-auto"
+      >
+      <v-img :src="user.avatar"></v-img>
+      </v-list-item-avatar>
+      <v-list-item-content>
+      <v-list-item-title>{{ user.name }}</v-list-item-title>
+      {{ user.id }}
+      </v-list-item-content>
+      </v-list-item>
+      </v-list>
+      <v-card-actions>
+      <v-row class="mx-auto mt-auto mb-auto">
+      <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
+            >Next</v-btn
+          >
+          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
+            >Previous</v-btn>
+   
+        </v-row>
+      </v-card-actions>
       </v-card>
     </v-dialog>
     <v-snackbar v-model="toast.visible">
@@ -204,12 +231,27 @@ export default {
       this.newTask.name = "";
       this.newTask.description = "";
     },
-    addUser: function () {
-      this.newTask.assignedUsers.push(this.newTask.cur);
-      this.toast.message = "Successfully assigned this task to " + this.newTask.cur;
+    addUser: async function () {
+      let name = this.newTask.cur;
+      let id = await this.getIdFromUsername(name);
+      console.log(id)
+      let avatar = await this.getPfp(id);
+      console.log(avatar)
+      let user = {
+        id: id,
+        name: this.newTask.cur,
+        avatar: avatar,
+      };
+      console.log(user);
+      this.newTask.assignedUsers.push(user);
+      this.toast.message = "Successfully assigned this task to " + name;
       this.toast.color = "success";
       this.toast.visible = true;
       this.newTask.cur = "";
+    },
+    getIdFromUsername: async function (username) {
+      const response = await this.$http.get("/getuser/" + username);
+      return response.data.user.userid;
     },
     goto: function (url) {
       this.$router.push(url);
