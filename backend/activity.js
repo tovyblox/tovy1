@@ -7,11 +7,14 @@ const router = express.Router();
 
 let activews = [];
 
-const erouter = (usernames, pfps, settings) => {
+const erouter = (usernames, pfps, settings, permissions) => {
+    let perms = permissions.perms;
+    let checkPerm = permissions.checkPerm
+
     router.ws('/socket', (ws, req) => {
+        if (!checkPerm(req.user.sessionid)) return
         if (!req.session.userid) {
             ws.close();
-            console.log('[-] Socket closing')
             return;
         }
 
@@ -22,17 +25,16 @@ const erouter = (usernames, pfps, settings) => {
 
         activews.push(ws);
         ws.on('close', () => {
-            console.log('[-] Socket closed due to inactivity')
             activews.splice(activews.indexOf(ws), 1);
         });
     });
 
     router.post('/createsession', async (req, res) => {
-        if (req.headers.authorization !== settings.activity.key) return res.status(401);
-        if (settings.activity.role) {
-            let userrank = await noblox.getRankInGroup(settings.group, parseInt(req.body.userid)).catch(err => null);
+        if (req.headers.authorization !== settings.get('activity').key) return res.status(401);
+        if (settings.get('activity')?.role) {
+            let userrank = await noblox.getRankInGroup(settings.get('group'), parseInt(req.body.userid)).catch(err => null);
             if (!userrank) return res.status(200).json({ message: 'User is not high enough rank!' });
-            if (userrank < settings.activity.role) {
+            if (userrank < settings.get('activity').role) {
                 return res.status(200).json({ message: 'User is not high enough rank!' });
             }
         }
@@ -61,11 +63,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully created session!' });
     });
 
-    router.get('/ias/unaprooved', async (req, res) => {
-        if (!checkperms(req.session.userid, 'manage_notices')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
-
+    router.get('/ias/unaprooved', perms('manage_notices'), async (req, res) => {
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
@@ -84,12 +82,8 @@ const erouter = (usernames, pfps, settings) => {
 
     })
 
-    router.get('/ias/deny/:id', async (req, res) => {
-        if (!checkperms(req.session.userid, 'manage_notices')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
-
-        let uid = req.session.userid;
+    router.get('/ias/deny/:id', perms('manage_notices'), async (req, res) => {
+       let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
 
@@ -103,9 +97,6 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.get('/ias/accept/:id', async (req, res) => {
-        if (!checkperms(req.session.userid, 'manage_notices')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
         let uid = req.session.userid;
 
         if (!uid) return res.status(401).json({ message: 'go away!' });
@@ -120,8 +111,9 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.post('/endsession', async (req, res) => {
-        if (req.headers.authorization !== settings.activity.key) return res.status(401)
-        let session = await db.session.findOne({ uid: parseInt(req.body.userid), active: true });
+        if (req.headers.authorization !== settings.get('activity').key) return res.status(401)
+        if (typeof req.body.userid !== 'number') return res.status(400).json({ message: 'Userid must be a number!' });
+        let session = await db.session.findOne({ uid: req.body.userid, active: true });
 
         if (!session) return res.status(400).json({ message: 'No active session found!' });
         session.end = new Date();
@@ -140,7 +132,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully ended session!' });
     });
 
-    router.get('/activity/@me', async (req, res) => {
+    router.get('/@me', async (req, res) => {
         let userid = req.session.userid;
 
         if (!userid) return res.status(401).json({ message: 'Get out!' });
@@ -165,10 +157,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ sessions: d, totaltime: Math.round(_.sumBy(sessions, 'time')) });
     });
 
-    router.post('/createia', async (req, res) => {
-        if (!checkperms(req.session.userid, '')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
+    router.post('/createia', perms(''), async (req, res) => {
 
         let userid = req.session.userid;
 
@@ -188,10 +177,7 @@ const erouter = (usernames, pfps, settings) => {
         res.status(200).json({ message: 'Successfully created ia!', data: data });
     })
 
-    router.get('/best', async (req, res) => {
-        if (!checkperms(req.session.userid, 'view_staff_activity')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
+    router.get('/best', perms('view_staff_activity'), async (req, res) => {
 
         let sessions = await db.session.find({});
         if (!sessions.length) return res.status(200).json([]);
@@ -211,10 +197,7 @@ const erouter = (usernames, pfps, settings) => {
         }
     });
 
-    router.get('/activityinfo', async (req, res) => {
-        if (!checkperms(req.session.userid, 'view_staff_activity')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
+    router.get('/activityinfo', perms('view_staff_activity'), async (req, res) => {
 
         let sessions = await db.session.find({ active: true });
         if (!sessions.length) return res.status(200).json([]);
@@ -233,10 +216,7 @@ const erouter = (usernames, pfps, settings) => {
         }
     });
 
-    router.get('/stats', async (req, res) => {
-        if (!checkperms(req.session.userid, 'view_staff_activity')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
+    router.get('/stats',perms('view_staff_activity'), async (req, res) => {
 
         let sessions = await db.session.find({});
         let e = _.groupBy(sessions, (i => i.uid));
@@ -263,10 +243,7 @@ const erouter = (usernames, pfps, settings) => {
         })
     });
 
-    router.get('/off', async (req, res) => {
-        if (!checkperms(req.session.userid, 'view_staff_activity')) {
-            return res.status(401).json({ message: 'Not logged in' });
-        };
+    router.get('/off', perms('view_staff_activity'), async (req, res) => {
 
         if (!req.session.userid) {
             return res.status(401).json({ message: 'Not logged in' });
@@ -302,19 +279,6 @@ const erouter = (usernames, pfps, settings) => {
         return userinfo;
     }
 
-    function chooseRandom(arr, num) {
-        const res = [];
-        for (let i = 0; i < num;) {
-            const random = Math.floor(Math.random() * arr.length);
-            if (res.indexOf(arr[random]) !== -1) {
-                continue;
-            };
-            res.push(arr[random]);
-            i++;
-        };
-        return res;
-    }
-
     async function fetchpfp(uid) {
         if (pfps.get(uid)) {
             return pfps.get(uid);
@@ -323,17 +287,6 @@ const erouter = (usernames, pfps, settings) => {
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
         return pfp[0].imageUrl
-    }
-
-    async function checkperms(uid, perm) {
-        let roles = settings.roles;
-        let user = await db.user.findOne({ userid: parseInt(uid) });
-        if (!user) return false;
-        if (user.role == null || user.role == undefined) return false;
-        if (user.role == 0) return true;
-        let role = roles.find(r => r.id == user.role);
-        if (!role) return false;
-        return role.permissions.includes(perm);
     }
 
 

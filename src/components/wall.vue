@@ -2,18 +2,20 @@
   <div>
     <v-card v-if="$store.state.user.perms.includes('post_on_wall')" outlined>
       <v-layout class="">
-        <v-avatar tile size="55" class="rounded-l">
+        <v-avatar tile size="62" class="rounded-l">
           <v-img :src="$store.state.user.pfp"></v-img>
         </v-avatar>
-        <v-text-field
+        <v-textarea
           solo
           flat
           v-model="message"
           :label="`Posting as ${$store.state.user.username}`"
-          class="mb-n8 mt-1"
+          class="mb-n6 mt-1 pb-1"
+          rows="1"
+          auto-grow
           :disabled="loading"
         >
-        </v-text-field> </v-layout
+        </v-textarea> </v-layout
     ></v-card>
     <v-btn
       v-if="message.length"
@@ -66,8 +68,8 @@
           <v-icon> mdi-delete </v-icon>
         </v-btn>
       </v-layout>
-      <p class="my-auto grey--text mx-3 py-3">
-        {{ msg.message }}
+      <p class="my-auto grey--text mx-3 py-3" style="white-space: pre-wrap;">
+        <vue-simple-markdown :source="msg.message"></vue-simple-markdown>
       </p></v-card
     >
     <v-layout v-if="ishome">

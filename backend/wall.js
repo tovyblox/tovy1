@@ -17,11 +17,14 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings) => {
+const erouter = (usernames, pfps, settings, permissions) => {
     console.log('running')
-    noblox.onShout(parseInt(settings.group)).on('error', err => {}).on('data', async (data) => {
+    let perms = permissions.perms;
+    let checkPerm = permissions.checkPerm
+
+    noblox.onShout(parseInt(settings.get('group'))).on('error', err => {}).on('data', async (data) => {
         console.log('New shout');
-        if (!settings.wall.sync) return;
+        if (!settings.get('wall')?.sync) return;
         let id = parseInt(await db.message.countDocuments({}));
 
 
@@ -53,8 +56,8 @@ const erouter = (usernames, pfps, settings) => {
     })
 
     function sendlog(data, username, pfp) {
-        if (!settings.wall?.discordhook) return;
-        let webhook = settings.wall.discordhook;
+        if (!settings.get('wall')?.discordhook) return;
+        let webhook = settings.get('wall').discordhook;
 
         let webhookc = new WebhookClient({ url: webhook });
 
@@ -69,8 +72,10 @@ const erouter = (usernames, pfps, settings) => {
         webhookc.send({ embeds: [embed] })
     }
 
-    router.ws('/wall/socket', async (ws, req) => {
-        let cp = await checkperms(req.session.userid);
+    router.ws('/socket', async (ws, req) => {
+        console.log(req.session.userid)
+        let cp = await checkPerm(req.session.userid);
+        console.log(cp)
         
         if (!cp) {
             ws.close();
@@ -90,9 +95,7 @@ const erouter = (usernames, pfps, settings) => {
         });
     });
 
-    router.get('/wall/messages', async (req, res) => {
-        let cp = await checkperms(req.session.userid);
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/messages', perms(), async (req, res) => {
         let messages = await db.message.find({ deleted: false }).sort({ date: -1 });
 
         let u = await Promise.all(messages.map(async m => {
@@ -109,9 +112,7 @@ const erouter = (usernames, pfps, settings) => {
         res.send(u);
     });
 
-    router.post('/wall/delete', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'admin');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/delete',perms('admin'), async (req, res) => {
         const { id } = req.body;
         let message = await db.message.findOne({ id: id });
 
@@ -129,10 +130,7 @@ const erouter = (usernames, pfps, settings) => {
         res.send({ success: true });
     })
 
-    router.post('/wall/send', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'post_on_wall');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-
+    router.post('/send',perms('post_on_wall'), async (req, res) => {
         const { message, shout } = req.body;
         console.log(await db.message.countDocuments({}))
         let id = parseInt(await db.message.countDocuments({}));
@@ -200,18 +198,6 @@ const erouter = (usernames, pfps, settings) => {
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
         return pfp[0].imageUrl
-    }
-
-    async function checkperms(uid, perm) {
-        let roles = settings.roles;
-        let user = await db.user.findOne({ userid: parseInt(uid) });
-        if (!user) return false;
-        if (user.role == null || user.role == undefined) return false;
-        if (user.role == 0) return true;
-        let role = roles.find(r => r.id == user.role);
-        if (!role) return false;
-        if (!perm) return true;
-        return role.permissions.includes(perm);
     }
 
     return router;

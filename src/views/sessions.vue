@@ -194,11 +194,11 @@ export default {
     games: [],
   }),
   mounted() {
-    this.$http.get("/games").then((res) => {
+    this.$http.get("/sessions/games").then((res) => {
       this.games = res.data;
     });
 
-    this.$http.get("/sessions").then((res) => {
+    this.$http.get("/sessions/list").then((res) => {
       this.sessions = res.data.filter((session) => !session.end);
     }).catch(() => {
       this.enabled = false
@@ -240,7 +240,7 @@ export default {
         newdate.setHours(this.prompt.time.split(":")[0], this.prompt.time.split(":")[1]);
 
         this.$http
-          .post("/hostsession", {
+          .post("/sessions/hostsession", {
             ...this.prompt,
             type: this.prompt.game,
             date: newdate,

@@ -17,11 +17,11 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings) => {
-    console.log('running');
+const erouter = (usernames, pfps, settings, permissions) => {
+    const perms = permissions.perms;
 
     router.use((req, res, next) => {
-        if (!settings?.sessions?.enabled) {
+        if (!settings.get('sessions')?.enabled) {
             return res.status(403).send('Forbidden');
         }
         next()
@@ -35,13 +35,11 @@ const erouter = (usernames, pfps, settings) => {
             ssession.did = await sendlog(session);
             await ssession.save();
         });
-
-    }, 10000)
+    }, 60000)
 
     async function sendlog(data) {
-        if (!settings.sessions?.discohook) return null;
-        console.log('sending')
-        let webhook = settings.sessions.discohook;
+        if (!settings.get('sessions')?.discohook) return null;
+        let webhook = settings.get('sessions').discohook;
 
         let webhookc = new discord.WebhookClient({ url: webhook });
         let username = await fetchusername(data.uid);
@@ -63,20 +61,17 @@ const erouter = (usernames, pfps, settings) => {
             );
         
 
-        let msg = await webhookc.send({ content: settings.sessions.discoping.length ? settings.sessions.discoping : null, embeds: [embed], components: [components] }).catch(err => {
-            console.log(err);
+        let msg = await webhookc.send({ content: settings.get('sessions').discoping.length ? settings.get('sessions').discoping : null, embeds: [embed], components: [components] }).catch(err => {
         });
         
-        console.log(msg?.id)
         return msg?.id;
     }
 
     async function unsendlog(data) {
-        if (!settings.sessions?.discohook) return null;
+        if (!settings.get('sessions')?.discohook) return null;
         if (!data?.did) return null;
-        console.log('editing')
 
-        let webhook = settings.sessions.discohook;
+        let webhook = settings.get('sessions').discohook;
 
         let webhookc = new discord.WebhookClient({ url: webhook });
         let username = await fetchusername(data.uid);
@@ -92,14 +87,13 @@ const erouter = (usernames, pfps, settings) => {
 
 
         let msg = await webhookc.editMessage(data.did, { content: null, embeds: [embed], components: [] }).catch(err => {
-            console.log(err)
         });
         return msg.id;
     }
 
-    router.post('/session/end', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'host_sessions');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.post('/session/end', perms('host_sessions'),  async (req, res) => {
+        if (!req.body?.id) return res.status(400).send({ success: false, message: 'No session id provided' });
+        if (typeof req.body.id !== 'number') return res.status(400).send({ success: false, message: 'Session id must be a number' });
         let session = await db.gsession.findOne({ id: req.body.id });
         if (!session) res.status(404).send('Session not found');
 
@@ -112,6 +106,8 @@ const erouter = (usernames, pfps, settings) => {
     });
 
     router.get('/session/:id', async (req, res) => {
+        if (!req.params.id) return res.status(400).send({ success: false, message: 'No session id provided' });
+        if (typeof req.params.id !== 'string') return res.status(400).send({ success: false, message: 'Session id must be a number' });
         let session = await db.gsession.findOne({ id: req.params.id });
         if (!session) return res.status(404).send({ success: false, error: 'Session not found' });
 
@@ -125,7 +121,7 @@ const erouter = (usernames, pfps, settings) => {
         res.send({ success: true, data });
     })
 
-    router.get('/sessions', async (req, res) => {
+    router.get('/list', async (req, res) => {
         let sessions = await db.gsession.find({});
         let mx = await Promise.all(sessions.map(async m => {
             return {
@@ -140,11 +136,10 @@ const erouter = (usernames, pfps, settings) => {
     })
 
     //session db is db.gsession
-    router.get('/games', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'host_sessions');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
+    router.get('/games', perms('host_sessions'), async (req, res) => {
+        
 
-        let games = settings.sessions.games;
+        let games = settings.get('sessions').games;
         let game = await noblox.getUniverseInfo(games.map(m => m.id))
 
         res.send(games.map(m => {
@@ -160,12 +155,8 @@ const erouter = (usernames, pfps, settings) => {
         }));
     });
 
-    router.post('/hostsession', async (req, res) => {
-        let cp = await checkperms(req.session.userid, 'host_sessions');
-        if (!cp) return res.status(401).json({ message: 'go away!' });
-
+    router.post('/hostsession', perms('host_sessions'), async (req, res) => {
         let data = req.body;
-        console.log('Session incoming')
         let id = parseInt(await db.gsession.countDocuments({}));
         let treq = await axios.get(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${req.body.game}&size=768x432&format=Png&isCircular=false`);
         let thumbnail = treq.data.data[0]?.thumbnails[0]?.imageUrl;
@@ -178,7 +169,7 @@ const erouter = (usernames, pfps, settings) => {
             started: data.now,
             type: {
                 id: req.body.type,
-                name: settings.sessions.games.find(f => f.id == req.body.type)?.type,
+                name: settings.get('sessions').games.find(f => f.id == req.body.type)?.type,
                 gname: ginfo[0].name,
                 gid: ginfo[0].rootPlaceId,
             },
@@ -210,19 +201,6 @@ const erouter = (usernames, pfps, settings) => {
         return userinfo;
     }
 
-    function chooseRandom(arr, num) {
-        const res = [];
-        for (let i = 0; i < num;) {
-            const random = Math.floor(Math.random() * arr.length);
-            if (res.indexOf(arr[random]) !== -1) {
-                continue;
-            };
-            res.push(arr[random]);
-            i++;
-        };
-        return res;
-    }
-
     async function fetchpfp(uid) {
         if (pfps.get(uid)) {
             return pfps.get(uid);
@@ -231,17 +209,6 @@ const erouter = (usernames, pfps, settings) => {
         pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
         return pfp[0].imageUrl
-    }
-
-    async function checkperms(uid, perm) {
-        let roles = settings.roles;
-        let user = await db.user.findOne({ userid: parseInt(uid) });
-        if (!user) return false;
-        if (user.role == null || user.role == undefined) return false;
-        if (user.role == 0) return true;
-        let role = roles.find(r => r.id == user.role);
-        if (!role) return false;
-        return role.permissions.includes(perm);
     }
 
     return router;

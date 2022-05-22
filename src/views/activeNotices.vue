@@ -66,7 +66,7 @@ export default {
       return;
     }*/
 
-    this.$http.get("/ias/unaprooved", { withCredentials: true }).then((response) => {
+    this.$http.get("/activity/ias/unaprooved", { withCredentials: true }).then((response) => {
       this.data = response.data.ias.sort((a, b) => {
         return new Date(b.end).getTime() - new Date(a.end).getTime();
       });
@@ -77,12 +77,12 @@ export default {
       this.$router.push(url);
     },
     deny: function (id) {
-      this.$http.get("/ias/deny/" + id, { withCredentials: true }).then(() => {
+      this.$http.get("/activity/ias/deny/" + id, { withCredentials: true }).then(() => {
         let indexofdocument = this.data.findIndex((element) => element.id == id);
         this.data.splice(indexofdocument, 1);
       });
     }, accept: function (id) {
-      this.$http.get("/ias/accept/" + id, { withCredentials: true }).then(() => {
+      this.$http.get("/activity/ias/accept/" + id, { withCredentials: true }).then(() => {
         let indexofdocument = this.data.findIndex((element) => element.id == id);
         this.data.splice(indexofdocument, 1);
       });

@@ -16,7 +16,7 @@
       app
     >
       <v-list dense shaped>
-        <v-list-item link>
+        <v-list-item @click="gotoProfile('/profile/'  + $store.state.user.id)" link>
           <v-list-item-avatar :color="$store.state.group.color" class="ml-n2 my-auto">
             <v-img :src="fetchusername().pfp"></v-img>
           </v-list-item-avatar>
@@ -32,6 +32,14 @@
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>Logout</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item @click="darkmode" link class="mt-2">
+          <v-list-item-icon>
+            <v-icon>mdi-theme-light-dark</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ this.$vuetify.theme.dark ? 'Light mode' : 'Dark mode'}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-divider class="mt-2 mb-2"> </v-divider>
@@ -104,6 +112,21 @@
           link
           v-if="this.$store.state.user.perms.includes('admin')"
           class="mt-2"
+          :to="`/audit`"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-clipboard</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Logs</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+
+        <v-list-item
+          link
+          v-if="this.$store.state.user.perms.includes('admin')"
+          class="mt-2"
           :href="`https://github.com/ItsWHOOOP/tovy`"
         >
           <v-list-item-icon class="">
@@ -140,10 +163,20 @@ export default {
         path: "/sessions",
       },
       {
+        name: "Tasks",  
+        icon: "mdi-checkbox-marked-circle-outline",
+        path: "/tasks",
+      },
+      {
         name: "Review notices",
         icon: "mdi-clipboard-check",
         path: "/reviewa",
         permission: "manage_notices",
+      },
+      {
+        name: 'Ban',
+        path: '/ban',
+        icon: 'mdi-gavel'
       },
       {
         name: "View staff",
@@ -156,6 +189,12 @@ export default {
   methods: {
     isSmall: function () {
       return window.innerWidth < 600;
+    }, darkmode: function () {
+      let nextstatus = !this.$vuetify.theme.dark
+      localStorage.setItem("darkMode", nextstatus);
+      this.$vuetify.theme.dark = nextstatus;
+
+
     },
     fetchusername() {
       return this.$store.state.user;
@@ -168,6 +207,9 @@ export default {
       this.$cookies.remove("session");
 
       this.$router.go("/");
+    },
+    gotoProfile(url) {
+      this.$router.push(url);
     },
     isMobile: function () {
       if (
