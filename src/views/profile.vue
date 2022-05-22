@@ -2,19 +2,41 @@
   <div>
     <v-container>
       <v-layout v-if="!loading" class="mt-12">
-        <v-avatar class="my-auto ml-3 mr-3" :color="$store.state.group.color" size="80">
+        <v-avatar
+          class="my-auto ml-3 mr-3 mt-0 mb-0"
+          :color="$store.state.group.color"
+          size="80"
+        >
           <v-img :src="data.pfp"></v-img>
         </v-avatar>
         <div class="my-auto">
-          <p class="text-h4 my-auto font-weight-bold">{{ data.info.displayName }}</p>
-          <p
+          <p class="text-h4 my-auto font-weight-bold">
+            {{ data.info.displayName
+            }}<v-tooltip bottom
+              ><template v-slot:activator="{ on, attrs }"
+                ><v-icon
+                  color="red"
+                  v-bind="attrs"
+                  v-on="on"
+                  v-if="ban.banned == true"
+                  large
+                  >mdi-gavel</v-icon
+                ></template
+              ><span>This user is <b>banned</b>!</span>
+            </v-tooltip>
+          </p>
+                    <p
             v-if="data.username != data.info.displayName"
-            class="text-body-1 my-auto grey--text mt-n1 gray"
+            class="text-body-1 grey--text gray"
           >
             @{{ data.username }}
           </p>
+          <p v-if="this.ban.banned == true"><i>{{ this.ban.reason }}</i></p>
+
+          <br>
         </div></v-layout
       >
+
     </v-container>
     <v-divider class="mt-10 mb-5"></v-divider>
     <v-container>
@@ -26,7 +48,9 @@
             class="mx-auto"
             indeterminate
           ></v-progress-circular>
-          <v-card-text class="text-center mt-2 mt-n2 mb-n5"> Loading... </v-card-text>
+          <v-card-text class="text-center mt-2 mt-n2 mb-n5">
+            Loading...
+          </v-card-text>
         </v-row></v-card
       >
 
@@ -59,7 +83,12 @@
           <v-card outlined class="">
             <v-card-title> Actions </v-card-title>
             <v-layout wrap class="py-4 ml-1 px-2 mt-n8" align="right">
-              <v-btn color="success" class="mr-2 mt-2" @click="openpropt('add')" outlined>
+              <v-btn
+                color="success"
+                class="mr-2 mt-2"
+                @click="openpropt('add')"
+                outlined
+              >
                 Add activity
               </v-btn>
               <v-btn
@@ -70,7 +99,31 @@
               >
                 Remove activity
               </v-btn>
-              <v-btn color="success" @click="openpropt('reset')" :loading="resetting" class="mr-2 mt-2" outlined> Reset activity </v-btn>
+              <v-btn
+                color="success"
+                @click="openpropt('reset')"
+                :loading="resetting"
+                class="mr-2 mt-2"
+                outlined
+              >
+                Reset activity
+              </v-btn>
+              <v-btn
+                color="error"
+                outlined
+                class="mr-2 mt-2"
+                @click="unban()"
+                v-if="ban.banned == true"
+                >Unban</v-btn
+              >
+              <v-btn
+                color="error"
+                outlined
+                class="mr-2 mt-2"
+                v-if="ban.banned == true"
+                @click="banp.visible = true"
+                >Edit Ban Reason</v-btn
+              >
             </v-layout>
           </v-card>
         </v-col>
@@ -80,7 +133,12 @@
         {{ toast.message }}
 
         <template v-slot:action="{ attrs }">
-          <v-btn :color="toast.color" text v-bind="attrs" @click="toast.visible = false">
+          <v-btn
+            :color="toast.color"
+            text
+            v-bind="attrs"
+            @click="toast.visible = false"
+          >
             Close
           </v-btn>
         </template>
@@ -88,11 +146,10 @@
 
       <v-dialog v-model="prompt.visible" max-width="400">
         <v-card v-if="prompt.type == 'reset'" :loading="prompt.loading">
-          <v-card-title
-            >Reset actvity
-          </v-card-title>
+          <v-card-title>Reset actvity </v-card-title>
           <v-card-text class="mt-n3">
-            Are you sure you want to reset the activity of the selected users? This action is irrvesible
+            Are you sure you want to reset the activity of the selected users?
+            This action is irrvesible
           </v-card-text>
           <v-btn
             elevation="0"
@@ -117,10 +174,18 @@
 
         <v-card v-else :loading="prompt.loading">
           <v-card-title
-            >{{ prompt.type.charAt(0).toUpperCase() + prompt.type.slice(1) }} actvity
+            >{{
+              prompt.type.charAt(0).toUpperCase() + prompt.type.slice(1)
+            }}
+            actvity
           </v-card-title>
 
-          <v-form ref="form" class="mt-n1 mx-6" v-model="prompt.valid" lazy-validation>
+          <v-form
+            ref="form"
+            class="mt-n1 mx-6"
+            v-model="prompt.valid"
+            lazy-validation
+          >
             <v-text-field
               outlined
               v-model="prompt.value"
@@ -156,6 +221,43 @@
           </v-form>
         </v-card>
       </v-dialog>
+      <v-dialog v-model="banp.visible" max-width="400">
+        <v-card>
+          <v-card-title> Edit Ban </v-card-title>
+          <v-card-text class="mt-n3">
+            <v-text-field
+              outlined
+              v-model="reason"
+              hide-details="auto"
+              :disabled="banp.loading"
+              label="Reason"
+              required
+              class="mt-3 mb-2"
+              v-bind="reason"
+              :rules="[(v) => !!v || 'Reason is required']"
+            ></v-text-field>
+            <v-btn
+              elevation="0"
+              :disabled="banp.loading"
+              @click="updateban"
+              class="ml-auto"
+              color="success"
+            >
+              Submit
+            </v-btn>
+            <v-btn
+              elevation="0"
+              class="ml-auto float-right"
+              @click="banp.visible = false"
+              :disabled="banp.loading"
+              plain
+              color="info"
+            >
+              Cancel
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
 
       <!-- <v-data-table :headers="headers" :items="data" :items-per-page="5">
         <template v-slot:item="{}" class="pt-5">
@@ -187,13 +289,22 @@ export default {
     valid: true,
     groles: [],
     srole: null,
+    reason: '',
+    ban: null,
     prompt: {
       type: "",
       visible: false,
       value: null,
       loading: false,
       valid: false,
-    }, resetting: false,
+    },
+    resetting: false,
+    banp: {
+      visible: false,
+      value: null,
+      loading: false,
+      valid: false,
+    },
     groups: "dog",
     data: {},
     stats: {},
@@ -206,16 +317,24 @@ export default {
   }),
   components: { notice },
   mounted: function () {
-
+    this.$http.get("/bans/banned/" + this.$route.params.id).then((response) => {
+      this.ban = response.data.banned;
+      console.log(this.ban);
+      console.log(response);
+    });
     this.$http
-      .get("/staff/uprofile/" + this.$route.params.id, { withCredentials: true })
+      .get("/staff/uprofile/" + this.$route.params.id, {
+        withCredentials: true,
+      })
       .then((response) => {
         this.data = response.data;
         this.loading = false;
       });
 
     this.$http
-      .get("/staff/pactivity/" + this.$route.params.id, { withCredentials: true })
+      .get("/staff/pactivity/" + this.$route.params.id, {
+        withCredentials: true,
+      })
       .then((response) => {
         this.activity = response.data.sessions.sort((a, b) => {
           return new Date(b.start).getTime() - new Date(a.start).getTime();
@@ -227,10 +346,22 @@ export default {
     goto: function (url) {
       this.$router.push(url);
     },
+    updateban: function () {
+      this.$http.post('/bans/edit', {
+        reason: this.reason,
+        userid: this.ban.userid
+      }).then(() => {
+        this.toast.message = 'Ban reason updated';
+        this.toast.visible = true;
+        this.banp.visible = false;
+        this.ban.reason = this.reason;
+      });
+    },
     openpropt: function (type) {
       this.prompt.type = type;
       this.prompt.visible = true;
-    }, resetactivity: function () {
+    },
+    resetactivity: function () {
       this.prompt.loading = true;
       this.$http
         .post(
@@ -247,9 +378,9 @@ export default {
           this.stats = {
             session: 0,
             ia: 0,
-            mins: 0
-          }
-          this.actvity = []
+            mins: 0,
+          };
+          this.actvity = [];
           this.prompt.visible = false;
         });
     },
@@ -277,8 +408,10 @@ export default {
             mins: type === "add" ? this.prompt.value : -this.prompt.value,
             start: new Date(),
           });
-          
-          type === "add" ? this.stats.mins += parseInt(this.prompt.value) : this.stats.mins -= parseInt(this.prompt.value)
+
+          type === "add"
+            ? (this.stats.mins += parseInt(this.prompt.value))
+            : (this.stats.mins -= parseInt(this.prompt.value));
         });
     },
     getTime: function (d) {
@@ -303,6 +436,22 @@ export default {
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
+    },
+    unban: function () {
+      this.$http
+        .post(
+          "/bans/unban",
+          {
+            userid: this.ban.userid,
+          },
+          { withCredentials: true }
+        )
+        .then(() => {
+          this.toast.message = "User unbanned";
+          this.toast.visible = true;
+          this.prompt.visible = false;
+          this.ban.banned = false;
+        });
     },
     getTimeRange: function (d, d2) {
       let date = new Date(d);

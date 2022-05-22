@@ -324,6 +324,14 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.send(xx);
     })
 
+    router.get('/bloader', perms('admin'), async (req, res) => {
+        let xml_string = fs.readFileSync(path.join(__dirname, 'TovyBans.rbxmx'), "utf8");
+        res.setHeader('Content-Disposition', 'attachment; filename=TovyBans.rbxmx');
+        let xx = xml_string.replace('<url>', `http://${req.headers.host}`);
+        res.type('rbxmx')
+        res.send(xx);
+    })
+
     router.get('/rloader', perms('admin'), async (req, res) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'Tovy_RankingLoader.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=Tovy_RankingLoader.rbxmx');

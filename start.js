@@ -22,7 +22,7 @@ if (!process.env.MONGO_URI) {
             message: 'Please provide a mongodb link (learn more @ https://tovy.gitbook.io/tovy/hosting/creating-a-mongodb-database)',
             validatingText: 'Checking URI',
             validate: async (answer) => {
-                if (!answer.includes('mongodb+srv://')) return 'Please enter a valid mongodb srv URI '
+                if (!answer.includes('mongodb+srv://') && !answer.includes('mongodb://')) return 'Please enter a valid mongodb srv URI '
                 return true
             },
         },

@@ -8,6 +8,7 @@ import yourActivity from '../views/yourActivity'
 import activeNotices from '@/views/activeNotices'
 import settings from '@/views/settings'
 import err from '@/views/err'
+import Ban from '@/views/Ban'
 import staff from '@/views/staff'
 import profile from '@/views/profile'
 import signup from '@/views/signup'
@@ -17,6 +18,7 @@ import audit from '@/views/audit'
 import sessions from '@/views/sessions'
 import session from '@/views/session'
 import notReady from '@/views/notReady'
+import tasks from '@/views/tasks' 
 
 Vue.use(VueRouter)
 
@@ -120,6 +122,18 @@ const routes = [
     name: 'Staff',
     meta: { layout: 'main' },
     component: staff
+  },
+  {
+    path: '/ban',
+    name: 'ban', 
+    meta: { layout: 'main' },
+    component: Ban
+  },
+  {
+    path: '/tasks',
+    name: 'Tasks',
+    meta: { layout: 'main' },
+    component: tasks
   }
 ]
 

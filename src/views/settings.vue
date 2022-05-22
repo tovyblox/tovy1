@@ -431,6 +431,18 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-gavel
+            </v-icon>
+            <v-expansion-panel-header> Ban loader </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <v-btn @click="downloadbloader" color="info mt-2"> Download loader </v-btn>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
               mdi-timer
             </v-icon>
             <v-expansion-panel-header> Activity loader </v-expansion-panel-header>
@@ -541,12 +553,20 @@ export default {
         value: "view_staff_activity",
       },
       {
+        name: "Manage bans",
+        value: "manage_bans",
+      },
+      {
         name: "Admin",
         value: "admin",
       },
       {
         name: "Manage notices",
         value: "manage_notices",
+      },
+      {
+        name: "Manage tasks",
+        value: "manage_tasks",
       },
       {
         name: "Manage staff activity",
@@ -796,6 +816,9 @@ export default {
     },
     downlodrloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/rloader");
+    },
+    downloadbloader: function () {
+      window.open(this.$http.defaults.baseURL + "/settings/bloader");
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);

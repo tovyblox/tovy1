@@ -16,4 +16,6 @@ module.exports = {
     message: require('./schemas/message.schema'),
     ranklog: require('./schemas/ranklog.schema'),
     gsession: require('./schemas/gsession.schema'),
+    ban: require('./schemas/ban.schema'),
+    task: require('./schemas/task.schema'),
 }

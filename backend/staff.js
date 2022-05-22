@@ -166,7 +166,7 @@ const erouter = (usernames, pfps, settings, permissions) => {
 
     function chooseRandom(arr, num) {
         const res = [];
-        for (let i = 0; i < num;) {
+        for (let i = 0; i < num;) { 
             const random = Math.floor(Math.random() * arr.length);
             if (res.indexOf(arr[random]) !== -1) {
                 continue;

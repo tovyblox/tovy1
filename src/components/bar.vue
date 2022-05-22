@@ -16,7 +16,7 @@
       app
     >
       <v-list dense shaped>
-        <v-list-item link>
+        <v-list-item @click="gotoProfile('/profile/'  + $store.state.user.id)" link>
           <v-list-item-avatar :color="$store.state.group.color" class="ml-n2 my-auto">
             <v-img :src="fetchusername().pfp"></v-img>
           </v-list-item-avatar>
@@ -163,10 +163,20 @@ export default {
         path: "/sessions",
       },
       {
+        name: "Tasks",  
+        icon: "mdi-checkbox-marked-circle-outline",
+        path: "/tasks",
+      },
+      {
         name: "Review notices",
         icon: "mdi-clipboard-check",
         path: "/reviewa",
         permission: "manage_notices",
+      },
+      {
+        name: 'Ban',
+        path: '/ban',
+        icon: 'mdi-gavel'
       },
       {
         name: "View staff",
@@ -197,6 +207,9 @@ export default {
       this.$cookies.remove("session");
 
       this.$router.go("/");
+    },
+    gotoProfile(url) {
+      this.$router.push(url);
     },
     isMobile: function () {
       if (
