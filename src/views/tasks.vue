@@ -5,14 +5,13 @@
         <p class="text-h4 font-weight-bold mt-14">
           Hi {{ this.$store.state.user.displayName }},
         </p>
-        <p class="text-body-1 font-weight-bold mt-n5 gray">
-          Welcome to Tovy tasks
-        </p>
+        <p class="text-body-1 font-weight-bold mt-n5 gray">Welcome to Tovy tasks</p>
       </v-container>
-      <v-btn
-        color="success"
-        depressed
-        class="ml-10 mx-auto"
+    </v-sheet>
+
+    <v-container class="mt-n16 mx-auto">
+      <v-card
+        min-width="300"
         v-if="
           $store.state.user.perms.includes('tasks') ||
           $store.state.user.perms.includes('admin')
@@ -21,11 +20,14 @@
           // make the dialog active
           dialog.active = true
         "
-        >Create Task</v-btn
+        ripple
+        class=""
       >
-    </v-sheet>
-
-    <v-container class="mt-n16 mx-auto">
+        <v-card-title> 📋 Create a notice </v-card-title>
+        <v-card-text class="mt-n6">
+          Create an inactivity notice for yourself
+        </v-card-text>
+      </v-card>
       <div v-for="task in tasks" :key="task.id">
         <v-card outlined class="task-card mb-5" min-width="300" ripple>
           <v-row>
@@ -33,7 +35,7 @@
               :color="$store.state.group.color"
               class="ml-5 mr-0 mt-4 my-auto"
             >
-              <v-img :src="task.creatorAvatar"></v-img>
+              <v-img :src="$store.state.user.pfp"></v-img>
             </v-list-item-avatar>
             <v-card-title class="mt-1"> {{ task.name }} </v-card-title>
           </v-row>
@@ -43,131 +45,119 @@
         </v-card>
       </div>
     </v-container>
-    <v-dialog
-      v-model="dialog.active"
-      max-width="600px"
-      @input="(v) => v || resetD()"
-    >
-      <v-progress-linear
-        indeterminate
-        v-if="dialog.loading"
-        :color="$store.state.group.color"
-      ></v-progress-linear>
-      <v-card v-if="dialog.page == 1">
-        <v-card-title class="headline">Select a Due Date</v-card-title>
-        <v-date-picker
-          :min="getcur()"
-          class="mb-3"
-          dark
-          full-width
-          :color="$store.state.group.color"
-          v-model="newTask.due"
-        ></v-date-picker>
-                  <v-card-actions>
+    <v-dialog v-model="dialog.active" max-width="600px">
+      <v-stepper v-model="dialog.page">
+        <v-stepper-header>
+          <v-stepper-step :complete="dialog.page > 1" step="1">
+            Due date
+          </v-stepper-step>
 
-        <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
-          >Next</v-btn
-        >
-        </v-card-actions>
-      </v-card>
-      <v-card v-if="dialog.page == 2">
-        <v-card-title>Now Lets Get Some Details</v-card-title>
-        <v-text-field
-          :color="$store.state.group.color"
-          label="Task Name"
-          v-model="newTask.name"
-          required
-          :rules="[(v) => !!v || 'Name is required']"
-          class="mb-3 mx-2"
-        ></v-text-field>
-        <v-textarea
-          :color="$store.state.group.color"
-          label="Task Description"
-          :rules="[(v) => !!v || 'Description is required']"
-          v-model="newTask.description"
-          required
-          class="mb-3 mx-2"
-          hide-details="auto"
-        ></v-textarea>
-                  <v-card-actions>
+          <v-divider></v-divider>
 
-        <v-row class="mx-auto mt-auto mb-auto">
-                 <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
-            >Next</v-btn
-          >
-          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
-            >Previous</v-btn>
-   
-        </v-row>
-        </v-card-actions>
-      </v-card>
-      <v-card v-if="dialog.page == 3">
-        <v-card-title>Assign to users</v-card-title>
-        <v-text-field
-          :color="$store.state.group.color"
-          label="Assign to"
-          v-model="newTask.cur"
-          required 
-          class="mb-3 mx-4 mb-0"
-        ></v-text-field>
-                  <v-card-actions>
+          <v-stepper-step :complete="dialog.page > 2" step="2">
+            Task details
+          </v-stepper-step>
 
-        <v-row class="mx-auto mt-0 mb-auto">
-                            <v-btn class="mb-6" :color="$store.state.group.color" @click="addUser()" block
-            >Assign User</v-btn
-          >
-                 <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
-            >Review Assigned Users</v-btn
-          >
-          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
-            >Previous</v-btn>
-   
-        </v-row>
-      </v-card-actions>
-      </v-card>
-      <v-card
-      v-if="dialog.page == 4"
-      >
-      <v-card-title>Review Assigned Users</v-card-title>
-      <v-list dense>
-      <v-list-item
-      v-for="user in newTask.assignedUsers"
-      :key="user.id"
-      >
-      <v-list-item-avatar
-      :color="$store.state.group.color"
-      class="ml-5 mr-0 mt-4 my-auto"
-      >
-      <v-img :src="user.avatar"></v-img>
-      </v-list-item-avatar>
-      <v-list-item-content>
-      <v-list-item-title>{{ user.name }}</v-list-item-title>
-      {{ user.id }}
-      </v-list-item-content>
-      </v-list-item>
-      </v-list>
-      <v-card-actions>
-      <v-row class="mx-auto mt-auto mb-auto">
-      <v-btn class="mb-3" :color="$store.state.group.color" @click="nextPage()" block
-            >Next</v-btn
-          >
-          <v-btn class="mb-1" :color="$store.state.group.color" @click="previousPage()" block
-            >Previous</v-btn>
-   
-        </v-row>
-      </v-card-actions>
-      </v-card>
+          <v-divider></v-divider>
+
+          <v-stepper-step step="3"> Assignment </v-stepper-step>
+        </v-stepper-header>
+
+        <v-stepper-items>
+          <v-stepper-content step="1">
+            <v-date-picker
+              :min="getcur()"
+              class="mb-3"
+              dark
+              full-width
+              :color="$store.state.group.color"
+              v-model="newTask.due"
+            ></v-date-picker>
+
+            <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
+
+            <v-btn text> Cancel </v-btn>
+          </v-stepper-content>
+
+          <v-stepper-content step="2">
+            <v-text-field
+              label="Task Name"
+              outlined
+              v-model="newTask.name"
+              required
+              :rules="[(v) => !!v || 'Name is required']"
+              class="mb-3"
+              hide-details="auto"
+            ></v-text-field>
+            <v-textarea
+            outlined
+              label="Task Description"
+              :rules="[(v) => !!v || 'Description is required']"
+              v-model="newTask.description"
+              required
+              class="mb-4 "
+              hide-details="auto"
+            ></v-textarea>
+
+            <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
+
+            <v-btn text @click="dialog.page--"> Previous </v-btn>
+          </v-stepper-content>
+
+          <v-stepper-content step="3">
+            <v-autocomplete
+              v-model="newTask.assignedUsers"
+              :items="dialog.users"
+              filled
+              cache-items
+              chips
+              color="blue-grey lighten-2"
+              label="Select"
+              @update:search-input="(i) => autoinput(i)"
+              item-text="username"
+              item-value="username"
+              multiple
+            >
+              <template v-slot:selection="data">
+                <v-chip
+                  v-bind="data.attrs"
+                  :input-value="data.selected"
+                  close
+                  @click="data.select"
+                  @click:close="remove(data.item)"
+                >
+                  <v-avatar left>
+                    <v-img :src="data.item.pfp"></v-img>
+                  </v-avatar>
+                  {{ data.item.username }}
+                </v-chip>
+              </template>
+              <template v-slot:item="data">
+                <template>
+                  <v-list-item-avatar>
+                    <img :src="data.item.pfp">
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-html="data.item.username"></v-list-item-title>
+                    <v-list-item-subtitle v-html="data.item.displayName"></v-list-item-subtitle>
+                  </v-list-item-content>
+                </template>
+              </template>
+            </v-autocomplete>
+
+            <v-btn color="primary" @click="dialog.page = 1"> Continue </v-btn>
+
+            <v-btn text @click="dialog.page--"> Previous </v-btn>
+          </v-stepper-content>
+        </v-stepper-items>
+      </v-stepper>
     </v-dialog>
+   
     <v-snackbar v-model="toast.visible">
       {{ toast.message }}
 
       <template v-slot:action="{ attrs }">
-        <v-btn
-          :color="toast.color"
-          text
-          v-bind="attrs"
-          @click="toast.visible = false"
-        >
+        <v-btn :color="toast.color" text v-bind="attrs" @click="toast.visible = false">
           Close
         </v-btn>
       </template>
@@ -187,22 +177,19 @@ export default {
       visible: false,
     },
     loading: false,
-    groups: "dog",
     newTask: {
       due: "",
       name: "",
       description: "",
-      creator: "",
-      creatorAvatar: "",
       assignedRoles: [],
       assignedUsers: [],
       cur: "",
     },
-    update: {},
     dialog: {
       active: false,
       page: 1,
       loading: false,
+      users: []
     },
     tasks: [],
   }),
@@ -210,65 +197,33 @@ export default {
     this.loading = true;
     this.$http.get("/tasks/get/all").then((response) => {
       this.tasks = response.data;
-      console.log(this.tasks);
       this.loading = false;
-      this.newTask.creator = this.$store.state.user.id;
-      this.$http
-        .get("/pfp/id/" + this.$store.state.user.id)
-        .then((response) => {
-          this.newTask.creatorAvatar = response.data.pfp;
-        });
     });
   },
 
   methods: {
-    resetD: function () {
-      setTimeout(() => {
-        this.dialog.page = 1;
-      }, "500");
-      this.dialog.loading = false;
-      this.newTask.due = "";
-      this.newTask.name = "";
-      this.newTask.description = "";
-    },
-    addUser: async function () {
-      let name = this.newTask.cur;
-      let id = await this.getIdFromUsername(name);
-      console.log(id)
-      let avatar = await this.getPfp(id);
-      console.log(avatar)
-      let user = {
-        id: id,
-        name: this.newTask.cur,
-        avatar: avatar,
-      };
-      console.log(user);
-      this.newTask.assignedUsers.push(user);
-      this.toast.message = "Successfully assigned this task to " + name;
-      this.toast.color = "success";
-      this.toast.visible = true;
-      this.newTask.cur = "";
-    },
-    getIdFromUsername: async function (username) {
-      const response = await this.$http.get("/getuser/" + username);
-      return response.data.user.userid;
-    },
     goto: function (url) {
       this.$router.push(url);
+    }, remove: function (item) {
+      this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
     },
     open: function (url) {
       window.open(url);
     },
-    getPfp: async function (user) {
-      const data = await this.$http.get("/pfp/id/" + user);
-      return data.data.pfp.toString();
-    },
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
-    },
-    previousPage: function () {
-      this.dialog.page = this.dialog.page - 1;
+    }, autoinput: function (input) {
+      console.log('woo')
+      console.log(input)
+      if (!input) return this.dialog.users = [];
+      this.$http.get('/staff/search?keyword=' + input).then((response) => {
+        this.dialog.users = response.data.users.map(u => ({
+          ...u,
+          selected: false
+        }));
+        console.log(this.dialog.users)
+      });
     },
     nextPage: function () {
       this.dialog.loading = true;

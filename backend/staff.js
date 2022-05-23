@@ -3,6 +3,7 @@ const noblox = require('noblox.js');
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
 const express = require('express');
+const { default: axios } = require('axios');
 const router = express.Router();
 
 let activews = [];
@@ -143,6 +144,22 @@ const erouter = (usernames, pfps, settings, permissions) => {
         });
 
         res.status(200).json({ message: 'Successfully changed activity' });
+    })
+
+    router.get('/search', perms('manage_staff_activity'), async (req, res) => {
+        let q = req.query.keyword;
+        if (!q) return res.status(400).json({ message: 'No query provided' });
+        if (q.length < 3) return res.status(400).json({ message: 'Query must be at least 3 characters' }); 
+        let users = await axios.get(`https://users.roblox.com/v1/users/search?keyword=${q}&limit=25`);
+        users = await Promise.all(users.data.data.map(async e => {
+            return {
+                username: e.name,
+                id: e.id,
+                pfp: await fetchpfp(e.id),
+                displayName: e.displayName,
+            }
+        }))
+        res.status(200).json({ users });
     })
 
     router.post('/mactivity/reset', perms('manage_staff_activity'), async (req, res) => {
