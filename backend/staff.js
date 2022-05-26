@@ -149,8 +149,14 @@ const erouter = (usernames, pfps, settings, permissions) => {
     router.get('/search', perms('manage_staff_activity'), async (req, res) => {
         let q = req.query.keyword;
         if (!q) return res.status(400).json({ message: 'No query provided' });
-        if (q.length < 3) return res.status(400).json({ message: 'Query must be at least 3 characters' }); 
-        let users = await axios.get(`https://users.roblox.com/v1/users/search?keyword=${q}&limit=25`);
+        if (q.length < 3) return res.status(400).json({ message: 'Query must be at least 3 characters' });
+        let users; 
+        try {
+            users = await axios.get(`https://users.roblox.com/v1/users/search?keyword=${q}&limit=25`);
+        } catch(e) {
+           return res.status(200).json({ users: [] }); 
+        }
+         
         users = await Promise.all(users.data.data.map(async e => {
             return {
                 username: e.name,
