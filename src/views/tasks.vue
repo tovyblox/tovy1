@@ -48,9 +48,7 @@
     <v-dialog v-model="dialog.active" max-width="600px">
       <v-stepper v-model="dialog.page">
         <v-stepper-header>
-          <v-stepper-step :complete="dialog.page > 1" step="1">
-            Due date
-          </v-stepper-step>
+          <v-stepper-step :complete="dialog.page > 1" step="1"> Due date </v-stepper-step>
 
           <v-divider></v-divider>
 
@@ -90,12 +88,12 @@
               hide-details="auto"
             ></v-text-field>
             <v-textarea
-            outlined
+              outlined
               label="Task Description"
               :rules="[(v) => !!v || 'Description is required']"
               v-model="newTask.description"
               required
-              class="mb-4 "
+              class="mb-4"
               hide-details="auto"
             ></v-textarea>
 
@@ -108,11 +106,11 @@
             <v-autocomplete
               v-model="newTask.assignedUsers"
               :items="dialog.users"
-              filled
+              outlined
               cache-items
               chips
               color="blue-grey lighten-2"
-              label="Select"
+              label="Users"
               @update:search-input="(i) => autoinput(i)"
               item-text="username"
               item-value="username"
@@ -135,15 +133,30 @@
               <template v-slot:item="data">
                 <template>
                   <v-list-item-avatar>
-                    <img :src="data.item.pfp">
+                    <img :src="data.item.pfp" />
                   </v-list-item-avatar>
                   <v-list-item-content>
                     <v-list-item-title v-html="data.item.username"></v-list-item-title>
-                    <v-list-item-subtitle v-html="data.item.displayName"></v-list-item-subtitle>
+                    <v-list-item-subtitle
+                      v-html="data.item.displayName"
+                    ></v-list-item-subtitle>
                   </v-list-item-content>
                 </template>
               </template>
             </v-autocomplete>
+
+            <v-autocomplete
+              class="mt-3"
+              v-model="newTask.assignedRoles"
+              :items="dialog.roles"
+              item-text="name"
+              item-value="id"
+              outlined
+              chips
+              small-chips
+              label="Outlined"
+              multiple
+            ></v-autocomplete>
 
             <v-btn color="primary" @click="dialog.page = 1"> Continue </v-btn>
 
@@ -152,7 +165,7 @@
         </v-stepper-items>
       </v-stepper>
     </v-dialog>
-   
+
     <v-snackbar v-model="toast.visible">
       {{ toast.message }}
 
@@ -189,7 +202,8 @@ export default {
       active: false,
       page: 1,
       loading: false,
-      users: []
+      users: [],
+      roles: [],
     },
     tasks: [],
   }),
@@ -199,12 +213,16 @@ export default {
       this.tasks = response.data;
       this.loading = false;
     });
+    this.$http.get("/settings/roles").then((response) => {
+      this.dialog.roles = response.data.roles;
+    });
   },
 
   methods: {
     goto: function (url) {
       this.$router.push(url);
-    }, remove: function (item) {
+    },
+    remove: function (item) {
       this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
     },
     open: function (url) {
@@ -213,16 +231,17 @@ export default {
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
-    }, autoinput: function (input) {
-      console.log('woo')
-      console.log(input)
-      if (!input) return this.dialog.users = [];
-      this.$http.get('/staff/search?keyword=' + input).then((response) => {
-        this.dialog.users = response.data.users.map(u => ({
+    },
+    autoinput: function (input) {
+      console.log("woo");
+      console.log(input);
+      if (!input) return (this.dialog.users = []);
+      this.$http.get("/staff/search?keyword=" + input).then((response) => {
+        this.dialog.users = response.data.users.map((u) => ({
           ...u,
-          selected: false
+          selected: false,
         }));
-        console.log(this.dialog.users)
+        console.log(this.dialog.users);
       });
     },
     nextPage: function () {
