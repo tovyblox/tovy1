@@ -108,12 +108,12 @@
               :items="dialog.users"
               outlined
               cache-items
-              chips
+              small-chips
+              hide-details="auto"
               color="blue-grey lighten-2"
-              label="Users"
+              label="Members"
               @update:search-input="(i) => autoinput(i)"
-              item-text="username"
-              item-value="username"
+              class="mt-1"
               multiple
             >
               <template v-slot:selection="data">
@@ -154,7 +154,7 @@
               outlined
               chips
               small-chips
-              label="Outlined"
+              label="Roles"
               multiple
             ></v-autocomplete>
 
@@ -199,8 +199,8 @@ export default {
       cur: "",
     },
     dialog: {
-      active: false,
-      page: 1,
+      active: true,
+      page: 3,
       loading: false,
       users: [],
       roles: [],
