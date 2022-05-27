@@ -74,7 +74,7 @@
 
             <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
 
-            <v-btn text> Cancel </v-btn>
+            <v-btn text @click="dialog.active = false"> Cancel </v-btn>
           </v-stepper-content>
 
           <v-stepper-content step="2">
