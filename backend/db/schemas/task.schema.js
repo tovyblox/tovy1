@@ -18,6 +18,7 @@ const task = new mongoose.Schema({
     assignedBy: Number,
     due: Date,
     createdAt: Date,
+    id: String,
 })
 
 module.exports = mongoose.models['tasks'] || mongoose.model('tasks', task, 'tasks');
