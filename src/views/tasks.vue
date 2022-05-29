@@ -24,36 +24,57 @@
         class=""
       >
         <v-card-title> 📋 Create a task </v-card-title>
-        <v-card-text class="mt-n6 mb-6">
-          Create a task for your team.
-        </v-card-text>
+        <v-card-text class="mt-n6 mb-6"> Create a task for your team. </v-card-text>
       </v-card>
-      <div v-for="task in tasks" :key="task.id">
-        <v-card outlined class="task-card mb-5" min-width="300" ripple>
-          <v-row>
-            <v-list-item-avatar
-              :color="$store.state.group.color"
-              class="ml-5 mr-0 mt-4 my-auto"
-            >
-              <v-img :src="$store.state.user.pfp"></v-img>
-            </v-list-item-avatar>
-            <v-card-title class="mt-1"> {{ task.name }} </v-card-title>
-          </v-row>
-          <v-card-text class="mt-n6">
-            {{ task.description }}
-          </v-card-text>
-        </v-card>
-      </div>
+
+      <v-row align="center">
+        <v-col
+          v-for="item in tasks"
+          :key="item.username"
+          cols="12"
+          class="mt-n4"
+          sm="6"
+          md="4"
+          lg="3"
+          ><v-card outlined :class="`py-n1 ${item.selected ? 'selected' : ''}`">
+            <div v-ripple>
+              <v-card-title> {{ item.name }}</v-card-title>
+              <v-card-text class="mt-n6 grey--text">
+                {{ item.description }}
+              </v-card-text>
+              <v-layout>
+                <v-avatar
+                  class="my-auto ml-4 mr-n2"
+                  :color="$store.state.group.color"
+                  size="25"
+                >
+                  <v-img :src="item.pfp"></v-img>
+                </v-avatar>
+                <div>
+                  <v-card-text class="grey--text">@{{ item.username }}</v-card-text>
+                </div></v-layout
+              >
+               <v-card-text class="red--text mt-n6 font-weight-bold">High priorty</v-card-text>
+               <v-card-text class="blue--text mt-n8 font-weight-bold">Due {{ getDate(item.due)}}</v-card-text>
+            </div>
+            <v-divider></v-divider>
+            <v-layout wrap class="py-2 px-2" align="right">
+              <v-btn color="success" plain>
+                View Details
+              </v-btn>
+            </v-layout>
+          </v-card></v-col
+        ></v-row
+      >
     </v-container>
-    <v-dialog @input="close" v-model="dialog.active" max-width="600px">
-        <v-progress-linear
-      :color="$store.state.group.color"
-      indeterminate
-      v-if="dialog.loading"
-      reverse
-    ></v-progress-linear>
+    <v-dialog v-model="dialog.active" max-width="600px">
+      <v-progress-linear
+        :color="$store.state.group.color"
+        indeterminate
+        v-if="dialog.loading"
+        reverse
+      ></v-progress-linear>
       <v-stepper v-model="dialog.page">
-      
         <v-stepper-header>
           <v-stepper-step :complete="dialog.page > 1" step="1"> Due date </v-stepper-step>
 
@@ -114,11 +135,13 @@
               v-model="newTask.assignedUsers"
               :items="dialog.users"
               outlined
-              cache-items
               small-chips
+              cache-items
               hide-details="auto"
               color="blue-grey lighten-2"
               label="Members"
+              item-text="username"
+              item-value="id"
               @update:search-input="(i) => autoinput(i)"
               class="mt-1"
               multiple
@@ -171,7 +194,6 @@
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
-
     </v-dialog>
 
     <v-snackbar v-model="toast.visible">
@@ -217,7 +239,7 @@ export default {
   }),
   mounted: function () {
     this.loading = true;
-    this.$http.get("/tasks/get/all").then((response) => {
+    this.$http.get("/tasks/@me").then((response) => {
       this.tasks = response.data;
       this.loading = false;
     });
@@ -242,17 +264,6 @@ export default {
       this.toast.color = "success";
       this.toast.visible = true;
     },
-    close: function () {
-      this.dialog.active = false;
-      this.dialog.page = 1;
-      this.dialog.users = []
-      this.dialog.roles = []
-      this.newTask.due = "";
-      this.newTask.name = "";
-      this.newTask.description = "";
-      this.newTask.assignedRoles = [];
-      this.newTask.assignedUsers = [];
-    },
     remove: function (item) {
       this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
     },
@@ -262,6 +273,14 @@ export default {
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
+    }, getDate: function (d) {
+      let date = new Date(d);
+
+      //get time in date
+      let time = date.toLocaleString("en", { weekday: "long" });
+      let m = date.toLocaleString("en", { month: "long" });
+      let day = date.getDate();
+      return `${time} ${m}, ${day}th`;
     },
     autoinput: function (input) {
       console.log("woo");

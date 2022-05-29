@@ -1,32 +1,43 @@
 const db = require('./db/db');
 const express = require('express');
 const router = express.Router();  
-const { fetchpfp } = require('./index');
+const { fetchpfp, fetchusername } = require('./index');
 const erouter = (usernames, pfps, settings, permissions, logging) => {
     const perms = permissions.perms
     router.get('/', async (req, res) => {
-        res.send('hello');
+        res.send('hesssllo');
     });
-    router.get('/get/:id', async (req, res) => {
+    router.get('/task/:id', async (req, res) => {
         const { id } = req.params;
         const task = await db.task.findOne({ where: { id: id } });
         if (task == null) return res.status(400).json({ error: "No such task." });
         res.json({ task: task });
-    })
-
-    router.get('/get/all', async (req, res) => {
+    });
+    router.get('/@me', async (req, res) => {
+        console.log('s')
         const userPerms = await db.user.findOne({ where: { id: req.session.userid } });
-        const tasks = await db.task.findAll();
+        let tasks = await db.task.find({});
+        tasks = await Promise.all(tasks.map(async task => {
+            let username = await fetchusername(task.author)
+            let pfp = await fetchpfp(task.author)
+            return {
+                ...task._doc,
+                pfp,
+                username
+            }
+        }));
+        console.log(tasks);
         console.log(userPerms);
         console.log('hi');
+        console.log('a')
         const tasksToSend = [];
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
-            if (task.assignedUsers.find(req.session.userid) || task.assignedRoles.find(userPerms.role)) {
+            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role)) {
                 tasksToSend.push(task);
             }
         }
-        res.json({ tasksToSend });
+        res.status(200).send(tasksToSend );
     })
 
     router.post('/create', perms('manage_tasks'), async (req, res) => {
@@ -35,7 +46,8 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         if (!name) return res.status(400).json({ error: "No name provided." });
         if (!description) return res.status(400).json({ error: "No description provided." });
         if (!due) return res.status(400).json({ error: "No due date provided." });  
-        const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: Math.floor(Math.random() * 1000000), assignedRoles: assignedRoles, assignedUsers: assignedUsers, assignedBy: req.session.userid, creatorAvatar: pfps.get(req.session.userid) });  
+        let currentid = await db.task.countDocuments({})
+        const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid) });  
         res.json({ success: true, task: task });    
         //logging.newLog(`has created a new task: **${name}**`, req.session.userid);
     })  

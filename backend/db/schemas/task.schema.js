@@ -15,7 +15,7 @@ const task = new mongoose.Schema({
     creatorAvatar: String,
     assignedUsers: [String],
     completedUsers: [String],
-    assignedBy: Number,
+    author: Number,
     due: Date,
     createdAt: Date,
     id: String,

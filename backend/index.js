@@ -436,9 +436,20 @@ async function fetchpfp(uid) {
     pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
     return pfp[0].imageUrl
+};
+
+async function fetchusername(uid) {
+    if (usernames.get(uid)) {
+        return usernames.get(uid);
+    }
+    let userinfo = await noblox.getUsernameFromId(uid);
+    usernames.set(parseInt(uid), userinfo, 10000);
+
+    return userinfo;
 }
 
-module.exports.pfp = fetchpfp;
+
+module.exports = {fetchpfp, fetchusername};
 
 
 function chooseRandom(arr, num) {
@@ -454,5 +465,5 @@ function chooseRandom(arr, num) {
     return res;
 }
 
-
+console.log('running on http://localhost:' + process.env.PORT || process.env.port || 8080);
 app.listen(process.env.PORT || process.env.port || 8080)
