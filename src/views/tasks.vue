@@ -54,7 +54,7 @@
                   <v-card-text class="grey--text">@{{ item.username }}</v-card-text>
                 </div></v-layout
               >
-               <v-card-text class="red--text mt-n6 font-weight-bold">High priorty</v-card-text>
+               <v-card-text v-if="item.priority < 2" class="red--text mt-n6 font-weight-bold">High priorty</v-card-text>
                <v-card-text class="blue--text mt-n8 font-weight-bold">Due {{ getDate(item.due)}}</v-card-text>
             </div>
             <v-divider></v-divider>
@@ -124,6 +124,15 @@
               class="mb-4"
               hide-details="auto"
             ></v-textarea>
+            <v-divider></v-divider>
+            <v-col>
+                    <v-select
+          :items="['High', 'Medium', 'Low']"
+          label="Priority"
+          outlined
+          v-model="newTask.priority"
+        ></v-select>
+        </v-col>
 
             <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
 
@@ -226,6 +235,7 @@ export default {
       description: "",
       assignedRoles: [],
       assignedUsers: [],
+      priority: '',
       cur: "",
     },
     dialog: {
@@ -257,6 +267,17 @@ export default {
       this.toast.message = "Creating task...";
       this.toast.color = "primary";
       this.toast.visible = true;
+      switch (this.newTask.priority) {
+        case "High":
+          this.newTask.priority = 1;
+          break;
+        case "Medium":
+          this.newTask.priority = 2;
+          break;
+        case "Low":
+          this.newTask.priority = 3;
+          break;
+      }
       await this.$http.post("/tasks/create", this.newTask);
       this.dialog.loading = false;
       this.dialog.active = false;

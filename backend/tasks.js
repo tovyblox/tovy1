@@ -41,13 +41,13 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     })
 
     router.post('/create', perms('manage_tasks'), async (req, res) => {
-        const { name, description, due, assignedRoles, assignedUsers } = req.body;  
+        const { name, description, due, assignedRoles, assignedUsers, priority } = req.body;  
         console.log(req.body);
         if (!name) return res.status(400).json({ error: "No name provided." });
         if (!description) return res.status(400).json({ error: "No description provided." });
         if (!due) return res.status(400).json({ error: "No due date provided." });  
         let currentid = await db.task.countDocuments({})
-        const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid) });  
+        const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority });  
         res.json({ success: true, task: task });    
         //logging.newLog(`has created a new task: **${name}**`, req.session.userid);
     })  
