@@ -33,7 +33,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         const tasksToSend = [];
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
-            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role)) {
+            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role) || task.author == req.session.userid) {
                 tasksToSend.push(task);
             }
         }
@@ -49,7 +49,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         let currentid = await db.task.countDocuments({})
         const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority });  
         res.json({ success: true, task: task });    
-        //logging.newLog(`has created a new task: **${name}**`, req.session.userid);
+        logging.newLog(`has created a new task: **${name}**`, req.session.userid);
     })  
 
     router.post('/edit', perms('manage_tasks'), async (req, res) => {
@@ -65,16 +65,13 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         if (!assignedUsers) assignedUsers = task.assignedUsers; 
         await task.update({ name: name, description: description, due: due, assignedRoles: assignedRoles, assignedUsers: assignedUsers });
         res.json({ success: true, task: task });
-        //ogging.newLog(`has edited a task: **${name}**`, req.session.userid);
+        logging.newLog(`has edited a task: **${name}**`, req.session.userid);
     })
 
-    router.post('/delete', perms('manage_tasks'), async (req, res) => {
-        const { id } = req.body;
-        const task = await db.task.findOne({ where: { id: id } });  
-        if (task == null) return res.status(400).json({ error: "No such task." });
-        await task.destroy();
+    router.post('/delete/:id', perms('manage_tasks'), async (req, res) => {
+        const { id } = req.params;
+        const task = await db.task.deleteOne({ where: { id: id } });  
         res.json({ success: true });
-        logging.newLog(`has deleted a task: **${task.name}**`, req.session.userid);
     })
 
     router.post('/complete', perms('manage_tasks'), async (req, res) => {
@@ -84,7 +81,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         if (!array.includes(req.session.userid)) return res.status(400).json({ error: "You can't complete this task." });
         await task.completedUsers.push(req.session.userid);
         res.json({ success: true, task: task });
-        logging.newLog(`has completed a task: **${task.name}**`, req.session.userid);
     })
     return router
 }

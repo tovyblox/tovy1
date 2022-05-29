@@ -85,7 +85,7 @@ app.use(cookieSession({
 async function runload() {
     console.log('Running tovy!')
     app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
-    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions));
+    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging));
     app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions));
     app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
     app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
