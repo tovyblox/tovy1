@@ -23,9 +23,9 @@
         ripple
         class=""
       >
-        <v-card-title> 📋 Create a notice </v-card-title>
-        <v-card-text class="mt-n6">
-          Create an inactivity notice for yourself
+        <v-card-title> 📋 Create a task </v-card-title>
+        <v-card-text class="mt-n6 mb-6">
+          Create a task for your team.
         </v-card-text>
       </v-card>
       <div v-for="task in tasks" :key="task.id">
@@ -45,8 +45,15 @@
         </v-card>
       </div>
     </v-container>
-    <v-dialog v-model="dialog.active" max-width="600px">
+    <v-dialog @input="close" v-model="dialog.active" max-width="600px">
+        <v-progress-linear
+      :color="$store.state.group.color"
+      indeterminate
+      v-if="dialog.loading"
+      reverse
+    ></v-progress-linear>
       <v-stepper v-model="dialog.page">
+      
         <v-stepper-header>
           <v-stepper-step :complete="dialog.page > 1" step="1"> Due date </v-stepper-step>
 
@@ -74,7 +81,7 @@
 
             <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
 
-            <v-btn text> Cancel </v-btn>
+            <v-btn text @click="dialog.active = false"> Cancel </v-btn>
           </v-stepper-content>
 
           <v-stepper-content step="2">
@@ -158,12 +165,13 @@
               multiple
             ></v-autocomplete>
 
-            <v-btn color="primary" @click="dialog.page = 1"> Continue </v-btn>
+            <v-btn color="primary" @click="create"> Finish </v-btn>
 
             <v-btn text @click="dialog.page--"> Previous </v-btn>
           </v-stepper-content>
         </v-stepper-items>
       </v-stepper>
+
     </v-dialog>
 
     <v-snackbar v-model="toast.visible">
@@ -199,8 +207,8 @@ export default {
       cur: "",
     },
     dialog: {
-      active: true,
-      page: 3,
+      active: false,
+      page: 1,
       loading: false,
       users: [],
       roles: [],
@@ -221,6 +229,29 @@ export default {
   methods: {
     goto: function (url) {
       this.$router.push(url);
+    },
+    create: async function () {
+      this.dialog.loading = true;
+      this.toast.message = "Creating task...";
+      this.toast.color = "primary";
+      this.toast.visible = true;
+      await this.$http.post("/tasks/create", this.newTask);
+      this.dialog.loading = false;
+      this.dialog.active = false;
+      this.toast.message = "Task created!";
+      this.toast.color = "success";
+      this.toast.visible = true;
+    },
+    close: function () {
+      this.dialog.active = false;
+      this.dialog.page = 1;
+      this.dialog.users = []
+      this.dialog.roles = []
+      this.newTask.due = "";
+      this.newTask.name = "";
+      this.newTask.description = "";
+      this.newTask.assignedRoles = [];
+      this.newTask.assignedUsers = [];
     },
     remove: function (item) {
       this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
