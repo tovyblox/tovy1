@@ -31,7 +31,7 @@
           >
             @{{ data.username }}
           </p>
-          <p v-if="this.ban.banned == true"><i>{{ this.ban.reason }}</i></p>
+          <p class="mt-n4" v-if="this.ban.banned == true"><i>{{ this.ban.reason }}</i></p>
 
           <br>
         </div></v-layout

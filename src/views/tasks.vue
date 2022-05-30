@@ -5,7 +5,9 @@
         <p class="text-h4 font-weight-bold mt-14">
           Hi {{ this.$store.state.user.displayName }},
         </p>
-        <p class="text-body-1 font-weight-bold mt-n5 gray">Welcome to Tovy tasks</p>
+        <p class="text-body-1 font-weight-bold mt-n5 gray">
+          Welcome to Tovy tasks
+        </p>
       </v-container>
     </v-sheet>
 
@@ -24,7 +26,9 @@
         class=""
       >
         <v-card-title> 📋 Create a task </v-card-title>
-        <v-card-text class="mt-n6 mb-6"> Create a task for your team. </v-card-text>
+        <v-card-text class="mt-n6 mb-6">
+          Create a task for your team.
+        </v-card-text>
       </v-card>
 
       <v-row align="center">
@@ -37,8 +41,35 @@
           md="4"
           lg="3"
           ><v-card outlined :class="`py-n1 ${item.selected ? 'selected' : ''}`">
-            <div v-ripple>
-              <v-card-title> {{ item.name }}</v-card-title>
+            <div>
+              <v-card-title>
+                {{ item.name }}
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      icon
+                      v-bind="attrs"
+                      v-on="on"
+                      color="grey"
+                      v-if="item.author === $store.state.user.id"
+                    >
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item
+                      link
+                    >
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item
+                      link
+                    >
+                      <v-list-item-title @click="deleteTask(item.id)">Delete</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </v-card-title>
               <v-card-text class="mt-n6 grey--text">
                 {{ item.description }}
               </v-card-text>
@@ -51,17 +82,23 @@
                   <v-img :src="item.pfp"></v-img>
                 </v-avatar>
                 <div>
-                  <v-card-text class="grey--text">@{{ item.username }}</v-card-text>
+                  <v-card-text class="grey--text"
+                    >@{{ item.username }}</v-card-text
+                  >
                 </div></v-layout
               >
-               <v-card-text class="red--text mt-n6 font-weight-bold">High priorty</v-card-text>
-               <v-card-text class="blue--text mt-n8 font-weight-bold">Due {{ getDate(item.due)}}</v-card-text>
+              <v-card-text
+                v-if="item.priority < 2"
+                class="red--text mt-n6 font-weight-bold"
+                >High priorty</v-card-text
+              >
+              <v-card-text class="blue--text mt-n8 font-weight-bold"
+                >Due {{ getDate(item.due) }}</v-card-text
+              >
             </div>
             <v-divider></v-divider>
             <v-layout wrap class="py-2 px-2" align="right">
-              <v-btn color="success" plain>
-                View Details
-              </v-btn>
+              <v-btn color="success" plain> View Details </v-btn>
             </v-layout>
           </v-card></v-col
         ></v-row
@@ -76,7 +113,9 @@
       ></v-progress-linear>
       <v-stepper v-model="dialog.page">
         <v-stepper-header>
-          <v-stepper-step :complete="dialog.page > 1" step="1"> Due date </v-stepper-step>
+          <v-stepper-step :complete="dialog.page > 1" step="1">
+            Due date
+          </v-stepper-step>
 
           <v-divider></v-divider>
 
@@ -124,6 +163,15 @@
               class="mb-4"
               hide-details="auto"
             ></v-textarea>
+            <v-divider></v-divider>
+            <v-col>
+              <v-select
+                :items="['High', 'Medium', 'Low']"
+                label="Priority"
+                outlined
+                v-model="newTask.priority"
+              ></v-select>
+            </v-col>
 
             <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
 
@@ -166,7 +214,9 @@
                     <img :src="data.item.pfp" />
                   </v-list-item-avatar>
                   <v-list-item-content>
-                    <v-list-item-title v-html="data.item.username"></v-list-item-title>
+                    <v-list-item-title
+                      v-html="data.item.username"
+                    ></v-list-item-title>
                     <v-list-item-subtitle
                       v-html="data.item.displayName"
                     ></v-list-item-subtitle>
@@ -200,7 +250,12 @@
       {{ toast.message }}
 
       <template v-slot:action="{ attrs }">
-        <v-btn :color="toast.color" text v-bind="attrs" @click="toast.visible = false">
+        <v-btn
+          :color="toast.color"
+          text
+          v-bind="attrs"
+          @click="toast.visible = false"
+        >
           Close
         </v-btn>
       </template>
@@ -213,6 +268,7 @@ export default {
   name: "HelloWorld",
 
   data: () => ({
+    list: ["Edit", "Delete"],
     drawer: true,
     toast: {
       color: "error",
@@ -226,6 +282,7 @@ export default {
       description: "",
       assignedRoles: [],
       assignedUsers: [],
+      priority: "",
       cur: "",
     },
     dialog: {
@@ -257,15 +314,32 @@ export default {
       this.toast.message = "Creating task...";
       this.toast.color = "primary";
       this.toast.visible = true;
+      switch (this.newTask.priority) {
+        case "High":
+          this.newTask.priority = 1;
+          break;
+        case "Medium":
+          this.newTask.priority = 2;
+          break;
+        case "Low":
+          this.newTask.priority = 3;
+          break;
+      }
       await this.$http.post("/tasks/create", this.newTask);
       this.dialog.loading = false;
       this.dialog.active = false;
       this.toast.message = "Task created!";
       this.toast.color = "success";
       this.toast.visible = true;
+      this.$http.get("/tasks/@me").then((response) => {
+        this.tasks = response.data;
+      });
     },
     remove: function (item) {
-      this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
+      this.newTask.assignedUsers.splice(
+        this.newTask.assignedUsers.indexOf(item),
+        1
+      );
     },
     open: function (url) {
       window.open(url);
@@ -273,7 +347,8 @@ export default {
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
-    }, getDate: function (d) {
+    },
+    getDate: function (d) {
       let date = new Date(d);
 
       //get time in date
@@ -291,7 +366,19 @@ export default {
           ...u,
           selected: false,
         }));
-        console.log(this.dialog.users);
+      });
+    },
+    deleteTask: function (taskId) {
+      this.toast.message = "Deleting task...";
+      this.toast.color = "primary";
+      this.toast.visible = true;
+      this.$http.post("/tasks/delete/" + taskId).then(() => {
+        this.toast.message = "Task deleted!";
+        this.toast.color = "success";
+        this.toast.visible = true;
+        this.$http.get("/tasks/@me").then((response) => {
+          this.tasks = response.data;
+        });
       });
     },
     nextPage: function () {

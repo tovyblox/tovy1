@@ -18,6 +18,7 @@ const task = new mongoose.Schema({
     author: Number,
     due: Date,
     createdAt: Date,
+    priority: Number,
     id: String,
 })
 
