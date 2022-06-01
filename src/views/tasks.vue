@@ -5,9 +5,7 @@
         <p class="text-h4 font-weight-bold mt-14">
           Hi {{ this.$store.state.user.displayName }},
         </p>
-        <p class="text-body-1 font-weight-bold mt-n5 gray">
-          Welcome to Tovy tasks
-        </p>
+        <p class="text-body-1 font-weight-bold mt-n5 gray">Welcome to Tovy tasks</p>
       </v-container>
     </v-sheet>
 
@@ -26,9 +24,7 @@
         class=""
       >
         <v-card-title> 📋 Create a task </v-card-title>
-        <v-card-text class="mt-n6 mb-6">
-          Create a task for your team.
-        </v-card-text>
+        <v-card-text class="mt-n6 mb-6"> Create a task for your team. </v-card-text>
       </v-card>
 
       <v-row align="center">
@@ -50,6 +46,7 @@
                       icon
                       v-bind="attrs"
                       v-on="on"
+                      class="ml-auto"
                       color="grey"
                       v-if="item.author === $store.state.user.id"
                     >
@@ -57,15 +54,13 @@
                     </v-btn>
                   </template>
                   <v-list>
-                    <v-list-item
-                      link
-                    >
+                    <v-list-item link>
                       <v-list-item-title>Edit</v-list-item-title>
                     </v-list-item>
-                    <v-list-item
-                      link
-                    >
-                      <v-list-item-title @click="deleteTask(item.id)">Delete</v-list-item-title>
+                    <v-list-item link>
+                      <v-list-item-title @click="deleteTask(item.id)"
+                        >Delete</v-list-item-title
+                      >
                     </v-list-item>
                   </v-list>
                 </v-menu>
@@ -82,13 +77,21 @@
                   <v-img :src="item.pfp"></v-img>
                 </v-avatar>
                 <div>
-                  <v-card-text class="grey--text"
-                    >@{{ item.username }}</v-card-text
-                  >
+                  <v-card-text class="grey--text">@{{ item.username }}</v-card-text>
                 </div></v-layout
               >
               <v-card-text
-                v-if="item.priority < 2"
+                v-if="item.priority === 1"
+                class="green--text mt-n6 font-weight-bold"
+                >Low priorty</v-card-text
+              >
+              <v-card-text
+                v-if="item.priority === 2"
+                class="blue--text mt-n6 font-weight-bold"
+                >Medium priorty</v-card-text
+              >
+              <v-card-text
+                v-if="item.priority === 3"
                 class="red--text mt-n6 font-weight-bold"
                 >High priorty</v-card-text
               >
@@ -113,9 +116,7 @@
       ></v-progress-linear>
       <v-stepper v-model="dialog.page">
         <v-stepper-header>
-          <v-stepper-step :complete="dialog.page > 1" step="1">
-            Due date
-          </v-stepper-step>
+          <v-stepper-step :complete="dialog.page > 1" step="1"> Due date </v-stepper-step>
 
           <v-divider></v-divider>
 
@@ -163,15 +164,18 @@
               class="mb-4"
               hide-details="auto"
             ></v-textarea>
-            <v-divider></v-divider>
-            <v-col>
-              <v-select
-                :items="['High', 'Medium', 'Low']"
-                label="Priority"
-                outlined
-                v-model="newTask.priority"
-              ></v-select>
-            </v-col>
+            <v-select
+              :items="[
+                { title: 'High', value: 3 },
+                { title: 'Medium', value: 2 },
+                { title: 'Low', value: 1 },
+              ]"
+              label="Priority"
+              item-text="title"
+              item-value="value"
+              outlined
+              v-model="newTask.priority"
+            ></v-select>
 
             <v-btn color="primary" @click="dialog.page++"> Continue </v-btn>
 
@@ -214,9 +218,7 @@
                     <img :src="data.item.pfp" />
                   </v-list-item-avatar>
                   <v-list-item-content>
-                    <v-list-item-title
-                      v-html="data.item.username"
-                    ></v-list-item-title>
+                    <v-list-item-title v-html="data.item.username"></v-list-item-title>
                     <v-list-item-subtitle
                       v-html="data.item.displayName"
                     ></v-list-item-subtitle>
@@ -250,12 +252,7 @@
       {{ toast.message }}
 
       <template v-slot:action="{ attrs }">
-        <v-btn
-          :color="toast.color"
-          text
-          v-bind="attrs"
-          @click="toast.visible = false"
-        >
+        <v-btn :color="toast.color" text v-bind="attrs" @click="toast.visible = false">
           Close
         </v-btn>
       </template>
@@ -306,43 +303,32 @@ export default {
   },
 
   methods: {
-    goto: function (url) {
-      this.$router.push(url);
-    },
     create: async function () {
       this.dialog.loading = true;
-      this.toast.message = "Creating task...";
-      this.toast.color = "primary";
-      this.toast.visible = true;
-      switch (this.newTask.priority) {
-        case "High":
-          this.newTask.priority = 1;
-          break;
-        case "Medium":
-          this.newTask.priority = 2;
-          break;
-        case "Low":
-          this.newTask.priority = 3;
-          break;
-      }
-      await this.$http.post("/tasks/create", this.newTask);
-      this.dialog.loading = false;
-      this.dialog.active = false;
+      let task = await this.$http.post("/tasks/create", this.newTask);
+      this.dialog = {
+        active: false,
+        page: 1,
+        loading: false,
+        users: [],
+        roles: [],
+      };
+      this.newTask = {
+        due: "",
+        name: "",
+        description: "",
+        assignedRoles: [],
+        assignedUsers: [],
+        priority: "",
+        cur: "",
+      };
+      this.tasks.push(task.data.task);
       this.toast.message = "Task created!";
       this.toast.color = "success";
       this.toast.visible = true;
-      this.$http.get("/tasks/@me").then((response) => {
-        this.tasks = response.data;
-      });
     },
     remove: function (item) {
-      this.newTask.assignedUsers.splice(
-        this.newTask.assignedUsers.indexOf(item),
-        1
-      );
-    },
-    open: function (url) {
-      window.open(url);
+      this.newTask.assignedUsers.splice(this.newTask.assignedUsers.indexOf(item), 1);
     },
     getcur: function () {
       let current = new Date();
@@ -369,30 +355,13 @@ export default {
       });
     },
     deleteTask: function (taskId) {
-      this.toast.message = "Deleting task...";
-      this.toast.color = "primary";
-      this.toast.visible = true;
       this.$http.post("/tasks/delete/" + taskId).then(() => {
         this.toast.message = "Task deleted!";
         this.toast.color = "success";
         this.toast.visible = true;
-        this.$http.get("/tasks/@me").then((response) => {
-          this.tasks = response.data;
-        });
+        this.tasks.splice(this.tasks.findIndex((item) => item.id === taskId), 1);
       });
-    },
-    nextPage: function () {
-      this.dialog.loading = true;
-      if (!this.newTask.due) {
-        this.toast.message = "Please select a due date";
-        this.toast.color = "error";
-        this.toast.visible = true;
-        this.dialog.loading = false;
-        return;
-      }
-      this.dialog.page = this.dialog.page + 1;
-      this.dialog.loading = false;
-    },
+    }
   },
 };
 </script>
