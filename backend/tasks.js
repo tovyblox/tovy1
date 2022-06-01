@@ -26,10 +26,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
                 username
             }
         }));
-        console.log(tasks);
-        console.log(userPerms);
-        console.log('hi');
-        console.log('a')
         const tasksToSend = [];
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
@@ -47,8 +43,9 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         if (!description) return res.status(400).json({ error: "No description provided." });
         if (!due) return res.status(400).json({ error: "No due date provided." });  
         let currentid = await db.task.countDocuments({})
-        const task = await db.task.create({ name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority });  
-        res.json({ success: true, task: task });    
+        let taskdata = { name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority }
+        const task = await db.task.create(taskdata);  
+        res.json({ success: true, task: taskdata });    
         logging.newLog(`has created a new task: **${name}**`, req.session.userid);
     })  
 
