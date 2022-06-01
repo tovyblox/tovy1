@@ -9,8 +9,8 @@
       <v-card-text class="mt-n6"> {{ ban.reason }} </v-card-text>
       <v-divider> </v-divider>
       <div class="mx-2 my-2" >
-       <v-btn text color="red"> Unban </v-btn> 
-       <v-btn text color="blue"> Edit ban </v-btn> 
+       <v-btn @click="unban" text color="red"> Unban </v-btn> 
+       <v-btn @click="banp.visible = true" text color="blue"> Edit ban </v-btn> 
       </div>
     </v-card>
     <v-dialog v-model="banp.visible" max-width="400">
@@ -31,7 +31,7 @@
           <v-btn
             elevation="0"
             :disabled="banp.loading"
-            @click="updateban"
+            @click="updateban()"
             class="ml-auto"
             color="success"
           >
@@ -66,7 +66,11 @@ export default {
     srole: null,
     tab: 1,
     reason: "",
-    ban: null,
+    ban: {
+      banned: false,
+      reason: "",
+      userid: ""
+    },
     resetting: false,
     banp: {
       visible: false,

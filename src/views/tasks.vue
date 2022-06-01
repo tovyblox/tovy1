@@ -55,9 +55,6 @@
                   </template>
                   <v-list>
                     <v-list-item link>
-                      <v-list-item-title>Edit</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item link>
                       <v-list-item-title @click="deleteTask(item.id)"
                         >Delete</v-list-item-title
                       >
