@@ -28,7 +28,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         const tasksToSend = [];
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
-            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role) || task.author == req.session.userid) {
+            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role) || task.author == req.session.userid || perms.includes('admin') || task.completedUsers.includes(req.session.userid)) {
                 tasksToSend.push(task);
             }
         }
@@ -69,12 +69,12 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.status(200).json({ success: true });
     })
 
-    router.post('/complete', perms('manage_tasks'), async (req, res) => {
+    router.post('/complete', async (req, res) => {
         const { id } = req.body;
         const task = await db.task.findOne({ where: { id: id } });
         if (task == null) return res.status(400).json({ error: "No such task." });
-        if (!array.includes(req.session.userid)) return res.status(400).json({ error: "You can't complete this task." });
         await task.completedUsers.push(req.session.userid);
+        await task.save();
         res.json({ success: true, task: task });
     })
     return router

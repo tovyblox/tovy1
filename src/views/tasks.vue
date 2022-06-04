@@ -98,7 +98,7 @@
             </div>
             <v-divider></v-divider>
             <v-layout wrap class="py-2 px-2" align="right">
-              <v-btn color="success" plain> View Details </v-btn>
+              <v-btn @click="completeTask(item.id)" color="success" plain> Mark as complete </v-btn>
             </v-layout>
           </v-card></v-col
         ></v-row
@@ -340,6 +340,14 @@ export default {
       let day = date.getDate();
       return `${time} ${m}, ${day}th`;
     },
+    completeTask: function (taskId) {
+      this.$http.post("/tasks/complete", { taskId: taskId }).then(() => {
+        this.tasks = this.tasks.filter((t) => t.id !== taskId);
+        this.toast.message = "Task completed!";
+        this.toast.color = "success";
+        this.toast.visible = true;
+      });
+    },
     autoinput: function (input) {
       console.log("woo");
       console.log(input);
@@ -351,6 +359,7 @@ export default {
         }));
       });
     },
+
     deleteTask: function (taskId) {
       this.$http.post("/tasks/delete/" + taskId).then(() => {
         this.toast.message = "Task deleted!";
