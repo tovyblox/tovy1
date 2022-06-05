@@ -6,12 +6,12 @@ const erouter = (usernames, pfps, settings, permissions, logging, automation) =>
     const perms = permissions.perms
     router.get('/task/:id', async (req, res) => {
         const { id } = req.params;
-        const task = await db.task.findOne({ where: { id: id } });
+        const task = await db.task.findOne({ id: parseInt(id)  });
         if (task == null) return res.status(400).json({ error: "No such task." });
         res.json({ task: task });
     });
     router.get('/@me', async (req, res) => {
-        const userPerms = await db.user.findOne({ where: { id: req.session.userid } });
+        const userPerms = await db.user.findOne({ userid: req.session.userid });
         let tasks = await db.task.find({});
         tasks = await Promise.all(tasks.map(async task => {
             let username = await fetchusername(task.author)
@@ -25,7 +25,7 @@ const erouter = (usernames, pfps, settings, permissions, logging, automation) =>
         const tasksToSend = [];
         for (let i = 0; i < tasks.length; i++) {
             const task = tasks[i];
-            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role) || task.author == req.session.userid || perms.includes('admin') || task.completedUsers.includes(req.session.userid)) {
+            if (task.assignedUsers.includes(req.session.userid) || task.assignedRoles.includes(userPerms.role) || task.author == req.session.userid || perms.includes('admin')) {
                 tasksToSend.push(task);
             }
         }
@@ -38,7 +38,7 @@ const erouter = (usernames, pfps, settings, permissions, logging, automation) =>
         if (!description) return res.status(400).json({ error: "No description provided." });
         if (!due) return res.status(400).json({ error: "No due date provided." });  
         let currentid = await db.task.countDocuments({})
-        let taskdata = { name: name, description: description, createdAt: new Date(), due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority }
+        let taskdata = { name: name, description: description, createdAt: new Date(), completed: false, due: due, id: currentid + 1, assignedRoles: assignedRoles, assignedUsers: assignedUsers, author: req.session.userid, creatorAvatar: pfps.get(req.session.userid), priority: priority }
         const task = await db.task.create(taskdata);  
         res.status(200).json({ success: true, task: taskdata });    
         logging.newLog(`has created a new task: **${name}**`, req.session.userid);
@@ -46,7 +46,7 @@ const erouter = (usernames, pfps, settings, permissions, logging, automation) =>
 
     router.post('/edit', perms('manage_tasks'), async (req, res) => {
         let { id, name, description, due, assignedRoles, assignedUsers } = req.body;
-        const task = await db.task.findOne({ where: { id: id } });
+        const task = await db.task.findOne({ id: id });
         if (!task.assignedBy == req.session.userid) return res.status(400).json({ error: "You can't edit this task." });
         if (task == null) return res.status(400).json({ error: "No such task." });
         if (!id) return res.status(400).json({ error: "No id provided." });
@@ -60,19 +60,22 @@ const erouter = (usernames, pfps, settings, permissions, logging, automation) =>
         logging.newLog(`has edited a task: **${name}**`, req.session.userid);
     })
 
-    router.post('/delete/:id', perms('manage_tasks'), async (req, res) => {
+    router.delete('/:id', perms('manage_tasks'), async (req, res) => {
         const { id } = req.params;
-        const task = await db.task.deleteOne({ where: { id: id } });  
+        const task = await db.task.deleteOne({ id: parseInt(id) });  
         res.status(200).json({ success: true });
     })
 
-    router.post('/complete', async (req, res) => {
-        const { id } = req.body;
-        const task = await db.task.findOne({ where: { id: id } });
+    router.patch('/:id', perms('manage_tasks'), async (req, res) => {
+        const { id } = req.params;
+        console.log(id)
+        const task = await db.task.findOne({ id: parseInt(id) });
         if (task == null) return res.status(400).json({ error: "No such task." });
-        await task.completedUsers.push(req.session.userid);
+        console.log(task)
+        task.completed = true;
+        console.log(task.completed)
         await task.save();
-        res.json({ success: true, task: task });
+        res.json({ success: true });
     })
     return router
 }

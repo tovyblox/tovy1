@@ -14,7 +14,7 @@ const task = new mongoose.Schema({
     assignedRoles: [String],
     creatorAvatar: String,
     assignedUsers: [String],
-    completedUsers: [String],
+    completed: Boolean,
     author: Number,
     due: Date,
     createdAt: Date,

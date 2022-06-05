@@ -13,8 +13,7 @@
       <v-card
         min-width="300"
         v-if="
-          $store.state.user.perms.includes('tasks') ||
-          $store.state.user.perms.includes('admin')
+          $store.state.user.perms.includes('tasks')
         "
         @click="
           // make the dialog active
@@ -26,11 +25,15 @@
         <v-card-title> 📋 Create a task </v-card-title>
         <v-card-text class="mt-n6 mb-6"> Create a task for your team. </v-card-text>
       </v-card>
+      
+      <v-row class="mx-0 my-n7 pb-4" > 
+       <v-switch v-model="showCompleted" class="mx-auto"  label="Show completed tasks"> </v-switch>
+       </v-row> 
 
       <v-row align="center">
         <v-col
-          v-for="item in tasks"
-          :key="item.username"
+          v-for="item in gettasks"
+          :key="item.id"
           cols="12"
           class="mt-n4"
           sm="6"
@@ -92,13 +95,16 @@
                 class="red--text mt-n6 font-weight-bold"
                 >High priorty</v-card-text
               >
-              <v-card-text class="blue--text mt-n8 font-weight-bold"
+              <v-card-text v-if="!item.completed" class="blue--text mt-n8 font-weight-bold"
                 >Due {{ getDate(item.due) }}</v-card-text
+              >
+              <v-card-text v-if="item.completed" class="green--text mt-n8 font-weight-bold"
+                >Completed</v-card-text
               >
             </div>
             <v-divider></v-divider>
             <v-layout wrap class="py-2 px-2" align="right">
-              <v-btn @click="completeTask(item.id)" color="success" plain> Mark as complete </v-btn>
+              <v-btn @click="completeTask(item)" :disabled="item.completed" color="success" plain> Mark as complete </v-btn>
             </v-layout>
           </v-card></v-col
         ></v-row
@@ -269,6 +275,7 @@ export default {
       message: "",
       visible: false,
     },
+    showCompleted: false,
     loading: false,
     newTask: {
       due: "",
@@ -298,7 +305,15 @@ export default {
       this.dialog.roles = response.data.roles;
     });
   },
-
+  computed: {
+    gettasks: function () {
+      if (this.showCompleted) {
+        return this.tasks;
+      } else {
+        return this.tasks.filter((task) => !task.completed);
+      }
+    },
+  },
   methods: {
     create: async function () {
       this.dialog.loading = true;
@@ -340,10 +355,10 @@ export default {
       let day = date.getDate();
       return `${time} ${m}, ${day}th`;
     },
-    completeTask: function (taskId) {
-      this.$http.post("/tasks/complete", { taskId: taskId }).then(() => {
-        this.tasks = this.tasks.filter((t) => t.id !== taskId);
+    completeTask: function (task) {
+      this.$http.patch("/tasks/" + task.id).then(() => {
         this.toast.message = "Task completed!";
+        task.completed = true
         this.toast.color = "success";
         this.toast.visible = true;
       });
@@ -361,7 +376,7 @@ export default {
     },
 
     deleteTask: function (taskId) {
-      this.$http.post("/tasks/delete/" + taskId).then(() => {
+      this.$http.delete("/tasks/" + taskId).then(() => {
         this.toast.message = "Task deleted!";
         this.toast.color = "success";
         this.toast.visible = true;

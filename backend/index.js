@@ -286,7 +286,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
+    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall','manage_bans', 'tasks'];
     info.perms = role;
     info.id = req.session.userid;
 
