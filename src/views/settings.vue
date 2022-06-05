@@ -431,25 +431,13 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
-              mdi-gavel
-            </v-icon>
-            <v-expansion-panel-header> Ban loader </v-expansion-panel-header>
-          </v-layout>
-
-          <v-expansion-panel-content>
-            <v-btn @click="downloadbloader" color="info mt-2"> Download loader </v-btn>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-layout>
-            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
               mdi-timer
             </v-icon>
-            <v-expansion-panel-header> Activity loader </v-expansion-panel-header>
+            <v-expansion-panel-header> Tovy loader </v-expansion-panel-header>
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">Minimum rank settings (roles from linked roblox group)!</p>
+            <p class="ml-2">Minimum activity rank settings (roles from linked roblox group)!</p>
             <v-select
               @change="(v) => setgrole(v)"
               v-model="roleconfig.arole"
