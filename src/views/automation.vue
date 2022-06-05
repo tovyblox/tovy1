@@ -20,7 +20,7 @@
         outlined
         class="mt-3"
       >
-        <v-card-title v-ripple @click="automation.visible = !automation.visible">
+        <v-card-title v-ripple style="cursor: pointer" @click="automation.visible = !automation.visible">
           {{ automation.name }}</v-card-title
         >
         

@@ -177,7 +177,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         if (data.now) dbdata.did = await sendlog(dbdata);
         automation.runEvent('sessioncreated', dbdata);
 
-        //await db.gsession.create(dbdata);
+        await db.gsession.create(dbdata);
 
         //let webhook = new WebhookClient()
 

@@ -118,7 +118,7 @@
             <v-icon>mdi-robot</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>Aut</v-list-item-title>
+            <v-list-item-title>Automation</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 

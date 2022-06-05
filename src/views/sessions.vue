@@ -269,7 +269,7 @@ export default {
     },
     getcur: function () {
       let current = new Date();
-      return `${current.getFullYear()}-${(current.getMonth() + 1).toString().padStart(2, '0')}-${current.getDate()}`;
+      return current.toISOString().substring(0, 10);
     },
     open: function (url) {
       window.open(url);

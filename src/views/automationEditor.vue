@@ -304,16 +304,19 @@ export default {
     this.$http.get("/settings/groles", { withCredentials: true }).then((response) => {
       this.atypes.find(
         (s) => s.value === "setrank"
-      ).data.rank.options = response.data.roles.map((s) => ({
-        name: s.name,
-        value: s.id,
-      }));
-      console.log(this.atypes.find((s) => s.value === "setrank").data.rank.options);
+      ).data.rank.options = response.data.roles.map((s) => {
+        return {
+          name: s.name,
+          value: s.id,
+        };
+      });
     });
+    this.value.actions.forEach((s) => {
+      this.checkAction(s)
+    })
   },
   methods: {
     createaction: function () {
-      console.log(this.value);
       this.value.actions.push({
         type: "",
         data: {},
@@ -348,6 +351,18 @@ export default {
       for (const prop in action.data) {
         event.data[prop] = "";
       }
+    },
+    checkAction: function (event) {
+      let action = this.atypes.find((a) => a.name === event.eventtype);
+      if (!event.data) event.data = {};
+      for (const prop in action.data) {
+        if (event.data[prop]) {
+          console.log('it feels so good')
+          continue
+        }
+        event.data[prop] = "";
+      }
+      return event;
     },
   },
 };
