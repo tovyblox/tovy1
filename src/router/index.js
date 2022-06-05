@@ -13,6 +13,7 @@ import staff from '@/views/staff'
 import profile from '@/views/profile'
 import signup from '@/views/signup'
 import forbidden from '@/views/forbidden'
+import automation from '@/views/automation'
 import wall from '@/views/wall'
 import audit from '@/views/audit'
 import sessions from '@/views/sessions'
@@ -34,6 +35,12 @@ const routes = [
     name: 'audit',
     meta: { layout: 'main' },
     component: audit
+  },
+  {
+    path: '/automation',
+    name: 'automation',
+    meta: { layout: 'main' },
+    component: automation
   },
   {
     path: '/sessions',

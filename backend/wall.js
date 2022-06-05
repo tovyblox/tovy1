@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings, permissions) => {
+const erouter = (usernames, pfps, settings, permissions, automation) => {
     console.log('running')
     let perms = permissions.perms;
     let checkPerm = permissions.checkPerm

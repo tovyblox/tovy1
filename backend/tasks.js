@@ -2,11 +2,8 @@ const db = require('./db/db');
 const express = require('express');
 const router = express.Router();  
 const { fetchpfp, fetchusername } = require('./index');
-const erouter = (usernames, pfps, settings, permissions, logging) => {
+const erouter = (usernames, pfps, settings, permissions, logging, automation) => {
     const perms = permissions.perms
-    router.get('/', async (req, res) => {
-        res.send('hesssllo');
-    });
     router.get('/task/:id', async (req, res) => {
         const { id } = req.params;
         const task = await db.task.findOne({ where: { id: id } });

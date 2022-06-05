@@ -25,7 +25,7 @@
       <v-tabs class="mt-7 mb-n3" v-model="tab" color="red darken-2">
         <v-tab href="#tab-1">Acivity</v-tab>
         <v-tab href="#tab-2">Bans</v-tab>
-        <v-tab href="#tab-2">Book</v-tab>
+        <v-tab href="#tab-3">Book</v-tab>
       </v-tabs>
     </v-container>
     <v-divider class=" mb-5"></v-divider>
@@ -43,49 +43,16 @@
       >
       <v-tabs-items v-model="tab" v-if="!loading">
         <v-tab-item :key="1" :value="'tab-' + 1">
-          <activityTab/>
+          <activityTab class="mx-1"/>
         </v-tab-item>
          <v-tab-item :key="2" :value="'tab-' + 2">
-          <banTab/>
+          <banTab class="mx-1"/>
+        </v-tab-item>
+         <v-tab-item :key="3" :value="'tab-' + 3">
+          <bookTab class="mx-1"/>
         </v-tab-item>
         </v-tabs-items>
-      <v-dialog v-model="banp.visible" max-width="400">
-        <v-card>
-          <v-card-title> Edit Ban </v-card-title>
-          <v-card-text class="mt-n3">
-            <v-text-field
-              outlined
-              v-model="reason"
-              hide-details="auto"
-              :disabled="banp.loading"
-              label="Reason"
-              required
-              class="mt-3 mb-2"
-              v-bind="reason"
-              :rules="[(v) => !!v || 'Reason is required']"
-            ></v-text-field>
-            <v-btn
-              elevation="0"
-              :disabled="banp.loading"
-              @click="updateban"
-              class="ml-auto"
-              color="success"
-            >
-              Submit
-            </v-btn>
-            <v-btn
-              elevation="0"
-              class="ml-auto float-right"
-              @click="banp.visible = false"
-              :disabled="banp.loading"
-              plain
-              color="info"
-            >
-              Cancel
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+      
 
       <!-- <v-data-table :headers="headers" :items="data" :items-per-page="5">
         <template v-slot:item="{}" class="pt-5">
@@ -108,6 +75,7 @@
 <script>
 import activityTab from "@/components/profile/activityTab";
 import banTab from '@/components/profile/banTab'
+import bookTab from '@/components/profile/bookTab'
 
 export default {
   name: "HelloWorld",
@@ -139,7 +107,7 @@ export default {
     },
     activity: [],
   }),
-  components: { activityTab, banTab },
+  components: { activityTab, banTab, bookTab },
   mounted: function () {
     this.$http
       .get("/staff/uprofile/" + this.$route.params.id, {

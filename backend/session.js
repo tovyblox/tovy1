@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings, permissions) => {
+const erouter = (usernames, pfps, settings, permissions, automation) => {
     const perms = permissions.perms;
 
     router.use((req, res, next) => {
@@ -175,8 +175,9 @@ const erouter = (usernames, pfps, settings, permissions) => {
             },
         };
         if (data.now) dbdata.did = await sendlog(dbdata);
+        automation.runEvent('sessioncreated', dbdata);
 
-        await db.gsession.create(dbdata);
+        //await db.gsession.create(dbdata);
 
         //let webhook = new WebhookClient()
 

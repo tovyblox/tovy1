@@ -13,14 +13,14 @@
           <v-list one-line v-for="(log, i) in items" :key="i">
             <template>
               <v-list-item>
-                <v-list-item-avatar style="cursor: pointer">
+                <v-list-item-avatar v-if="!log.automation" style="cursor: pointer">
                   <v-img style="cursor: pointer" :src="log.user.pfp"></v-img>
                 </v-list-item-avatar>
 
                 <v-list-item-content style="cursor: pointer">
                   <p class="my-auto">
                     <vue-simple-markdown
-                      :source="`**${log.user.username}** ${log.message}`"
+                      :source="`${!log.automation ? `**${log.user.username}**`: ''} ${log.message}`"
                     ></vue-simple-markdown>
                   </p>
                 </v-list-item-content>

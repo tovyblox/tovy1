@@ -21,6 +21,7 @@ if (backendonly) {
 
 const _ = require('lodash');
 const LoggingEngine = require('./util/loggingEngine');
+const automationEngine = require('./util/automationEngine');
 const logging = new LoggingEngine();
 
 const bcrypt = require('bcrypt');
@@ -30,6 +31,7 @@ const NodeCache = require("node-cache");
 const permissionsManager = require('./util/permissionsManager');
 const settingsManager = require('./util/settingsManager');
 const settings = new settingsManager();
+const automation = new automationEngine(logging, settings, noblox);
 const permissions = new permissionsManager(settings);
 const usernames = new NodeCache();
 const pfps = new NodeCache();
@@ -84,14 +86,14 @@ app.use(cookieSession({
 
 async function runload() {
     console.log('Running tovy!')
-    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
-    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions));
-    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
+    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging, automation));
+    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions, automation));
     app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions));
-    app.use('/api/bans/', require('./bans')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions));
+    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/bans/', require('./bans')(usernames, pfps, settings, permissions, logging, automation));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions, automation));
 }
 
 

@@ -56,7 +56,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     }
     res.json({ banned: banned });
   });
-  router.get("/banned/name/:name", async (req, res) => {
+  router.get("/banned/:name", async (req, res) => {
     const { name } = req.params;
     const id = await noblox.getIdFromName(name);
     let banned = await db.ban.findOne({ where: { id: id } });
