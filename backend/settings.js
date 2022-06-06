@@ -153,7 +153,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         const body = req.body;
         if (body.enabled == null) return res.status(400).json({ success: false, message: 'No enabled provided' });
         if (typeof body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
-        settings.set('autoupdate', body.enabled);
+        settings.set('checkForUpdates', body.enabled);
         logging.newLog(`has **${body.enabled ? 'enabled' : 'disabled'}** update checking`, req.session.userid);
         
         return res.status(200).json({ message: 'Updated!' });
@@ -212,6 +212,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             role: settings.get('activity')?.role,
             tovyr: settings.get('tovyr')?.enabled,
             proxy: settings.get('wproxy'),
+            checkForUpdates: settings.get('checkForUpdates'),
             ranking: settings.get('ranking'),
             wall: settings.get('wall'),
             sessions: settings.get('sessions'),
