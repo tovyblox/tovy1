@@ -12,8 +12,6 @@ const staticFileMiddleware = express.static(path.join(__dirname, 'dist'));
 const fs = require('fs');
 const spinner = ora({ text: 'Building app..', spinner: 'dots', color: 'red' })
 
-
-
 if (!process.env.MONGO_URI) {
     inquirer.prompt([
         {
@@ -47,8 +45,6 @@ if (!process.env.MONGO_URI) {
     runBuild();
 }
 
-
-
 function runBuild() {
     spinner.start();
 
@@ -79,4 +75,3 @@ function startbackend() {
         startbackend();
     })
 }
-
