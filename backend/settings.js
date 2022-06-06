@@ -148,7 +148,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     
     router.post('/setupdates', perms('admin'), async (req, res) => {
         const body = req.body;
-        if (body.enabled == null) return res.status(400).json({ success: false, message: 'No enabled provided' });
+        if (body?.enabled == null) return res.status(400).json({ success: false, message: 'No enabled provided' });
         if (typeof body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
         settings.set('checkForUpdates', body.enabled);
         logging.newLog(`has **${body.enabled ? 'enabled' : 'disabled'}** update checking`, req.session.userid);
