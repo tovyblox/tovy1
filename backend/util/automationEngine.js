@@ -205,10 +205,13 @@ module.exports = class automationEngine {
             try {
               this.webhookAction(text, adata.url);
             } catch (e) {
-              this.loggingEngine.newAutomationLog(
+              return this.loggingEngine.newAutomationLog(
                 `Error while running webhook action | ${event.name} | ${e}`
               );
             }
+            this.loggingEngine.newAutomationLog(
+              `${event.name} has run successfully`
+            );
             break;
           }
           case "wallpost": {
@@ -222,10 +225,13 @@ module.exports = class automationEngine {
             try {
               this.wallpostAction(text);
             } catch (e) {
-              this.loggingEngine.newAutomationLog(
+              return this.loggingEngine.newAutomationLog(
                 `Error while running wallpost action | ${event.name} | ${e}`
               );
             }
+            this.loggingEngine.newAutomationLog(
+              `${event.name} has run successfully`
+            );
             break;
           }
           case "groupshout": {
@@ -239,10 +245,13 @@ module.exports = class automationEngine {
             try {
               this.groupshoutAction(text);
             } catch (e) {
-              this.loggingEngine.newAutomationLog(
+              return this.loggingEngine.newAutomationLog(
                 `Error while running groupshout action | ${event.name} | ${e}`
               );
             }
+            this.loggingEngine.newAutomationLog(
+              `${event.name} has run successfully`
+            );
           }
           case "setrank": {
             let adata = action.data;
@@ -264,10 +273,13 @@ module.exports = class automationEngine {
             }
             catch (e) {
               console.log(e);
-              this.loggingEngine.newAutomationLog(
+              return this.loggingEngine.newAutomationLog(
                 `Error while running setrank action | ${event.name} | ${e}`
               );
             }
+            this.loggingEngine.newAutomationLog(
+              `${event.name} has run successfully`
+            );
           }
         }
       })
