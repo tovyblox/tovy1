@@ -35,8 +35,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.status(200).json({ message: 'Successfully added user!', uid: robloxusername });
     });
 
-
-
     router.get('/users', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
@@ -112,7 +110,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
 
         res.status(200).json({ message: 'Successfully set cookie!', info: settings.get('ranking') });
     });
-
 
     router.post('/updateuserroles', perms('admin'),async (req, res) => {
         if (!req.body?.userid) return res.status(400).json({ success: false, message: 'No user previded' });
@@ -314,8 +311,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             message: 'ok'
         })
     })
-
-
 
     router.post('/setcolor', perms('admin'), async (req, res) => {
         if (!req.body?.color) return res.status(400).json({ success: false, message: 'No color previded' });
