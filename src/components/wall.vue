@@ -108,7 +108,7 @@ export default {
   methods: {
     fetchposts() {
       if (this.ishome) {
-        return this.messages.slice(0, 4);
+        return this.messages.slice(0, 6);
       }
 
       return this.messages;

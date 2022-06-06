@@ -80,7 +80,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         });
         await a.save();
         res.status(200).json({ message: 'Successfully created new automation!', automation: a });
-
     });
     router.patch('/automation/:id', perms('admin'), async (req, res) => {
         let id = parseInt(req.params.id);
@@ -94,6 +93,14 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         });
         res.status(200).json({ message: 'Successfully updated automation!', automation: a });
     });
+    router.delete('/automation/:id', perms('admin'), async (req, res) => {
+        let id = parseInt(req.params.id);
+        let a = await db.automation.findOne({ id: id });
+        if (!a) return res.status(400).json({ message: 'No automation with that id!' });
+        await db.automation.findOneAndDelete({ id: id });
+        res.status(200).json({ message: 'Successfully deleted automation!' });
+    });
+    
     router.get('/automations', perms('admin'), async (req, res) => {
         let automations = await db.automation.find({ });
         res.status(200).json({ message: 'Successfully fetched automations!', automations: automations });

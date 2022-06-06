@@ -11,6 +11,7 @@ let eventTypes = {
         id: "ID of the session",
         username: "Username of the user who created the session",
         type: "Type of session",
+        game: "Name of game that the session is being hosted in session",
       },
     },
     {
@@ -21,6 +22,7 @@ let eventTypes = {
         id: "ID of the session",
         username: "Username of the user who created the session",
         type: "Type of session",
+        game: "Name of game that the session is being hosted in session",
       },
     },
     {

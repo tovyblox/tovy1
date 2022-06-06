@@ -20,10 +20,22 @@
         outlined
         class="mt-3"
       >
-        <v-card-title v-ripple style="cursor: pointer" @click="automation.visible = !automation.visible">
-          {{ automation.name }}</v-card-title
+        <v-row
+          v-ripple
+          class="mx-0 my-0"
+          style="cursor: pointer"
+          @click="automation.visible = !automation.visible"
         >
-        
+          <v-card-title> {{ automation.name }}</v-card-title>
+          <v-btn
+            icon
+            @click="del(automation)"
+            class="mr-4 my-auto ml-auto"
+          >
+            <v-icon> mdi-delete </v-icon>
+          </v-btn>
+        </v-row>
+
         <v-expand-transition>
           <div v-show="automation.visible">
             <automationEditor v-model="automations[i]" />
@@ -51,17 +63,22 @@ export default {
   },
   mounted() {
     this.$http.get("/settings/automations").then((res) => {
-      this.automations = res.data.automations.map(a => ({ ...a, visible: false }));
+      this.automations = res.data.automations.map((a) => ({ ...a, visible: false }));
     });
   },
   methods: {
     goto: function (url) {
       this.$router.push(url);
     },
-    
+
     newAutomation() {
       this.$http.post("/settings/automation/new").then((response) => {
-        this.automations.push(response.body.automation );
+        this.automations.push(response.body.automation);
+      });
+    }, 
+    del(automation) {
+      this.$http.delete("/settings/automation/" + automation.id).then(() => {
+        this.automations.splice(this.automations.indexOf(automation), 1);
       });
     },
     open: function (url) {

@@ -126,6 +126,7 @@ export default {
             id: "ID of the session",
             username: "Username of the user who created the session",
             type: "Type of session",
+            game: "Name of game that the session is being hosted in session",
           },
         },
         {
@@ -136,6 +137,7 @@ export default {
             id: "ID of the session",
             username: "Username of the user who created the session",
             type: "Type of session",
+            game: "Name of game that the session is being hosted in session",
           },
         },
         {
@@ -164,6 +166,7 @@ export default {
             id: "ID of the staff member",
             username: "Username of the staff member",
             moderator: "Username of the moderator",
+            notes: "Notes about the suspension",
           },
         },
         {
@@ -174,6 +177,7 @@ export default {
             id: "ID of the staff member",
             username: "Username of the staff member",
             moderator: "Username of the moderator",
+            notes: "Notes about the unsuspension",
           },
         },
         {
@@ -184,6 +188,7 @@ export default {
             id: "ID of the staff member",
             username: "Username of the staff member",
             moderator: "Username of the moderator",
+            notes: "Notes about the fire",
           },
         },
         {
@@ -194,6 +199,7 @@ export default {
             id: "ID of the staff member",
             username: "Username of the staff member",
             moderator: "Username of the moderator",
+            notes: "Notes about the promotion",
           },
         },
         {
@@ -204,6 +210,7 @@ export default {
             id: "ID of the staff member",
             username: "Username of the staff member",
             moderator: "Username of the moderator",
+            notes: "Notes about the demoation",
           },
         },
         {
@@ -312,8 +319,8 @@ export default {
       });
     });
     this.value.actions.forEach((s) => {
-      this.checkAction(s)
-    })
+      this.checkAction(s);
+    });
   },
   methods: {
     createaction: function () {
@@ -357,8 +364,8 @@ export default {
       if (!event.data) event.data = {};
       for (const prop in action.data) {
         if (event.data[prop]) {
-          console.log('it feels so good')
-          continue
+          console.log("it feels so good");
+          continue;
         }
         event.data[prop] = "";
       }
