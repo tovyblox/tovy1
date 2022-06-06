@@ -58,7 +58,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     });
 
     router.get('/checkupdates', perms('admin'), async (req, res) => {
-        if (!settings.get('autoupdate')) {
+        if (!settings.get('checkForUpdates')) {
             return res.status(501).json({ updates: false, err: 'Update checks are disabled.' })
         }
         
