@@ -148,11 +148,21 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
 
         res.status(200).json({ message: 'Updated!' });
     });
+    
+    router.post('/setupdates', perms('admin'), async (req, res) => {
+        const body = req.body;
+        if (body.enabled == null) return res.status(400).json({ success: false, message: 'No enabled provided' });
+        if (typeof body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
+        settings.set('autoupdate', body.enabled);
+        logging.newLog(`has **${body.enabled ? 'enabled' : 'disabled'}** update checking`, req.session.userid);
+        
+        return res.status(200).json({ message: 'Updated!' });
+    });
 
     router.post('/setwall', perms('admin'), async (req, res) => {
-        settings.set('wall', req.body.wall);
-        logging.newLog(`has updated the wall`, req.session.userid);
         const body = req.body;
+        settings.set('wall', body.wall);
+        logging.newLog(`has updated the wall`, req.session.userid);
 
         res.status(200).json({ message: 'Updated!' });
     });
