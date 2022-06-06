@@ -58,6 +58,10 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     });
 
     router.get('/checkupdates', perms('admin'), async (req, res) => {
+        if (!settings.get('autoupdate')) {
+            return res.status(501).json({ updates: false, err: 'Update checks are disabled.' })
+        }
+        
         let red;
         try {
             red = await axios.get('https://bot.tovyblox.xyz/changes/latestupdate');
@@ -157,7 +161,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         const body = req.body;
         settings.set('sessions', body.settings)
         logging.newLog(`has updated session settings`, req.session.userid);
-
 
         res.status(200).json({ message: 'Updated!' });
     });
