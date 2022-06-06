@@ -38,7 +38,7 @@ const erouter = (
         task.assignedUsers.includes(req.session.userid) ||
         task.assignedRoles.includes(userPerms.role) ||
         task.author == req.session.userid ||
-        perms.includes("admin")
+        permissions.checkPerm(req.session.userid, "admin")
       ) {
         tasksToSend.push(task);
       }
