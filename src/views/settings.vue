@@ -152,7 +152,7 @@
             <p class="">
               Checks with Tovy for updates
             </p>
-            <v-switch v-model="other.setupdates" @change="setupdates" label="Enabled?">
+            <v-switch v-model="other.checkForUpdates" @change="setupdates" label="Enabled?">
             </v-switch>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -796,7 +796,7 @@ export default {
       this.$http
         .post(
           "/settings/setupdates",
-          { enabled: this.other.setupdates },
+          { enabled: this.other.checkForUpdates },
           { withCredentials: true }
         )
         .then(
