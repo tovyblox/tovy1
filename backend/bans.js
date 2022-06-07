@@ -60,7 +60,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     );
     res.status(200).json({ success: true, message: "Ban updated.", b });
   });
-  router.get("/banned/:userid", perms(), async (req, res) => {
+  router.get("/banned/:userid", perms('view_staff_activity'), async (req, res) => {
     const { userid } = req.params;
     let banned = await db.ban.findOne({ userid });
     if (banned == null) return res.status(200).json({ banned: false });
@@ -71,17 +71,18 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     }
     res.status(200).json({ banned: banned });
   });
-  router.get("/banned/:name", perms(), async (req, res) => {
-    const { name } = req.params;
-    const id = await noblox.getIdFromName(name);
-    let banned = await db.ban.findOne({ id: id });
+  router.get("/gbanned/:userid", perms('view_staff_activity'), async (req, res) => {
+    if (req.headers.authorization !== settings.get("activity").key)
+      return res.status(401);
+    const { userid } = req.params;
+    let banned = await db.ban.findOne({ userid });
     if (banned == null) return res.status(200).json({ banned: false });
     const today = new Date();
     if (banned.until < today && banned.permanent == false) {
-      await db.ban.updateOne({ banned: false }, { id });
-      return res.status(200).json({ banned: false });
+      await db.ban.updateOne({ banned: false }, { userid });
+      return res.json({ banned: false });
     }
-    res.status(200).json({ banned });
+    res.status(200).json({ banned: banned });
   });
   return router;
 };
