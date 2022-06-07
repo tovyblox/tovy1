@@ -5,7 +5,9 @@
         <p class="text-h4 font-weight-bold mt-14">
           Hi {{ this.$store.state.user.displayName }},
         </p>
-        <p class="text-body-1 font-weight-bold mt-n5 gray">Lets track some activity!</p>
+        <p class="text-body-1 font-weight-bold mt-n5 gray">
+          Lets track some activity!
+        </p>
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
@@ -18,7 +20,13 @@
           <v-tooltip v-for="session in active" :key="session.uid" bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-avatar :color="$store.state.group.color" size="36">
-                <img size="36" v-bind="attrs" v-on="on" :src="session.pfp" alt="John" />
+                <img
+                  size="36"
+                  v-bind="attrs"
+                  v-on="on"
+                  :src="session.pfp"
+                  alt="John"
+                />
               </v-avatar>
             </template>
             <span>{{ session.username }}</span>
@@ -38,8 +46,18 @@
             <div v-if="!loading.best" class="mt-n2 ml-4 mb-3">
               <v-tooltip v-for="user in best" :key="user.uid" bottom>
                 <template v-slot:activator="{ on, attrs }">
-                  <v-avatar :color="$store.state.group.color" class="mr-1" size="36">
-                    <img size="36" v-bind="attrs" v-on="on" :src="user.pfp" alt="John" />
+                  <v-avatar
+                    :color="$store.state.group.color"
+                    class="mr-1"
+                    size="36"
+                  >
+                    <img
+                      size="36"
+                      v-bind="attrs"
+                      v-on="on"
+                      :src="user.pfp"
+                      alt="John"
+                    />
                   </v-avatar>
                 </template>
                 <span>{{ user.username }}</span>
@@ -60,9 +78,15 @@
               <v-tooltip v-for="ia of off" :key="ia.uid" bottom>
                 <template v-slot:activator="{ on, attrs }">
                   <v-avatar :color="$store.state.group.color" size="36">
-                    <img size="36" v-bind="attrs" v-on="on" :src="ia.pfp" alt="John" />
+                    <img
+                      size="36"
+                      v-bind="attrs"
+                      v-on="on"
+                      :src="ia.pfp"
+                      alt="John"
+                    />
                   </v-avatar>
-                </template> 
+                </template>
                 <span
                   >{{ ia.username }}, {{ getTime(ia.start) }} -
                   {{ getTime(ia.end) }}</span
@@ -92,13 +116,46 @@
           </v-card>
         </v-col>
       </v-row>
-      <div v-if="this.$store.state.user.perms.includes('manage_staff_activity')" class="mt-2">
-        <v-card @click.stop="reset" ripple class="mt-2">
+      <div
+        v-if="this.$store.state.user.perms.includes('manage_staff_activity')"
+        class="mt-2"
+      >
+        <v-card @click.stop="prompt.visible = true" ripple class="mt-2">
           <v-card-title> 📋 Reset activity </v-card-title>
-          <v-card-text class="mt-n6"> Reset all activity in the database </v-card-text>
+          <v-card-text class="mt-n6">
+            Reset all activity in the database
+          </v-card-text>
         </v-card>
       </div>
     </v-container>
+    <v-dialog v-model="prompt.visible" max-width="400">
+      <v-card :loading="prompt.loading">
+        <v-card-title>Reset actvity </v-card-title>
+        <v-card-text class="mt-n3">
+          Are you sure you want to reset the activity of all users in the database?
+          This action is irrvesible
+        </v-card-text>
+        <v-btn
+          elevation="0"
+          :disabled="prompt.loading"
+          @click="reset"
+          class="mb-4 mr-6 mt-n1 mx-6"
+          color="success"
+        >
+          Submit
+        </v-btn>
+        <v-btn
+          elevation="0"
+          class="mb-4 mr-6 mt-n1 float-right"
+          @click="prompt.visible = false"
+          :disabled="prompt.loading"
+          plain
+          color="info"
+        >
+          Cancel
+        </v-btn>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -113,7 +170,14 @@ export default {
 
     active: [],
     stats: {
-      loading: true
+      loading: true,
+    },
+    prompt: {
+      type: "",
+      visible: false,
+      value: null,
+      loading: false,
+      valid: false,
     },
     off: [],
     best: [],
@@ -143,31 +207,43 @@ export default {
     },
     reset: function () {
       this.best = [];
-
+      this.prompt.loading = true
       this.$http.post("/settings/resetactivity", {}, { withCredentials: true });
+      this.prompt.loading = false;
+      this.prompt.visible = false;
     },
   },
   mounted: function () {
-    this.$http.get("/activity/activityinfo", { withCredentials: true }).then((response) => {
-      this.loading.igame = false;
-      this.active = response.data;
-    });
+    this.$http
+      .get("/activity/activityinfo", { withCredentials: true })
+      .then((response) => {
+        this.loading.igame = false;
+        this.active = response.data;
+      });
 
-    this.$http.get("/activity/stats", { withCredentials: true }).then((response) => {
-      response.data.loading = false
-      this.stats = response.data;
-    });
+    this.$http
+      .get("/activity/stats", { withCredentials: true })
+      .then((response) => {
+        response.data.loading = false;
+        this.stats = response.data;
+      });
 
-    this.$http.get("/activity/best", { withCredentials: true }).then((response) => {
-      this.loading.best = false;
-      this.best = response.data;
-    });
+    this.$http
+      .get("/activity/best", { withCredentials: true })
+      .then((response) => {
+        this.loading.best = false;
+        this.best = response.data;
+      });
 
-    this.$http.get("/activity/off", { withCredentials: true }).then((response) => {
-      this.loading.off = false;
-      this.off = response.data;
-    });
-    let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/socket`);
+    this.$http
+      .get("/activity/off", { withCredentials: true })
+      .then((response) => {
+        this.loading.off = false;
+        this.off = response.data;
+      });
+    let connection = new WebSocket(
+      `ws://${this.$http.defaults.baseURL}/socket`
+    );
 
     connection.onopen = () => {
       console.log("[-] Connected to WS");

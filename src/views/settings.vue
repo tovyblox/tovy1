@@ -433,11 +433,11 @@
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
               mdi-timer
             </v-icon>
-            <v-expansion-panel-header> Activity loader </v-expansion-panel-header>
+            <v-expansion-panel-header> Tovy loader </v-expansion-panel-header>
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">Minimum rank settings (roles from linked roblox group)!</p>
+            <p class="ml-2">Minimum activity rank settings (roles from linked roblox group)!</p>
             <v-select
               @change="(v) => setgrole(v)"
               v-model="roleconfig.arole"
@@ -541,12 +541,20 @@ export default {
         value: "view_staff_activity",
       },
       {
+        name: "Manage bans",
+        value: "manage_bans",
+      },
+      {
         name: "Admin",
         value: "admin",
       },
       {
         name: "Manage notices",
         value: "manage_notices",
+      },
+      {
+        name: "Manage tasks",
+        value: "manage_tasks",
       },
       {
         name: "Manage staff activity",
@@ -796,6 +804,9 @@ export default {
     },
     downlodrloader: function () {
       window.open(this.$http.defaults.baseURL + "/settings/rloader");
+    },
+    downloadbloader: function () {
+      window.open(this.$http.defaults.baseURL + "/settings/bloader");
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);

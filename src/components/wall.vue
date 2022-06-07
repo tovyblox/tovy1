@@ -31,12 +31,14 @@
     <v-card v-for="msg in fetchposts()" :key="msg.id" outlined class="mt-2">
       <v-layout class="">
         <v-tooltip top>
+        {{ msg.author}}
           <template v-slot:activator="{ on, attrs }">
             <v-avatar
               v-bind="attrs"
               size="60"
               v-on="on"
               tile
+              @click="$router.push(`/profile/${msg.author}`)"
               class="rounded-lt rounded-br"
             >
               <v-img :src="msg.pfp"></v-img>
@@ -57,6 +59,15 @@
           small
         >
           Group shout
+        </v-chip>
+        <v-chip
+          v-if="msg.automated"
+          class="my-auto ml-3 white--text ml-0"
+          color="orange"
+          label
+          small
+        >
+          Automated
         </v-chip>
         <v-spacer></v-spacer>
         <v-btn
@@ -97,7 +108,7 @@ export default {
   methods: {
     fetchposts() {
       if (this.ishome) {
-        return this.messages.slice(0, 4);
+        return this.messages.slice(0, 6);
       }
 
       return this.messages;

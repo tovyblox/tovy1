@@ -6,6 +6,7 @@ const message = new mongoose.Schema({
     message: String,
     date: Date,
     deleted: Boolean,
+    automated: Boolean,
     shout: Boolean
 })
 

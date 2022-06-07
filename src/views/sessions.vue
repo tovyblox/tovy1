@@ -37,10 +37,10 @@
       >
         <v-layout>
           <div @click="goto(`/session/${session.id}`)">
-            <v-card-title class="my-auto">
+            <v-card-title class="my-auto black--text">
               {{ session.started ? `🟢 ${session.type.name}` : session.type.name }}
             </v-card-title>
-            <v-card-text class="mt-n6">
+            <v-card-text class="mt-n6 black--text">
               {{ session.user.username }} is hosting a {{ session.type.name}} @
               {{ session.type.gname }}.
               <countdown

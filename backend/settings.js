@@ -68,7 +68,43 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         let ver = parseFloat(package.version.split('.').slice(0, 2).join('.'));
         if (ver >= red.data.version) return res.status(200).json({ updates: false });
         return res.status(200).json({ updates: true, ...red.data });
-    })
+    });
+
+    router.post('/automation/new', perms('admin'), async (req, res) => {
+        let id = await db.automation.countDocuments({ }); 
+        let a = new db.automation({ 
+            id: id + 1,
+            eventtype: undefined,
+            name: `Automation ${id + 1}`,
+            actions: []
+        });
+        await a.save();
+        res.status(200).json({ message: 'Successfully created new automation!', automation: a });
+    });
+    router.patch('/automation/:id', perms('admin'), async (req, res) => {
+        let id = parseInt(req.params.id);
+        let a = await db.automation.findOne({ id: id });
+        if (!a) return res.status(400).json({ message: 'No automation with that id!' });
+        if (req.body.name) a.name = req.body.name;
+        if (req.body.eventtype) a.eventtype = req.body.eventtype;
+        if (req.body.actions) a.actions = req.body.actions;
+        await db.automation.findOneAndUpdate({ id: id }, a, {
+            upsert: true
+        });
+        res.status(200).json({ message: 'Successfully updated automation!', automation: a });
+    });
+    router.delete('/automation/:id', perms('admin'), async (req, res) => {
+        let id = parseInt(req.params.id);
+        let a = await db.automation.findOne({ id: id });
+        if (!a) return res.status(400).json({ message: 'No automation with that id!' });
+        await db.automation.findOneAndDelete({ id: id });
+        res.status(200).json({ message: 'Successfully deleted automation!' });
+    });
+    
+    router.get('/automations', perms('admin'), async (req, res) => {
+        let automations = await db.automation.find({ });
+        res.status(200).json({ message: 'Successfully fetched automations!', automations: automations });
+    });
 
     router.post('/setcookie', perms('admin'),  async (req, res) => {
         if (!req.body?.cookie) return res.status(400).json({ success: false, message: 'No cookie previded' });
@@ -320,6 +356,14 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
         let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `http://${req.headers.host}/api`);
 
+        res.type('rbxmx')
+        res.send(xx);
+    })
+
+    router.get('/bloader', perms('admin'), async (req, res) => {
+        let xml_string = fs.readFileSync(path.join(__dirname, 'TovyBans.rbxmx'), "utf8");
+        res.setHeader('Content-Disposition', 'attachment; filename=TovyBans.rbxmx');
+        let xx = xml_string.replace('<url>', `http://${req.headers.host}`);
         res.type('rbxmx')
         res.send(xx);
     })

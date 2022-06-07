@@ -1,0 +1,70 @@
+<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+	<Meta name="ExplicitAutoJoints">true</Meta>
+	<External>null</External>
+	<External>nil</External>
+	<Item class="Script" referent="RBX3a49656a77a346e681baacb0afb5f3d7">
+		<Properties>
+			<BinaryString name="AttributesSerialize"></BinaryString>
+			<bool name="Disabled">false</bool>
+			<Content name="LinkedSource"><null></null></Content>
+			<string name="Name">Ban</string>
+			<string name="ScriptGuid">{2b4690db-0c3a-4c2b-9595-0f897c1203cc}</string>
+			<ProtectedString name="Source"><![CDATA[--[[
+████████  ██████  ██    ██ ██    ██ 
+   ██    ██    ██ ██    ██  ██  ██  
+   ██    ██    ██ ██    ██   ████   
+   ██    ██    ██  ██  ██     ██    
+   ██     ██████    ████      ██    
+                                    
+
+		© 2022 Tovy
+		
+		Property of ItsWHOOOP (https://www.roblox.com/users/469981094/profile) [WHOOOP#0001]
+		Script created by brandoncipher (https://www.roblox.com/users/435237501/profile) [brandonn#2968]
+		
+		Place this file in ServerScriptService
+]]
+
+
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+------------------------------DONT TOUCH ANYTHING BELOW THIS LINE-------------------------------------------------------------------------------------------------
+
+
+local Players = game:GetService("Players")
+local Http = game:GetService("HttpService")
+local url = '<url>'
+game.Players.PlayerAdded:Connect(function(plr)
+	local response = Http:GetAsync(url..'/api/bans/banned/'..plr.UserId)
+	local data = Http:JSONDecode(response).banned
+	if data.banned == true then
+		if data.reason == nil then
+			plr:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
+		else
+			plr:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
+		end
+	end
+end)
+while true do
+	local players = game.Players:GetPlayers()
+	for i,v in ipairs(players) do
+		local response = Http:GetAsync(url..'/api/bans/banned/'..v.userId)
+		local data = Http:JSONDecode(response).banned
+		if data.banned == true then
+			local player = game.Players:GetPlayerByUserId(data.userId)
+			if data.reason == nil then
+				v:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\n-Tovy')
+			else
+				v:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'Tovy')
+			end
+		end
+	end
+	task.wait(15)
+end]]></ProtectedString>
+			<int64 name="SourceAssetId">-1</int64>
+			<BinaryString name="Tags"></BinaryString>
+		</Properties>
+	</Item>
+</roblox>

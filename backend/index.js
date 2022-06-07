@@ -21,6 +21,7 @@ if (backendonly) {
 
 const _ = require('lodash');
 const LoggingEngine = require('./util/loggingEngine');
+const automationEngine = require('./util/automationEngine');
 const logging = new LoggingEngine();
 
 const bcrypt = require('bcrypt');
@@ -30,6 +31,7 @@ const NodeCache = require("node-cache");
 const permissionsManager = require('./util/permissionsManager');
 const settingsManager = require('./util/settingsManager');
 const settings = new settingsManager();
+const automation = new automationEngine(logging, settings, noblox);
 const permissions = new permissionsManager(settings);
 const usernames = new NodeCache();
 const pfps = new NodeCache();
@@ -84,12 +86,14 @@ app.use(cookieSession({
 
 async function runload() {
     console.log('Running tovy!')
-    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions));
-    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions));
-    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions));
+    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging, automation));
+    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions, automation));
     app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions));
-    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions));
+    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/bans/', require('./bans')(usernames, pfps, settings, permissions, logging, automation));
+    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions, automation));
 }
 
 
@@ -199,6 +203,7 @@ app.post('/api/finishSignup', async (req, res) => {
           "permissions": [
             "view_staff_activity",
             "manage_notices",
+            "manage_bans",
             "update_shout",
             "post_on_wall",
             "host_sessions"
@@ -210,11 +215,13 @@ app.post('/api/finishSignup', async (req, res) => {
           "permissions": [
             "view_staff_activity",
             "admin",
+            "manage_bans",
             "manage_notices",
             "manage_staff_activity",
             "update_shout",
             "post_on_wall",
-            "host_sessions"
+            "host_sessions",
+            "manage_tasks",
           ],
           "id": 4
         }
@@ -245,6 +252,22 @@ Here are some links that may help you in the future
  
  */
 
+app.get('/api/getuser/:name', async (req, res) => {
+    if (!req.params.name) return res.status(500).send({ success: false, message: 'no name' });
+    let uid = await noblox.getIdFromUsername(req.params.name);
+    if (!uid) return res.status(500).send({ success: false, message: 'user not found' });
+    let user = await db.user.findOne({
+        where: {
+            userid: uid
+        }
+    });
+    if (!user) return res.status(500).send({ success: false, message: 'user not found' });
+    res.send({
+        success: true,
+        user: user
+    })
+})
+
 app.get('/api/profile', async (req, res) => {
     if (!await db.config.findOne({ name: 'group' })) return res.status(400).json({ message: 'NGS' });
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
@@ -263,7 +286,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall'];
+    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall','manage_bans', 'manage_tasks'];
     info.perms = role;
     info.id = req.session.userid;
 
@@ -366,6 +389,29 @@ app.post('/api/signup/finish', async (req, res) => {
 
 });
 
+app.get('/api/pfp/name/:name', async (req, res) => {
+    if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
+    if (!req.params.name) return res.status(400).json({ message: 'No name specified' });
+    let uid = await noblox.getIdFromUsername(req.params.name).catch(e => {
+        if (!uid) return res.status(404).json({ message: 'No such user!' });
+        res.status(404).json({ message: 'No such user!' });
+        return;
+    });
+    const pfp = await fetchpfp(uid);
+    res.status(200).json({
+        pfp: pfp
+    });
+});
+
+app.get('/api/pfp/id/:id', async (req, res) => {
+    if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
+    if (!req.params.id) return res.status(400).json({ message: 'No id specified' });
+    const pfp = await fetchpfp(Number(req.params.id));
+    res.status(200).json({
+        pfp: pfp
+    });
+});
+
 app.post('/api/login', async (req, res) => {
     if (!req.body.username || !req.body.password) return res.status(400).json({ message: 'No username or password!' });
     if (typeof req.body.username !== 'string' || typeof req.body.password !== 'string') return res.status(400).json({ message: 'Invalid username or password!' });
@@ -392,7 +438,20 @@ async function fetchpfp(uid) {
     pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
 
     return pfp[0].imageUrl
+};
+
+async function fetchusername(uid) {
+    if (usernames.get(uid)) {
+        return usernames.get(uid);
+    }
+    let userinfo = await noblox.getUsernameFromId(uid);
+    usernames.set(parseInt(uid), userinfo, 10000);
+
+    return userinfo;
 }
+
+
+module.exports = {fetchpfp, fetchusername};
 
 
 function chooseRandom(arr, num) {
@@ -408,5 +467,5 @@ function chooseRandom(arr, num) {
     return res;
 }
 
-
+console.log('running on http://localhost:' + process.env.PORT || process.env.port || 8080);
 app.listen(process.env.PORT || process.env.port || 8080)

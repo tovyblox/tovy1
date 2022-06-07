@@ -59,6 +59,18 @@ end
 players.PlayerAdded:Connect(createsession)
 players.PlayerRemoving:Connect(endsession)
 
+game.Players.PlayerAdded:Connect(function(plr)
+	local response = httpservice:GetAsync(config.url..'/bans/banned/'..plr.UserId)
+	local data = httpservice:JSONDecode(response)
+	if data.banned == true then
+		if data.reason == nil then
+			plr:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
+		else
+			plr:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
+		end
+	end
+end)
+
 
 ]]></ProtectedString>
 			<int64 name="SourceAssetId">-1</int64>

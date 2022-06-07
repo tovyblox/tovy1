@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings, permissions) => {
+const erouter = (usernames, pfps, settings, permissions, automation) => {
     const perms = permissions.perms;
 
     router.use((req, res, next) => {
@@ -33,6 +33,12 @@ const erouter = (usernames, pfps, settings, permissions) => {
             let ssession = await db.gsession.findOne({ id: session.id });
             ssession.started = true;
             ssession.did = await sendlog(session);
+            automation.runEvent('sessionstarted', {
+                type: ssession.type.name,
+                id: ssession.id,
+                username: await fetchusername(ssession.uid),
+                game: ssession.type.gname,
+            });
             await ssession.save();
         });
     }, 60000)
@@ -99,6 +105,12 @@ const erouter = (usernames, pfps, settings, permissions) => {
 
         session.end = new Date();
         session.save();
+        automation.runEvent('sessionended', {
+            type: session.type.name,
+            id: session.id,
+            username: await fetchusername(session.uid),
+            game: session.type.gname,
+        });
 
         await unsendlog(session);
 
@@ -175,6 +187,12 @@ const erouter = (usernames, pfps, settings, permissions) => {
             },
         };
         if (data.now) dbdata.did = await sendlog(dbdata);
+        if (data.now) automation.runEvent('sessionstarted', {
+            type: dbdata.type.name,
+            id: dbdata.id,
+            username: await fetchusername(dbdata.uid),
+            game: dbdata.type.gname,
+        });
 
         await db.gsession.create(dbdata);
 

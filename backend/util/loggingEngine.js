@@ -14,4 +14,16 @@ module.exports = class LoggingEngine {
         db.log.create(logdata);
         return logdata;
     }
+    async newAutomationLog(message) {
+        let count = await db.log.countDocuments({});
+        const logdata = {
+            id: count + 1,
+            automation: true,
+            message: message
+        }
+        db.log.create(logdata);
+        return logdata;
+    }
+
+
 }
