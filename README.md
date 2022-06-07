@@ -32,6 +32,18 @@
           Track your members' group activity
         </li>
         <li>
+          Assign your staff members tasks
+        </li>
+        <li>
+          Automate things with Tovy
+        </li>
+        <li>
+          Warn, promote, demote, and way more to your members
+        </li>
+        <li>
+          Ban bad actors from your game
+        </li>
+        <li>
           Communicate with your members directly in Tovy
         </li>
         <li>
