@@ -102,6 +102,9 @@ const erouter = (
 
   router.delete("/:id", perms("manage_tasks"), async (req, res) => {
     const { id } = req.params;
+    let tsk = await db.task.findOne({ id: parseInt(id) });
+    if (!tsk) return res.status(400).json({ error: "No such task." });
+    if (!tsk.assignedBy == req.session.userid) return res.status(400).json({});
     const task = await db.task.deleteOne({ id: parseInt(id) });
     res.status(200).json({ success: true });
   });
