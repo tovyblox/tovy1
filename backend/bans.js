@@ -71,7 +71,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     }
     res.status(200).json({ banned: banned });
   });
-  router.get("/gbanned/:userid", perms('view_staff_activity'), async (req, res) => {
+  router.get("/gbanned/:userid", async (req, res) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
     const { userid } = req.params;
