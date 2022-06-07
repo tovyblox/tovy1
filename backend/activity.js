@@ -35,10 +35,10 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
       if (!req.body.userid) return res.status(400).json({ error: "no userid" });
-      console.log(req.body.userid)
+      if (typeof req.body.userid !== 'number') return res.status(400).json({ error: "userid is not a number" });
     if (settings.get("activity")?.role) {
       let userrank = await noblox
-        .getRankInGroup(settings.get("group"), parseInt(req.body.userid))
+        .getRankInGroup(settings.get("group"), req.body.userid)
         .catch((err) => null);
       if (!userrank)
         return res
@@ -51,25 +51,25 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       }
     }
     let session = await db.session.findOne({
-      uid: parseInt(req.body.userid),
+      uid: req.body.userid,
       active: true,
     });
 
     if (session) return res.status(400).json({ message: "Active session!!" });
-    let userinfo = await noblox.getPlayerInfo(parseInt(req.body.userid));
+    let userinfo = await noblox.getPlayerInfo(req.body.userid);
     await db.session.create({
       active: true,
       start: new Date(),
-      uid: parseInt(req.body.userid),
+      uid: req.body.userid,
     });
-    let fpfp = await fetchpfp(parseInt(req.body.userid));
+    let fpfp = await fetchpfp(req.body.userid);
 
     activews.forEach((ws) => {
       ws.send(
         JSON.stringify({
           type: "playadd",
           data: {
-            uid: parseInt(req.body.userid),
+            uid: req.body.userid,
             pfp: fpfp,
             username: userinfo.username,
           },
@@ -78,7 +78,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     });
 
     automation.runEvent("staffjoin", {
-      id: parseInt(req.body.userid),
+      id: req.body.userid,
       username: userinfo.username,
     });
 
@@ -140,6 +140,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
   router.post("/endsession", async (req, res) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
+      if (typeof req.body.userid !== 'number') return res.status(400).json({ error: "userid is not a number" });
+
     if (typeof req.body.userid !== "number")
       return res.status(400).json({ message: "Userid must be a number!" });
     let session = await db.session.findOne({
@@ -158,14 +160,14 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         JSON.stringify({
           type: "playrm",
           data: {
-            uid: parseInt(req.body.userid),
+            uid: req.body.userid,
           },
         })
       );
     });
 
     automation.runEvent("staffleave", {
-      id: parseInt(req.body.userid),
+      id: req.body.userid,
       username: fetchusername(req.body.userid),
     });
 
