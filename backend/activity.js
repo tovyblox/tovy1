@@ -35,6 +35,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
       if (!req.body.userid) return res.status(400).json({ error: "no userid" });
+      console.log(req.body.userid)
     if (settings.get("activity")?.role) {
       let userrank = await noblox
         .getRankInGroup(settings.get("group"), parseInt(req.body.userid))
