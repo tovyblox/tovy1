@@ -73,7 +73,9 @@ export default {
 
     newAutomation() {
       this.$http.post("/settings/automation/new").then((response) => {
-        this.automations.push(response.body.automation);
+        console.log('uwu')
+        response.data.automation.visible = true;
+        this.automations.push(response.data.automation);
       });
     }, 
     del(automation) {
