@@ -8,6 +8,7 @@ module.exports = class permissionsManager {
     perms = (perm) => {
         return async (req, res, next) => {
             let roles = this.settingsManager.settings.roles;
+            if (!req.session.userid) return res.status(401).send('You do not have permission to do this')
             let user = await db.user.findOne({ userid: parseInt(req.session.userid) });
             if (!user) return res.status(401).send('Invalid user');
             if (!req.session.userid) return res.status(401);
