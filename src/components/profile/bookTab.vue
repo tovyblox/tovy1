@@ -2,7 +2,7 @@
   <div>
     <v-card @click="creation.active = true" ripple class="">
       <v-card-title> 📋 Create a book entry </v-card-title>
-      <v-card-text class="mt-n6 mb-3"> Create a task for your team. </v-card-text>
+      <v-card-text class="mt-n6 mb-3"> Create a task for this user. </v-card-text>
     </v-card>
     <v-card class="mb-2" v-if="creation.active" outlined>
       <v-card-title> New book entry </v-card-title>
@@ -21,7 +21,7 @@
         </v-textarea>
       </v-form>
       <v-row class="mx-3 mt-n4 mb-3">
-      <v-btn
+        <v-btn
           @click="creation.active = false"
           color="info"
           class="ml-auto elevation-0"
@@ -40,7 +40,12 @@
       </v-row></v-card
     >
     <v-card outlined class="mb-2" v-for="book in book" :key="book.id">
-      <v-card-title> {{ book.type }} #{{ book.id }} </v-card-title>
+      <v-row class="mx-0 my-0"
+        ><v-card-title> {{ book.type }} #{{ book.id }} </v-card-title>
+        <v-btn icon @click="delbook(book)" class="mr-4 my-auto ml-auto">
+          <v-icon> mdi-delete </v-icon></v-btn
+        ></v-row
+      >
       <v-card-text class="blue--text mt-n5 font-weight-bold"
         >Created {{ getDate(book.created) }}</v-card-text
       >
@@ -92,7 +97,19 @@ export default {
         .then((res) => {
           this.creation.active = false;
           this.book.push(res.data.book);
+          this.toast.message = "Book entry created";
+          this.toast.color = "success";
+          this.toast.visible = true;
         });
+    },
+    delbook(book) {
+      this.$http.delete("/staff/book/" + book.id).then(() => {
+        this.creation.active = false;
+        this.book.splice(this.book.indexOf(book), 1);
+        this.toast.message = "Book entry deleted";
+        this.toast.color = "success";
+        this.toast.visible = true;
+      });
     },
     getDate: function (d) {
       let date = new Date(d);

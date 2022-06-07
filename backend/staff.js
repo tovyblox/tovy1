@@ -129,7 +129,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       let userid = parseInt(req.params.user);
       console.log(userid);
       if (!userid) return res.status(404).json({ message: "No user!" });
-      let books = await db.book.find({ userid: userid });
+      let books = await db.book.find({ userid: userid, deleted: { $ne: true } });
       res.status(200).json({ success: true, books });
     }
   );
@@ -162,6 +162,17 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     await book.save();
     res.status(200).json({ success: true, book });
   });
+
+  router.delete('/book/:id', perms("manage_staff_activity"), async (req, res) => {
+    let id = parseInt(req.params.id);
+    if (!id) return res.status(404).json({ success: false, message: "No id!" });
+    let book = await db.book.findOne({ id: id });
+    if (!book) return res.status(404).json({ success: false, message: "No book!" });
+    book.deleted = true;
+    await book.save();
+    res.status(200).json({ success: true, book });
+  });
+
 
   router.get("/audit", perms("admin"), async (req, res) => {
     let logs = await db.log.find({});
