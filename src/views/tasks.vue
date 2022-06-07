@@ -13,7 +13,7 @@
       <v-card
         min-width="300"
         v-if="
-          $store.state.user.perms.includes('tasks')
+          $store.state.user.perms.includes('manage_tasks')
         "
         @click="
           // make the dialog active
