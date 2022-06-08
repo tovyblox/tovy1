@@ -60,7 +60,7 @@ players.PlayerAdded:Connect(createsession)
 players.PlayerRemoving:Connect(endsession)
 
 game.Players.PlayerAdded:Connect(function(plr)
-	local response = httpservice:GetAsync(config.url..'/bans/banned/'..plr.UserId)
+	local response = httpservice:GetAsync(config.url..'/bans/gbanned/'..plr.UserId)
 	local data = httpservice:JSONDecode(response)
 	if data.banned == true then
 		if data.reason == nil then
