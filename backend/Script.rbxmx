@@ -63,7 +63,33 @@ game.Players.PlayerAdded:Connect(function(plr)
 	local response = httpservice:GetAsync(config.url..'/bans/gbanned/'.. plr.UserId, false, {
 		['authorization'] = config.auth
 	})
-	local data = httpservice:JSONDecode(response).banned
+	--the better way B)
+	local data = httpservice:JSONDecode(response)
+	-- use to debug ig print(data)
+	if data.banned ~= false then
+		local reason
+		if data.banned.reason == nil then
+			reason = "No reason provided."
+		else
+			reason = data.banned.reason
+		end
+
+		local unbannedat = ""
+
+		if data.banned["until"]  then
+			data.banned["until"]:gsub('(.*)T(.*)', function (date, releasetime)
+				unbannedat = "\n\nBanned Until:\n"..date
+			end)
+		end
+
+
+
+
+		plr:Kick('\nYou are banned from this place.\nBan Reason:\n'..reason..unbannedat..'\n\Tovy')
+	
+	
+	--[[ ur original way
+	local data = httpservice:JSONDecode(response)
 	if data.banned == true then
 		if data.reason == nil then
 			plr:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
@@ -71,6 +97,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 			plr:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
 		end
 	end
+	]]
 end)
 
 
