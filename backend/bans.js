@@ -63,11 +63,11 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
   router.get("/banned/:userid", perms('view_staff_activity'), async (req, res) => {
     const { userid } = req.params;
     let banned = await db.ban.findOne({ userid });
-    if (banned == null) return res.status(200).json(false);
+    if (banned == null) return res.status(200).json({banned: false});
     const today = new Date();
     if (banned.until < today && banned.permanent == false) {
       await db.ban.updateOne({ banned: false }, { userid });
-      return res.json(false);
+      return res.json({banned: false});
     }
     res.status(200).json(banned);
   });
@@ -76,11 +76,11 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
       return res.status(401);
     const { userid } = req.params;
     let banned = await db.ban.findOne({ userid });
-    if (banned == null) return res.status(200).json(false);
+    if (banned == null) return res.status(200).json({banned: false});
     const today = new Date();
     if (banned.until < today && banned.permanent == false) {
       await db.ban.updateOne({ banned: false }, { userid });
-      return res.json(false);
+      return res.json({banned: false});
     }
     res.status(200).json(banned);
   });
