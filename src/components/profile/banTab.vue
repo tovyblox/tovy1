@@ -89,7 +89,7 @@ export default {
   components: {  },
   mounted: function () {
     this.$http.get("/bans/banned/" + this.$route.params.id).then((response) => {
-      this.ban = response.data.banned;
+      this.ban = response.data;
       console.log(this.ban);
       console.log(response);
     });
@@ -130,7 +130,7 @@ export default {
           { withCredentials: true }
         )
         .then(() => {
-          this.toast.message = "User unbanned";
+          this.toast.message = "User unbanned, reload the page to view changes."; /*dev team, I don't know vue so please just make this reload the page! also quick thing to note, for some reason you can ban players multiple times, the user profile just displays the oldest one until u get to none!!! - so either make it so you can only ban a player once (if they are alr banned) and just set the text to this player isn't banned OR make it reload the page!*/
           this.toast.visible = true;
           this.prompt.visible = false;
           this.ban.banned = false;
