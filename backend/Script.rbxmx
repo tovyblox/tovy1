@@ -63,7 +63,7 @@ game.Players.PlayerAdded:Connect(function(plr)
 	local response = httpservice:GetAsync(config.url..'/bans/gbanned/'.. plr.UserId, false, {
 		['authorization'] = config.auth
 	})
-	local data = httpservice:JSONDecode(response)
+	local data = httpservice:JSONDecode(response).banned
 	if data.banned == true then
 		if data.reason == nil then
 			plr:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
