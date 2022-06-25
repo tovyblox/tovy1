@@ -47,15 +47,22 @@
                 Please enter your roblox secuirty token below
               </p>
               <v-text-field
-                v-model="ranking.cookie"
+                v-model="ranking.login.username"
                 hide-details="auto"
                 outlined
                 class="mx-4 mt-n1"
-                label=".ROBLOSECURITY"
+                label="Username"
+              />
+               <v-text-field
+                v-model="ranking.login.password"
+                hide-details="auto"
+                outlined
+                class="mx-4 mt-n1"
+                label="Password"
               >
               </v-text-field>
               <v-btn class="ml-4 mt-3 mb-4" @click="setcookie" elevation="0" color="info">
-                Set cookie
+                Login
               </v-btn></v-card
             >
 
@@ -510,7 +517,10 @@ export default {
       enabled: false,
     },
     ranking: {
-      cookie: "",
+      login: {
+        username: "",
+        password: "",
+      },
       username: "",
       pfp: "",
       id: 0,
@@ -675,7 +685,8 @@ export default {
       this.$http
         .post(
           "/settings/setcookie",
-          { cookie: this.ranking.cookie },
+          { username: this.ranking.login.username,
+            password: this.ranking.login.password },
           { withCredentials: true }
         )
         .then(
