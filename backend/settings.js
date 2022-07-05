@@ -107,57 +107,31 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     });
 
     router.post('/setcookie', perms('admin'),  async (req, res) => {
-        //if (!req.body?.cookie) return res.status(400).json({ success: false, message: 'No cookie previded' });
-        //if (typeof req.body.cookie !== 'string') return res.status(400).json({ success: false, message: 'Cookie must be a string' });
-        const { username, password } = req.body;
+        if (!req.body?.cookie) return res.status(400).json({ success: false, message: 'No cookie previded' });
+        if (typeof req.body.cookie !== 'string') return res.status(400).json({ success: false, message: 'Cookie must be a string' });
+        const { cookie } = req.body;
 
         let user;
-        let loginreq;
-
-        let xserfreq = await axios.post('https://auth.roblox.com/v2/login', {
-            username: username,
-            password: password,
-        }).catch(e => e)
-        let xsef = xserfreq.response.headers['x-csrf-token']
-
 
         try {
-            console.log('yes')
-            loginreq = await axios.post(`https://auth.roblox.com/v2/login`, {
-                ctype: 'Username',
-                cvalue: username,
-                password: password
-            }, {
-                headers: {
-                    'X-CSRF-TOKEN': xsef
-                }
-            })
-        } catch(e) {
-            let error = e.response.data;
-            console.log(error)
-        } 
-        console.log(loginreq.status)
-        console.log(loginreq.data)
-        
+            user = await noblox.setCookie(cookie);
 
-        try {
-            //user = await noblox.setCookie(cookie);
         } catch (e) {
             res.status(400).json({ message: 'Invalid cookie!' });
             return;
         };
 
-        //let pfp = await fetchpfp(user.UserID)
+        let pfp = await fetchpfp(user.UserID)
         // generate random hex with crypto
         let config = settings.get('ranking');
         console.log(config)
         let hash = config?.hash || crypto.randomBytes(20).toString('hex');
-        /*settings.set('ranking', { 
+        settings.set('ranking', { 
             cookie: cookie,
             hash
-        });*/
+        });
 
-        //logging.newLog(`has updated the ranking account to **${user.UserName}**`, req.session.userid);
+        logging.newLog(`has updated the ranking account to **${user.UserName}**`, req.session.userid);
         
 
         settings.settings.ranking =    {
