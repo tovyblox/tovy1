@@ -191,6 +191,7 @@ export default {
         name: 'Ban',
         path: '/ban',
         icon: 'mdi-gavel'
+        permission: "manage_bans",
       },
       {
         name: "View staff",
