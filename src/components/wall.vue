@@ -158,7 +158,8 @@ export default {
       .catch((error) => {
         console.log(error);
       });
-    let connection = new WebSocket(`ws://${this.$http.defaults.baseURL}/wall/socket`);
+      let { protocol} = location;
+    let connection = new WebSocket(`${protocol=== 'https' ? `wss` : 'ws' }://${this.$http.defaults.baseURL}/wall/socket`);
     this.connection = connection;
 
     connection.onopen = () => {

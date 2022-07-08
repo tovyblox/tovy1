@@ -212,14 +212,6 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
           .status(400)
           .json({ success: false, message: "Minutes must be a number" });
 
-      let mins = req.body.mins;
-      let type = req.body.type;
-
-      if (!mins)
-        return res.status(400).json({ message: "No minutes specified" });
-      if (type !== "remove" && type !== "add")
-        return res.status(400).json({ message: "Invalid type" });
-      req.body.users.forEach(async (u) => {
         await db.session.create({
           active: false,
           mins: req.body.type === "remove" ? -mins : mins,

@@ -241,8 +241,9 @@ export default {
         this.loading.off = false;
         this.off = response.data;
       });
+    let { protocol} = location;
     let connection = new WebSocket(
-      `ws://${this.$http.defaults.baseURL}/socket`
+      `${protocol=== 'https' ? `wss` : 'ws' }://${this.$http.defaults.baseURL}/socket`
     );
 
     connection.onopen = () => {

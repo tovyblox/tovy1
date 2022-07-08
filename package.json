@@ -1,6 +1,6 @@
 {
   "name": "tovy",
-  "version": "0.7.04",
+  "version": "0.7.05",
   "scripts": {
     "serve": "vue-cli-service serve --host localhost",
     "build": "vue-cli-service build",
