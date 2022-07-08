@@ -212,6 +212,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
           .status(400)
           .json({ success: false, message: "Minutes must be a number" });
 
+      req.body.users.forEach(async (u) => {
         await db.session.create({
           active: false,
           mins: req.body.type === "remove" ? -mins : mins,
