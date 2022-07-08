@@ -152,7 +152,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         
 
         let games = settings.get('sessions').games;
-        let game = await noblox.getUniverseInfo(games.map(m => m.id))
+        let game = await noblox.getUniverseInfo(games.filter(m => m.id).map(m => m.id))
 
         res.send(games.map(m => {
             let e = game.find(f => f.id == m.id);
