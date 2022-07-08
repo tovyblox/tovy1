@@ -172,7 +172,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         let id = parseInt(await db.gsession.countDocuments({}));
         let treq = await axios.get(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${req.body.game}&size=768x432&format=Png&isCircular=false`);
         let thumbnail = treq.data.data[0]?.thumbnails[0]?.imageUrl;
-        let ginfo = await noblox.getUniverseInfo(req.body.type);
+        let ginfo = await noblox.getUniverseInfo(req.body.type).catch(e => null);
         let dbdata = {
             id: id + 1,
             start: data.date || Date.now(),
@@ -180,10 +180,10 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
             thumbnail,
             started: data.now,
             type: {
-                id: req.body.type,
-                name: settings.get('sessions').games.find(f => f.id == req.body.type)?.type,
-                gname: ginfo[0].name,
-                gid: ginfo[0].rootPlaceId,
+                id: req.body.type || null,
+                name: settings.get('sessions').games.find(f => f.id == req.body.type)?.type || 'Unknown',
+                gname: ginfo[0]?.name || 'Unknown',
+                gid: ginfo[0]?.rootPlaceId || 0,
             },
         };
         if (data.now) dbdata.did = await sendlog(dbdata);
