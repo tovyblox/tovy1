@@ -161,7 +161,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <tfasetup v-model="twofa"></tfasetup>
+    <tfasetup @close="twofa = false" v-model="twofa"></tfasetup>
   </div>
 </template>
 

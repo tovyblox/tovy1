@@ -435,7 +435,8 @@ app.post('/api/login', async (req, res) => {
             code: newToken,
             awaiting: true,
         }
-
+        res.status(401).json({ message: '2fa required' });
+        return;
     }
     req.session.userid = target;
     res.status(200).json({ message: 'Successfully logged in!' });
@@ -447,11 +448,12 @@ app.post('/api/finish2fa', async (req, res) => {
     if (!user) return res.status(401).json({ message: 'User not found' });
     if (!req.body.code) return res.status(400).json({ message: 'No code!' });
     if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
-    let session = req.session['2fa']
+    
 
     let delta = twofactor.verifyToken(user['2fa'], req.body.code);
-    if (delta.delta !== 1) return res.status(401).json({ message: 'Invalid code!' });
-    req.session['2fa'] = undefined;
+    console.log(delta)
+    if (delta?.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
+    req.session.userid = req.session['2fa'].userid;
     res.status(200).json({ message: 'Successfully logged in!' });
 });
 
@@ -505,11 +507,9 @@ app.post('/api/turnoff2fa', async (req, res) => {
     console.log(delta)
     if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
 
-    user['2fa'] = session.secret.secret;
-    console.log(user['2fa'])
+    user['2fa'] = undefined;
     await user.save();
-    req.session['2fasetup'] = undefined;
-    res.status(200).json({ message: 'Set up 2fa!' });
+    res.status(200).json({ message: 'Disabled 2fa!' });
 })
 
 

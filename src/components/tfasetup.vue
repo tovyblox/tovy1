@@ -2,7 +2,7 @@
   <div>
     <v-row>
       <v-dialog
-        persistent
+        @click:outside="close"
         v-if="$store.state.user['2fa']"
         max-width="500px"
         v-model="value"
@@ -25,8 +25,8 @@
               </div>
               <v-card-actions>
                 <v-spacer />
-                <v-btn text color="info" @click="slide = 1"> Back </v-btn>
-                <v-btn text color="success" @click="confirm2fa">
+                <v-btn text color="info" @click="close"> Cancel </v-btn>
+                <v-btn text color="success" @click="disable">
                   Next
                 </v-btn></v-card-actions
               >
@@ -37,7 +37,7 @@
               >
               <v-card-actions>
                 <v-spacer />
-                <v-btn text color="success" @click="value = false">
+                <v-btn text color="success" @click="close">
                   Close
                 </v-btn></v-card-actions
               >
@@ -47,7 +47,7 @@
       >
 
       <v-dialog
-        persistent
+        @click:outside="close"
         v-if="!$store.state.user['2fa']"
         max-width="500px"
         v-model="value"
@@ -123,7 +123,7 @@
               >
               <v-card-actions>
                 <v-spacer />
-                <v-btn text color="success" @click="value = false">
+                <v-btn text color="success" @click="close">
                   Close
                 </v-btn></v-card-actions
               >
@@ -155,10 +155,14 @@ export default {
       this.secret = data.secret;
       this.slide = 1;
     },
+    close() {
+      this.slide = 0
+      this.$emit("close");
+  
+    },
     async confirm2fa() {
-      let req;
       try {
-        req = await this.$http.post("/confirm2fa", {
+        await this.$http.post("/confirm2fa", {
           code: this.code,
         });
       } catch (e) {
@@ -167,14 +171,23 @@ export default {
         return;
       }
       this.slide = 3;
-      let data = req.data;
-      if (data.success) {
-        this.value = false;
-        this.$store.commit("set2fa", true);
-      } else {
-        this.$toast.error(data.message);
-      }
+      this.close();
+      this.$store.commit("set2fa", true);
     },
-  },
+    async disable() {
+      try {
+         await this.$http.post("/turnoff2fa", {
+          code: this.code,
+        });
+      } catch (e) {
+        console.log(e);
+        this.invalid = true;
+        return;
+      }
+      this.slide = 2;
+      this.close();
+      this.$store.commit("set2fa", false);
+    },
+  }
 };
 </script>
