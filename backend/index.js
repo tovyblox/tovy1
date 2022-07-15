@@ -11,6 +11,7 @@ const history = require('connect-history-api-fallback');
 const ora = require('ora');
 let package = require('../package.json');
 const fs = require('fs');
+const twofactor = require('node-2fa');
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 let backendonly = false;
 
@@ -134,7 +135,7 @@ app.get('/info', (req, res) => {
         success: true,
         version: package.version,
     })
-    
+
 });
 
 app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
@@ -183,49 +184,49 @@ app.post('/api/finishSignup', async (req, res) => {
     res.status(200).json({ message: 'Successfully created user!' });
     await settings.set('roles', [
         {
-          "name": "Member",
-          "permissions": [
-            "view_staff_activity"
-          ],
-          "id": 1
+            "name": "Member",
+            "permissions": [
+                "view_staff_activity"
+            ],
+            "id": 1
         },
         {
-          "name": "HR",
-          "permissions": [
-            "view_staff_activity",
-            "host_sessions",
-            "post_on_wall"
-          ],
-          "id": 2
+            "name": "HR",
+            "permissions": [
+                "view_staff_activity",
+                "host_sessions",
+                "post_on_wall"
+            ],
+            "id": 2
         },
         {
-          "name": "Manager",
-          "permissions": [
-            "view_staff_activity",
-            "manage_notices",
-            "manage_bans",
-            "update_shout",
-            "post_on_wall",
-            "host_sessions"
-          ],
-          "id": 3
+            "name": "Manager",
+            "permissions": [
+                "view_staff_activity",
+                "manage_notices",
+                "manage_bans",
+                "update_shout",
+                "post_on_wall",
+                "host_sessions"
+            ],
+            "id": 3
         },
         {
-          "name": "Admin",
-          "permissions": [
-            "view_staff_activity",
-            "admin",
-            "manage_bans",
-            "manage_notices",
-            "manage_staff_activity",
-            "update_shout",
-            "post_on_wall",
-            "host_sessions",
-            "manage_tasks",
-          ],
-          "id": 4
+            "name": "Admin",
+            "permissions": [
+                "view_staff_activity",
+                "admin",
+                "manage_bans",
+                "manage_notices",
+                "manage_staff_activity",
+                "update_shout",
+                "post_on_wall",
+                "host_sessions",
+                "manage_tasks",
+            ],
+            "id": 4
         }
-      ])
+    ])
     await db.message.create({
         id: 1,
         author: 469981094,
@@ -286,13 +287,14 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall','manage_bans', 'manage_tasks'];
+    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall', 'manage_bans', 'manage_tasks'];
     info.perms = role;
     info.id = req.session.userid;
 
     let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
     res.status(200).json({
         pfp: pfp[0].imageUrl,
+        '2fa': !!user['2fa'],
         info: info,
         group: {
             color: color || 'grey lighten-2',
@@ -425,10 +427,93 @@ app.post('/api/login', async (req, res) => {
         res.status(401).json({ message: 'User not found' });
         return;
     };
+    if (user['2fa']) {
+        const newToken = twofactor.generateToken(user['2fa']);
 
+        req.session['2fa'] = {
+            userid: user.userid,
+            code: newToken,
+            awaiting: true,
+        }
+
+    }
     req.session.userid = target;
     res.status(200).json({ message: 'Successfully logged in!' });
+});
+
+app.post('/api/finish2fa', async (req, res) => {
+    if (!req.session['2fa']) return res.status(400).json({ message: 'No 2fa code!' });
+    let user = await db.user.findOne({ userid: req.session['2fa'].userid });
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    let session = req.session['2fa']
+
+    let delta = twofactor.verifyToken(user['2fa'], req.body.code);
+    if (delta.delta !== 1) return res.status(401).json({ message: 'Invalid code!' });
+    req.session['2fa'] = undefined;
+    res.status(200).json({ message: 'Successfully logged in!' });
+});
+
+app.post('/api/setup2fa', async (req, res) => {
+    if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
+    let user = await db.user.findOne({ userid: req.session.userid });
+    if (user['2fa'] ) {
+        return res.status(400).json({ message: '2fa already setup!' });
+    }
+    
+    let new2fa = twofactor.generateSecret({ name: "Tovy", account: await noblox.getUsernameFromId(req.session.userid) });
+    let code = twofactor.generateToken(new2fa);
+    //user['2fa'] = new2fa;
+    //await user.save();
+    req.session['2fasetup'] = {
+        secret: new2fa,
+        code: code,
+    }
+    res.status(200).json({ qr: new2fa.qr, secret: new2fa.secret });
 })
+
+app.post('/api/confirm2fa', async (req, res) => {
+    if (!req.session['2fasetup']) return res.status(400).json({ message: 'No 2fa code!' });
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    let user = await db.user.findOne({ userid: req.session.userid });   
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    let session = req.session['2fasetup']
+    console.log(session.secret.secret)
+
+    let delta = twofactor.verifyToken(session.secret.secret, `${req.body.code}`);
+    console.log(delta)
+    if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
+
+    user['2fa'] = session.secret.secret;
+    console.log(user['2fa'])
+    await user.save();
+    req.session['2fasetup'] = undefined;
+    res.status(200).json({ message: 'Set up 2fa!' });
+})
+
+app.post('/api/turnoff2fa', async (req, res) => {
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    let user = await db.user.findOne({ userid: req.session.userid });   
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!user['2fa']) return res.status(400).json({ message: 'No 2fa code!' });
+
+
+    let delta = twofactor.verifyToken(user['2fa'], `${req.body.code}`);
+    console.log(delta)
+    if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
+
+    user['2fa'] = session.secret.secret;
+    console.log(user['2fa'])
+    await user.save();
+    req.session['2fasetup'] = undefined;
+    res.status(200).json({ message: 'Set up 2fa!' });
+})
+
+
+
 
 async function fetchpfp(uid) {
     if (pfps.get(uid)) {
@@ -451,7 +536,7 @@ async function fetchusername(uid) {
 }
 
 
-module.exports = {fetchpfp, fetchusername};
+module.exports = { fetchpfp, fetchusername };
 
 
 function chooseRandom(arr, num) {

@@ -31,7 +31,8 @@ const store = new Vuex.Store({
     user: {
       id: null,
       name: null,
-      signedin: false
+      signedin: false,
+      '2fa':  false,
     }, group: {
       color: 'red',
       id: null
@@ -46,6 +47,9 @@ const store = new Vuex.Store({
       state.group.color = color;
     }, netntext(state, text) {
       state.group.noticetext = text;
+    },
+    set2fa(state, value) {
+      state.user['2fa'] = value;
     }
   }
 })

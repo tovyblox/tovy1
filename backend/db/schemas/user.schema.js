@@ -4,6 +4,7 @@ const user = new mongoose.Schema({
     passwordhash: String,
     userid: Number,
     role: Number,
+    '2fa': String,
     verify: {
         uid: Number,
         code: String,

@@ -35,7 +35,7 @@
         <v-expansion-panel>
           <v-layout>
             <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
-              mdi-cookie
+              mdi-lock
             </v-icon>
             <v-expansion-panel-header> Ranking </v-expansion-panel-header>
           </v-layout>
@@ -43,19 +43,34 @@
           <v-expansion-panel-content>
             <v-card :loading="ranking.loading" v-if="!ranking.id" class="m-6" outlined>
               <v-card-title> Not logged in! </v-card-title>
-              <p class="ml-4 mt-n6 grey--text">
-                Please enter your roblox secuirty token below
-              </p>
+              <p class="ml-4 mt-n6 grey--text">Please enter your account login below.</p>
               <v-text-field
-                v-model="ranking.cookie"
+                v-model="ranking.login.username"
                 hide-details="auto"
                 outlined
-                class="mx-4 mt-n1"
-                label=".ROBLOSECURITY"
+                class="mx-4 mt-n2"
+                label="Username"
               >
               </v-text-field>
-              <v-btn class="ml-4 mt-3 mb-4" @click="setcookie" elevation="0" color="info">
-                Set cookie
+              <v-text-field
+                v-model="ranking.login.password"
+                hide-details="auto"
+                outlined
+                class="mx-4 mt-2"
+                label="Password"
+                :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                :type="show1 ? 'text' : 'password'"
+                @click:append="show1 = !show1"
+
+              >
+              </v-text-field>
+              <v-btn
+                class="ml-4 mt-3 mb-4"
+                @click="showcaptcha"
+                elevation="0"
+                color="info"
+              >
+                Login
               </v-btn></v-card
             >
 
@@ -82,16 +97,44 @@
                 You can enter your ROBLOSECURITY token below if you wish to update it
               </p>
               <v-text-field
-                v-model="ranking.cookie"
+                v-model="ranking.login.username"
                 hide-details="auto"
                 outlined
                 class="mx-4 mt-n2"
-                label=".ROBLOSECURITY"
+                label="Username"
               >
               </v-text-field>
-              <v-btn class="ml-4 mt-3 mb-6" elevation="0" @click="setcookie" color="info">
-                Set cookie
-              </v-btn></v-card
+              <v-text-field
+                v-model="ranking.login.password"
+                hide-details="auto"
+                outlined
+                class="mx-4 mt-2"
+                label="Password"
+                :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
+                :type="show2 ? 'text' : 'password'"
+                @click:append="show2 = !show2"
+              >
+              </v-text-field>
+              <v-btn
+                class="ml-4 mt-3 mb-6"
+                elevation="0"
+                @click="showcaptcha"
+                color="info"
+              >
+                Login
+              </v-btn>
+              <!--
+              <v-btn
+                class="ml-4 mt-3 mb-6"
+                elevation="0"
+                @click="setcookie"
+                color="info"
+              >
+                kl;ll;'n
+              </v-btn>
+              
+              -->
+              </v-card
             >
             <div v-if="ranking.id">
               <v-btn @click="downlodrloader" class="mt-3" elevation="0" color="info">
@@ -170,8 +213,7 @@
               Enroll your group with tovy to allow support staff to easily pull up data
               about your instance and let us know who uses tovy.
             </p>
-            <v-switch v-model="other.tovyr" @change="setreg" label="Enabled?">
-            </v-switch>
+            <v-switch v-model="other.tovyr" @change="setreg" label="Enabled?"> </v-switch>
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
@@ -377,7 +419,13 @@
             <v-expansion-panel-header> Invites </v-expansion-panel-header>
           </v-layout>
           <v-expansion-panel-content>
-            <v-btn color="success" elevation="0" :disabled="!sroles.length" @click="createnewinvite" class="ml-auto">
+            <v-btn
+              color="success"
+              elevation="0"
+              :disabled="!sroles.length"
+              @click="createnewinvite"
+              class="ml-auto"
+            >
               New invite
             </v-btn>
             <v-btn color="info" elevation="0" @click="updateinvites" class="float-right">
@@ -437,7 +485,9 @@
           </v-layout>
 
           <v-expansion-panel-content>
-            <p class="ml-2">Minimum activity rank settings (roles from linked roblox group)!</p>
+            <p class="ml-2">
+              Minimum activity rank settings (roles from linked roblox group)!
+            </p>
             <v-select
               @change="(v) => setgrole(v)"
               v-model="roleconfig.arole"
@@ -486,6 +536,28 @@
         </v-btn>
       </template>
     </v-snackbar>
+    <v-row justify="center">
+      <v-dialog v-model="captcha.visible" persistent max-width="290">
+        <v-card>
+          <v-card-title class="text-h5">
+            Please solve the captcha to continue.
+          </v-card-title>
+          <iframe id="arkoseFrame" :src="captcha.url"></iframe>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              @click="
+                captcha.visible = false;
+                captcha.url = '';
+              "
+            >
+              Cancel
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </div>
 </template>
 
@@ -515,6 +587,10 @@ export default {
       pfp: "",
       id: 0,
       loading: false,
+      login: {
+        username: "",
+        password: "",
+      }
     },
     roleconfig: {
       loading: false,
@@ -535,6 +611,7 @@ export default {
       color: "success",
       visible: false,
     },
+    showPass: false,
     permissions: [
       {
         name: "View staff activity",
@@ -573,6 +650,7 @@ export default {
         value: "host_sessions",
       },
     ],
+    show2: false,
     invites: [],
 
     host: location.host,
@@ -601,6 +679,13 @@ export default {
       "grey",
       "grey lighten-2",
     ],
+    show1: false,
+    captcha: {
+      visible: false,
+      completed: false,
+      loading: false,
+      url: "",
+    },
     groups: "dog",
   }),
   components: {},
@@ -609,6 +694,25 @@ export default {
       this.$router.push(`/`);
       return;
     }
+
+    window.addEventListener("message", (event) => {
+      //if (event.origin !== "https://roblox-api.arkoselabs.com") return;
+      //idiot the data is a string so u need to parse it
+      // it errors when u parse it to json
+      // u fix this stupid event shit i fucking hate  it
+      //brb
+      console.log(event.data + " from arkose");
+      console.log(this.captcha);
+      if (event.data === "complete") {
+        if (this.captcha.completed) return;
+        this.captcha.completed = true;
+        this.setcookie()
+        this.captcha.visible = false;
+        this.captcha.url = "";
+      }
+      
+    });
+    
     let c = this.colors;
     c;
     this.colors = this.colors.map((color) => ({
@@ -656,6 +760,10 @@ export default {
           id: response.data.config.ranking.uid,
           apikey: response.data.config.ranking.apikey,
           loading: false,
+          login: {
+            username: "",
+            password: "",
+          },
         };
       }
       if (response.data.config.wall) this.wall = response.data.config.wall;
@@ -664,6 +772,14 @@ export default {
   methods: {
     goto: function (url) {
       this.$router.push(url);
+    },
+    showcaptcha: function () {
+      this.$http
+        .post("/settings/getcaptcha", { username: this.ranking.login.username, password: this.ranking.login.password })
+        .then((response) => {
+          this.captcha.url = response.data.url;
+          this.captcha.visible = true;
+        });
     },
     copykey: function () {
       navigator.clipboard.writeText(this.ranking.apikey);
@@ -674,8 +790,8 @@ export default {
       this.ranking.loading = true;
       this.$http
         .post(
-          "/settings/setcookie",
-          { cookie: this.ranking.cookie },
+          "/settings/login",
+          {  },
           { withCredentials: true }
         )
         .then(
@@ -688,6 +804,10 @@ export default {
               pfp: r.data.info.pfp,
               id: r.data.info.uid,
               loading: false,
+              login: {
+                username: "",
+                password: "",
+              }
             };
             this.toast.message = `Logged in as ${r.data.info.username}`;
             this.toast.visible = true;
@@ -991,5 +1111,13 @@ export default {
   outline-color: #000000;
   outline-offset: -2px;
   outline-width: 2px;
+}
+iframe {
+  width: 298px;
+  height: 248px;
+  margin: 0;
+  padding: 0;
+  border: 0 !important;
+  overflow-y: hidden;
 }
 </style>

@@ -85,6 +85,7 @@ export default {
         this.$store.commit("setuser", response.data.info);
         this.$store.commit("netntext", response.data.group.noticetext);
         this.$store.commit("setgroup", response.data.group);
+        this.$store.commit("set2fa", response.data['2fa']);
 
         setTimeout(() => {
           this.loading = false;
