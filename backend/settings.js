@@ -35,8 +35,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.status(200).json({ message: 'Successfully added user!', uid: robloxusername });
     });
 
-
-
     router.get('/users', perms('admin'), async (req, res) => {
         let uid = req.session.userid;
 
@@ -58,6 +56,10 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
     });
 
     router.get('/checkupdates', perms('admin'), async (req, res) => {
+        if (!settings.get('checkForUpdates')) {
+            return res.status(501).json({ updates: false, err: 'Update checks are disabled.' })
+        }
+        
         let red;
         try {
             red = await axios.get('https://bot.tovyblox.xyz/changes/latestupdate');
@@ -145,7 +147,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.status(200).json({ message: 'Successfully set cookie!', info: settings.get('ranking') });
     });
 
-
     router.post('/updateuserroles', perms('admin'),async (req, res) => {
         if (!req.body?.userid) return res.status(400).json({ success: false, message: 'No user previded' });
         if (typeof req.body.userid !== 'number') return res.status(400).json({ success: false, message: 'User must be a string' });
@@ -180,11 +181,21 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
 
         res.status(200).json({ message: 'Updated!' });
     });
+    
+    router.post('/setupdates', perms('admin'), async (req, res) => {
+        const body = req.body;
+        if (body?.enabled == null) return res.status(400).json({ success: false, message: 'No enabled provided' });
+        if (typeof body.enabled !== 'boolean') return res.status(400).json({ success: false, message: 'Enabled must be a string' });
+        settings.set('checkForUpdates', body.enabled);
+        logging.newLog(`has **${body.enabled ? 'enabled' : 'disabled'}** update checking`, req.session.userid);
+        
+        return res.status(200).json({ message: 'Updated!' });
+    });
 
     router.post('/setwall', perms('admin'), async (req, res) => {
-        settings.set('wall', req.body.wall);
-        logging.newLog(`has updated the wall`, req.session.userid);
         const body = req.body;
+        settings.set('wall', body.wall);
+        logging.newLog(`has updated the wall`, req.session.userid);
 
         res.status(200).json({ message: 'Updated!' });
     });
@@ -193,7 +204,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         const body = req.body;
         settings.set('sessions', body.settings)
         logging.newLog(`has updated session settings`, req.session.userid);
-
 
         res.status(200).json({ message: 'Updated!' });
     });
@@ -235,6 +245,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             role: settings.get('activity')?.role,
             tovyr: settings.get('tovyr')?.enabled,
             proxy: settings.get('wproxy'),
+            checkForUpdates: settings.get('checkForUpdates'),
             ranking: settings.get('ranking'),
             wall: settings.get('wall'),
             sessions: settings.get('sessions'),
@@ -336,8 +347,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             message: 'ok'
         })
     })
-
-
 
     router.post('/setcolor', perms('admin'), async (req, res) => {
         if (!req.body?.color) return res.status(400).json({ success: false, message: 'No color previded' });

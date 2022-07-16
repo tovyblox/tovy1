@@ -139,6 +139,23 @@
             />
           </v-expansion-panel-content>
         </v-expansion-panel>
+        
+         <v-expansion-panel>
+          <v-layout>
+            <v-icon size="22" :color="this.$store.state.group.color" class="ml-3 mr-n5">
+              mdi-hammer
+            </v-icon>
+            <v-expansion-panel-header> Update Checking </v-expansion-panel-header>
+          </v-layout>
+
+          <v-expansion-panel-content>
+            <p class="">
+              Checks with Tovy for updates
+            </p>
+            <v-switch v-model="other.checkForUpdates" @change="setupdates" label="Enabled?">
+            </v-switch>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
 
         <v-expansion-panel>
           <v-layout>
@@ -779,6 +796,26 @@ export default {
           (err) => {
             err;
             this.toast.message = "Error updating proxy!";
+            this.toast.visible = true;
+          }
+        );
+    },
+    setupdates: function () {
+      this.$http
+        .post(
+          "/settings/setupdates",
+          { enabled: this.other.checkForUpdates },
+          { withCredentials: true }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Update checking updated!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error updating update checking!";
             this.toast.visible = true;
           }
         );
