@@ -72,7 +72,7 @@
             max-width="400"
           ></v-img>
           <v-card-text class="text-center mt-n5 mb-n4">
-            Sadly this module isnt enabled!
+            This module is currently disabled!
           </v-card-text>
         </v-row></v-card
       >

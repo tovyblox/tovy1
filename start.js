@@ -1,18 +1,13 @@
 const { exec, fork } = require("child_process");
 const ex = require('util').promisify(exec);
 const express = require('express');
-const app = express();
-const path = require('path')
-const history = require('connect-history-api-fallback');
+express();
 require('dotenv').config({ path: './backend/.env' });
 const inquirer = require('inquirer');
 const ora = require('ora');
 const envfile = require('envfile');
-const staticFileMiddleware = express.static(path.join(__dirname, 'dist'));
 const fs = require('fs');
 const spinner = ora({ text: 'Building app..', spinner: 'dots', color: 'red' })
-
-
 
 if (!process.env.MONGO_URI) {
     inquirer.prompt([
@@ -47,12 +42,10 @@ if (!process.env.MONGO_URI) {
     runBuild();
 }
 
-
-
 function runBuild() {
     spinner.start();
 
-    let chield = ex('npm run build').then(async (result) => {
+    ex('npm run build').then(async () => {
         setTimeout(() => {
             startbackend();
         }, 1000)
@@ -66,7 +59,6 @@ function runBuild() {
 ░░░╚═╝░░░░╚════╝░░░░╚═╝░░░░░░╚═╝░░░`)
         console.log(`Tovy has been successfully built`)
     });
-
 }
 
 function startbackend() {
