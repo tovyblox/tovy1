@@ -6,7 +6,7 @@
   </div>
   <ul>
     <li><a href="#about">About</a></li>
-    <li><a href="#why-consider">Why conisder</a></li>
+    <li><a href="#why-consider">Why consider</a></li>
     <li><a href="#quicklinks">Quicklinks</a></li>
     <li><a href="#license">License</a></li>
   </ul>
