@@ -42,15 +42,22 @@ module.exports = class CacheEngine {
         resolve(userinfo);
       } else {
         if (this.usernames.get(uid)) {
-          resolve(this.usernames.get(uid));
-          let userinfo = await noblox.getUsernameFromId(uid);
-          this.usernames.set(parseInt(uid), userinfo);
+          resolve(this.usernames.get(uid).username);
+          let thing = this.usernames.get(uid)
+
+          if (thing.uses === 10) {
+            let username = await noblox.getUsernameFromId(uid);
+            this.usernames.set(uid, {username, uses: 1 });
+          } else {
+            thing.uses += 1;
+            this.usernames.set(parseInt(uid), thing);
+          }
           return;
         }
-        let userinfo = await noblox.getUsernameFromId(uid);
-        this.usernames.set(parseInt(uid), userinfo);
+        let username = await noblox.getUsernameFromId(uid);
+        this.usernames.set(uid, {username, uses: 1});
 
-        resolve(userinfo);
+        resolve(username);
       }
     });
   }
@@ -82,19 +89,26 @@ module.exports = class CacheEngine {
         resolve(pfp[0].imageUrl);
       } else {
         if (this.pfps.get(uid)) {
-          resolve(this.pfps.get(uid));
-          let pfp = await noblox.getPlayerThumbnail({
-            userIds: uid,
-            cropType: "headshot",
-          });
-          this.pfps.set(parseInt(uid), pfp[0].imageUrl);
+          resolve(this.pfps.get(uid).pfp);
+          
+          let thing = this.pfps.get(uid)
+          if (thing.uses === 10) {
+            let pfp = await noblox.getPlayerThumbnail({
+              userIds: uid,
+              cropType: "headshot",
+            });
+            this.pfps.set(uid, {pfp: pfp[0].imageUrl, uses: 1});
+          } else {
+            thing.uses += 1;
+            this.pfps.set(parseInt(uid), thing);
+          }
           return;
         }
         let pfp = await noblox.getPlayerThumbnail({
           userIds: uid,
           cropType: "headshot",
         });
-        this.pfps.set(parseInt(uid), pfp[0].imageUrl);
+        this.pfps.set(uid, {pfp: pfp[0].imageUrl, uses: 1});
 
         resolve(pfp[0].imageUrl);
       }
