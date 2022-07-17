@@ -171,7 +171,7 @@ export default {
         return;
       }
       this.slide = 3;
-      //this.close();
+      this.close();
       this.$store.commit("set2fa", true);
     },
     async disable() {
@@ -184,7 +184,8 @@ export default {
         this.invalid = true;
         return;
       }
-      this.slide = 2;
+      this.slide = 3;
+      this.close()
       this.$store.commit("set2fa", false);
     },
   }
