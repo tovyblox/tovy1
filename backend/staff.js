@@ -215,7 +215,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       req.body.users.forEach(async (u) => {
         await db.session.create({
           active: false,
-          mins: req.body.type === "remove" ? -mins : mins,
+          mins: req.body.type === "remove" ? -req.body.mins : req.body.mins,
           uid: u,
           start: new Date(),
           type: req.body.type,
