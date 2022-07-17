@@ -56,7 +56,7 @@
           <v-card-title>Setup 2fa</v-card-title>
           <v-window class="mt-n8" v-model="slide" reverse>
             <v-window-item>
-              <v-card-text class="grey--text mx-2">
+              <v-card-text class="grey--text mx-2 mt-1">
                 2fa is a secure way to make sure that your account stays safe by making
                 you use your authenticator app everytime you want to login</v-card-text
               >
