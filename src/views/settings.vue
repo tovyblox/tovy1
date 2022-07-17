@@ -953,9 +953,11 @@ export default {
       });
 
       if (this.$route.query.success) {
+        this.$router.push('/settings')
         this.toast.message = `Logged in!`;
           this.toast.visible = true;
       } else if (this.$route.query.error) {
+        this.$router.push('/settings')
         this.toast.message =
             "Error logging in! Did you enter the username and password?";
           this.toast.visible = true;
