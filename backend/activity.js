@@ -59,6 +59,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     let userinfo = await noblox.getPlayerInfo(req.body.userid).catch(e => null);
     if (!userinfo) return res.status(400).json({ message: "User not found!" });
     await cacheEngine.fetchpfp(req.body.userid);
+    await cacheEngine.fetchusername(req.body.userid);
     await db.session.create({
       active: true,
       start: new Date(),
@@ -251,10 +252,10 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
 
       for (session of sessions) {
         let e = session.toObject();
-        let userinfo = await noblox.getPlayerInfo(session.uid);
+        let userinfo = await cacheEngine.fetchusername(session.uid);
         let pfp = await cacheEngine.fetchpfp(session.uid);
         e.pfp = pfp;
-        e.username = userinfo.username;
+        e.username = userinfo;
         s.push(e);
         if (sessions.indexOf(session) == sessions.length - 1) {
           res.status(200).json(s);
@@ -265,6 +266,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
 
   router.get("/stats", perms("view_staff_activity"), async (req, res) => {
     let sessions = await db.session.find({});
+    let des = await db.session.distinct("uid")
     let e = _.groupBy(sessions, (i) => i.uid);
     let arr = sessions.map((e) => {
       let time;
@@ -283,7 +285,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     let grouped = _.groupBy(sorted, (i) => i.uid);
 
     res.status(200).json({
-      staff: Object.keys(grouped).length,
+      staff: des.length,
       sessions: arr.length,
       mins: Math.floor(
         _.sumBy(arr, function (i) {

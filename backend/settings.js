@@ -260,7 +260,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     });
 
     router.post('/setwall', perms('admin'), async (req, res) => {
-        settings.set('wall', req.body.wall);
+        settings.set('wall', req.body.settings);
         logging.newLog(`has updated the wall`, req.session.userid);
         const body = req.body;
 
