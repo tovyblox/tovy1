@@ -26,7 +26,7 @@ module.exports = class CacheEngine {
       if (this.isRedis) {
         if (await this.client.get(`usernames:${parseInt(uid)}:username`)) {
           resolve(await this.client.get(`usernames:${parseInt(uid)}:username`));
-          if (await this.client.get(`usernames:${parseInt(uid)}:uses`) === 10) {
+          if (await this.client.get(`usernames:${parseInt(uid)}:uses`) > 20) {
             let userinfo = await noblox.getUsernameFromId(uid); 
             this.client.set(`usernames:${parseInt(uid)}:username`, userinfo);
             this.client.set(`usernames:${parseInt(uid)}:uses`, 1);
@@ -45,7 +45,7 @@ module.exports = class CacheEngine {
           resolve(this.usernames.get(uid).username);
           let thing = this.usernames.get(uid)
 
-          if (thing.uses === 10) {
+          if (thing.uses > 20) {
             let username = await noblox.getUsernameFromId(uid);
             this.usernames.set(uid, {username, uses: 1 });
           } else {
@@ -67,7 +67,7 @@ module.exports = class CacheEngine {
       if (this.isRedis) {
         if (await this.client.get(`pfps:${parseInt(uid)}:pfp`)) {
           resolve(await this.client.get(`pfps:${parseInt(uid)}:pfp`));
-          if (this.client.get(`pfps:${parseInt(uid)}:uses`) === 10) {
+          if (this.client.get(`pfps:${parseInt(uid)}:uses`) > 20) {
             let pfp = await noblox.getPlayerThumbnail({
               userIds: uid,
               cropType: "headshot",
@@ -92,7 +92,7 @@ module.exports = class CacheEngine {
           resolve(this.pfps.get(uid).pfp);
           
           let thing = this.pfps.get(uid)
-          if (thing.uses === 10) {
+          if (thing.uses > 20) {
             let pfp = await noblox.getPlayerThumbnail({
               userIds: uid,
               cropType: "headshot",

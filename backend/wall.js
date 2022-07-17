@@ -73,9 +73,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     }
 
     router.ws('/socket', async (ws, req) => {
-        console.log(req.session.userid)
         let cp = await checkPerm(req.session.userid);
-        console.log(cp)
         
         if (!cp) {
             ws.close();

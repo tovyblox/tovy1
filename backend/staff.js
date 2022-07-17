@@ -127,7 +127,6 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     perms("manage_staff_activity"),
     async (req, res) => {
       let userid = parseInt(req.params.user);
-      console.log(userid);
       if (!userid) return res.status(404).json({ message: "No user!" });
       let books = await db.book.find({ userid: userid, deleted: { $ne: true } });
       res.status(200).json({ success: true, books });

@@ -241,7 +241,6 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         }
         let s = settings.get('roles').find(r => r.id == req.body.role)
         if (!s) return res.status(400).json({ message: 'No such role!' });
-        console.log(req.body.userId)
         logging.newLog(`has updated the role of user **${username}** to **${s.name}**`, req.session.userid);
 
 

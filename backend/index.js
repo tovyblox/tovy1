@@ -480,14 +480,11 @@ app.post('/api/confirm2fa', async (req, res) => {
     let user = await db.user.findOne({ userid: req.session.userid });   
     if (!user) return res.status(401).json({ message: 'User not found' });
     let session = req.session['2fasetup']
-    console.log(session.secret.secret)
 
     let delta = twofactor.verifyToken(session.secret.secret, `${req.body.code}`);
-    console.log(delta)
     if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
 
     user['2fa'] = session.secret.secret;
-    console.log(user['2fa'])
     await user.save();
     req.session['2fasetup'] = undefined;
     res.status(200).json({ message: 'Set up 2fa!' });
