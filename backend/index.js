@@ -285,6 +285,11 @@ app.get('/api/profile', async (req, res) => {
         res.status(403).json({ message: 'Not a member' });
         return;
     };
+ 
+    if (!settings.get('roles').find(role => role.id === user.role)) {
+        res.status(403).json({ message: 'Not a member' });
+        return
+    }
 
     let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall', 'manage_bans', 'manage_tasks'];
     info.perms = role;
