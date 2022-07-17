@@ -334,6 +334,7 @@
                         outlined
                         label="Webhook override"
                         v-model="game.woverride"
+                        v-if="sessions.discohook.length"
                         class="mt-2"
                         hide-details="auto"
                       >
@@ -350,6 +351,7 @@
                         outlined
                         label="Prefix"
                         v-model="game.prefix"
+                        v-if="sessions.discohook.length"
                         class="mt-2"
                         hide-details="auto"
                       >
@@ -358,6 +360,7 @@
                         outlined
                         label="Embed title"
                         v-model="game.embedtitle"
+                        v-if="sessions.discohook.length"
                         class="mt-2"
                         hide-details="auto"
                       >
@@ -365,6 +368,7 @@
                       <v-textarea
                         outlined
                         label="Embed body"
+                        v-if="sessions.discohook.length"
                         v-model="game.embedbody"
                         class="mt-2"
                         hide-details="auto"
