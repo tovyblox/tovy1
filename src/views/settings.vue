@@ -342,6 +342,7 @@
                       <p
                         class="green--text mt-3"
                         style="white-space: pre-line"
+                        v-if="sessions.discohook.length"
                       >
                        %TYPE%: Type of session being hosted<br>
                        %GAME%: Name of game that session is being hosted in<br>
