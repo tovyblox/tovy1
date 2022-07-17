@@ -3,7 +3,7 @@ const noblox = require("noblox.js");
 const { createClient } = require("redis");
 module.exports = class CacheEngine {
   constructor() {
-    this.isRedis = !!process.env.redis?.length;
+    this.isRedis = !!process.env.REDIS_URI?.length;
     if (!this.isRedis) {
       this.usernames = new nodecache({
         stdTTL: 60 * 60 * 24 * 7,
@@ -15,7 +15,7 @@ module.exports = class CacheEngine {
       });
     } else {
       this.client = createClient({
-        url: process.env.redis,
+        url: process.env.REDIS_URI,
       });
       this.client.connect();
     }
