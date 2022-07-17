@@ -203,7 +203,7 @@
               label="Sync with group shout"
             ></v-switch>
             <p class="" v-if="wall.enabled">
-              The discord webhook synces the wall with a discord webhook leave
+              The Discord webhook synces the wall with a Discord webhook leave
               blank if you want to disable
             </p>
             <v-text-field
@@ -232,8 +232,8 @@
 
           <v-expansion-panel-content>
             <p class="">
-              If enabled this lets you proxy discord webhooks though our server
-              (allows you to use webhooks in roblox)
+              If enabled this lets you proxy Discord webhooks though your server
+              (allows you to use webhooks in Roblox)
             </p>
             <v-switch v-model="other.proxy" @change="setproxy" label="Enabled?">
             </v-switch>
@@ -253,8 +253,8 @@
 
           <v-expansion-panel-content>
             <p class="">
-              Enroll your group with tovy to allow support staff to easily pull
-              up data about your instance and let us know who uses tovy.
+              Enroll your group with Tovy to allow support staff to easily pull
+              up data about your instance and let us know who uses Tovy.
             </p>
             <v-switch v-model="other.tovyr" @change="setreg" label="Enabled?">
             </v-switch>
@@ -274,8 +274,7 @@
 
           <v-expansion-panel-content>
             <p class="">
-              If enabled this lets you proxy discord webhooks though our server
-              (allows you to use webhooks in roblox)
+              Enables sessions for your group. This allows you to easily shout and send preset session types to your Discord server and group.
             </p>
             <v-switch
               v-model="sessions.enabled"
@@ -646,7 +645,7 @@
 
           <v-expansion-panel-content>
             <p class="ml-2">
-              Minimum activity rank settings (roles from linked roblox group)!
+              Minimum activity rank settings (roles from linked Roblox group)!
             </p>
             <v-select
               @change="(v) => setgrole(v)"
