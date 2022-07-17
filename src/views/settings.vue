@@ -948,8 +948,20 @@ export default {
             },
           };
         }
+        
         if (response.data.config.wall) this.wall = response.data.config.wall;
       });
+
+      if (this.$route.query.success) {
+        this.toast.message = `Logged in!`;
+          this.toast.visible = true;
+      } else if (this.$route.query.error) {
+        this.toast.message =
+            "Error logging in! Did you enter the username and password?";
+          this.toast.visible = true;
+      }
+
+      
   },
   methods: {
     goto: function (url) {
@@ -988,11 +1000,16 @@ export default {
               password: "",
             },
           };
+          this.$router.push(`/settings?success=true`);
+          window.location.reload();
           this.toast.message = `Logged in as ${r.data.info.username}`;
           this.toast.visible = true;
         },
         (err) => {
           this.ranking.loading = false;
+
+          this.$router.push(`/settings?error=true`);
+          window.location.reload();
 
           err;
           this.toast.message =
