@@ -171,7 +171,7 @@ export default {
         return;
       }
       this.slide = 3;
-      this.close();
+      //this.close();
       this.$store.commit("set2fa", true);
     },
     async disable() {

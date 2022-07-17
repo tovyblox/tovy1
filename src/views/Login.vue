@@ -116,6 +116,7 @@ export default {
         )
         .catch((er) => {
           if (er?.response?.data?.message === '2fa required') {
+            this.error = false
             return this.e1 = 2;
           }
           this.error = true;

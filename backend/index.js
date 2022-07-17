@@ -450,7 +450,6 @@ app.post('/api/finish2fa', async (req, res) => {
     
 
     let delta = twofactor.verifyToken(user['2fa'], req.body.code);
-    console.log(delta)
     if (delta?.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
     req.session.userid = req.session['2fa'].userid;
     res.status(200).json({ message: 'Successfully logged in!' });
@@ -503,7 +502,6 @@ app.post('/api/turnoff2fa', async (req, res) => {
 
 
     let delta = twofactor.verifyToken(user['2fa'], `${req.body.code}`);
-    console.log(delta)
     if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
 
     user['2fa'] = undefined;

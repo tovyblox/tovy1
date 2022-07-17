@@ -39,7 +39,7 @@
             <v-icon>{{!$store.state.user['2fa'] ? 'mdi-lock' : 'mdi-lock-open'}}</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>{{$store.state.user['2fa'] ? 'Disable 2fa' : 'Enable 2fa'}}</v-list-item-title>
+            <v-list-item-title>{{$store.state.user['2fa'] ? 'Disable 2FA' : 'Enable 2FA'}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         
