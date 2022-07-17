@@ -79,7 +79,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
 
     automation.runEvent("staffjoin", {
       id: req.body.userid,
-      username: userinfo.username,
+      username: username,
     });
 
     res.status(200).json({ message: "Successfully created session!" });
