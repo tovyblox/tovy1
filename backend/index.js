@@ -9,6 +9,8 @@ const db = require('./db/db');
 const noblox = require('noblox.js');
 const history = require('connect-history-api-fallback');
 const ora = require('ora');
+const CacheEngineLoader = require('./util/cacheEngine');
+const cacheEngine = new CacheEngineLoader();
 let package = require('../package.json');
 const fs = require('fs');
 const twofactor = require('node-2fa');
@@ -28,14 +30,11 @@ const logging = new LoggingEngine();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const NodeCache = require("node-cache");
 const permissionsManager = require('./util/permissionsManager');
 const settingsManager = require('./util/settingsManager');
 const settings = new settingsManager();
 const automation = new automationEngine(logging, settings, noblox);
 const permissions = new permissionsManager(settings);
-const usernames = new NodeCache();
-const pfps = new NodeCache();
 const ews = require('express-ws')(app);
 let activews = [];
 
@@ -75,7 +74,7 @@ app.use(cookieSession({
             settings.settings.ranking = {
                 username: u.UserName,
                 uid: u.UserID,
-                pfp: await fetchpfp(u.UserID),
+                pfp: await cacheEngine.fetchpfp(u.UserID),
                 apikey: configforranking.hash,
             };
         }
@@ -87,14 +86,14 @@ app.use(cookieSession({
 
 async function runload() {
     console.log('Running tovy!')
-    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging, automation));
-    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/bans/', require('./bans')(usernames, pfps, settings, permissions, logging, automation));
-    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/activity/', require('./activity')(cacheEngine, settings, permissions, automation));
+    app.use('/api/tasks/', require('./tasks')(cacheEngine, settings, permissions, logging, automation));
+    app.use('/api/wall/', require('./wall')(cacheEngine, settings, permissions, automation));
+    app.use('/api/staff', require('./staff')(cacheEngine, settings, permissions, automation));
+    app.use('/api/settings/', require('./settings')(cacheEngine, settings, permissions, logging));
+    app.use('/api/sessions/', require('./session')(cacheEngine, settings, permissions, automation));
+    app.use('/api/bans/', require('./bans')(cacheEngine, settings, permissions, logging, automation));
+    app.use('/api/ranking/', require('./ranking')(cacheEngine, settings, permissions, automation));
 }
 
 
@@ -399,7 +398,7 @@ app.get('/api/pfp/name/:name', async (req, res) => {
         res.status(404).json({ message: 'No such user!' });
         return;
     });
-    const pfp = await fetchpfp(uid);
+    const pfp = await cacheEngine.fetchpfp(uid);
     res.status(200).json({
         pfp: pfp
     });
@@ -408,7 +407,7 @@ app.get('/api/pfp/name/:name', async (req, res) => {
 app.get('/api/pfp/id/:id', async (req, res) => {
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
     if (!req.params.id) return res.status(400).json({ message: 'No id specified' });
-    const pfp = await fetchpfp(Number(req.params.id));
+    const pfp = await cacheEngine.fetchpfp(Number(req.params.id));
     res.status(200).json({
         pfp: pfp
     });
@@ -515,28 +514,11 @@ app.post('/api/turnoff2fa', async (req, res) => {
 
 
 
-async function fetchpfp(uid) {
-    if (pfps.get(uid)) {
-        return pfps.get(uid);
-    }
-    let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
-    pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-    return pfp[0].imageUrl
-};
-
-async function fetchusername(uid) {
-    if (usernames.get(uid)) {
-        return usernames.get(uid);
-    }
-    let userinfo = await noblox.getUsernameFromId(uid);
-    usernames.set(parseInt(uid), userinfo, 10000);
-
-    return userinfo;
-}
 
 
-module.exports = { fetchpfp, fetchusername };
+
+
+module.exports = { cacheEngine };
 
 
 function chooseRandom(arr, num) {

@@ -13,7 +13,7 @@ const cookieParser = require('set-cookie-parser');
 const router = express.Router();
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
 
-const erouter = (usernames, pfps, settings, permissions, logging) => {
+const erouter = (cacheEngine, settings, permissions, logging) => {
     let perms = permissions.perms;
     let checkPerm = permissions.checkPerm
 
@@ -49,7 +49,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         let s = [];
         for (u of users) {
             let e = u.toObject();
-            let username = await fetchusername(u.userid);
+            let username = await cacheEngine.fetchusername(u.userid);
             e.passwordhash = undefined;
             e._id = undefined;
             e.username = username;
@@ -129,7 +129,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             throw 'ratelimoted'
         
         }
-        console.log(json)
         return json['failureDetails'][0]['fieldData']
     }
     
@@ -150,7 +149,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
 
         let s = new fun.Session(token, { userAgent: UA });
         
-        console.log(s.getEmbedUrl());
         req.session.captcha = {
             username: username,
             password:   password,
@@ -186,22 +184,16 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
                 'x-csrf-token': csfrtoken,
             }
         }).catch(e => {
-            console.log(e.response.data);
             res.status(400).json({ success: false, message: 'Failed to login' });
             return
         })
         if (!loginreq) return;
-        console.log(cookieParser.parse(loginreq.headers[`set-cookie`], {
-            map: true
-        }))
         let cookie = cookieParser.parse(loginreq.headers[`set-cookie`], {
             map: true
         })['.ROBLOSECURITY'].value;
         
         
-
         let user;
-
         try {
             user = await noblox.setCookie(cookie);
         } catch (e) {
@@ -209,10 +201,9 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             return;
         };
 
-        let pfp = await fetchpfp(user.UserID)
+        let pfp = await cacheEngine.fetchpfp(user.UserID)
         // generate random hex with crypto
         let config = settings.get('ranking');
-        console.log(config)
         let hash = config?.hash || crypto.randomBytes(20).toString('hex');
         settings.set('ranking', {
             cookie: cookie,
@@ -240,7 +231,7 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         let user = await db.user.findOne({ userid: parseInt(req.body.userid) });
         if (!user) return res.status(400).json({ message: 'No such user!' });
         if (user.role == 0) return res.status(400).json({ message: 'No such user!' });
-        let username = await fetchusername(user.userid);
+        let username = await cacheEngine.fetchusername(user.userid);
         if (req.body.role == 'delete') {
             user.role = undefined;
             await user.save();
@@ -465,16 +456,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
         res.send(xx);
     })
 
-    async function fetchusername(uid) {
-        if (usernames.get(uid)) {
-            return usernames.get(uid);
-        }
-        let userinfo = await noblox.getUsernameFromId(uid);
-        usernames.set(parseInt(uid), userinfo, 10000);
-
-        return userinfo;
-    }
-
     function chooseRandom(arr, num) {
         const res = [];
         for (let i = 0; i < num;) {
@@ -486,16 +467,6 @@ const erouter = (usernames, pfps, settings, permissions, logging) => {
             i++;
         };
         return res;
-    }
-
-    async function fetchpfp(uid) {
-        if (pfps.get(uid)) {
-            return pfps.get(uid);
-        }
-        let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
-        pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-        return pfp[0].imageUrl
     }
 
     return router;

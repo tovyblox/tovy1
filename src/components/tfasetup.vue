@@ -185,7 +185,6 @@ export default {
         return;
       }
       this.slide = 2;
-      this.close();
       this.$store.commit("set2fa", false);
     },
   }

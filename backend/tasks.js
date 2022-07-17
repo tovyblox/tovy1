@@ -1,10 +1,8 @@
 const db = require("./db/db");
 const express = require("express");
 const router = express.Router();
-const { fetchpfp, fetchusername } = require("./index");
 const erouter = (
-  usernames,
-  pfps,
+  cacheEngine,
   settings,
   permissions,
   logging,
@@ -22,8 +20,8 @@ const erouter = (
     let tasks = await db.task.find({});
     tasks = await Promise.all(
       tasks.map(async (task) => {
-        let username = await fetchusername(task.author);
-        let pfp = await fetchpfp(task.author);
+        let username = await cacheEngine.fetchusername(task.author);
+        let pfp = await cacheEngine.fetchpfp(task.author);
         return {
           ...task._doc,
           pfp,
@@ -70,7 +68,7 @@ const erouter = (
     res.status(200).json({ success: true, task: taskdata });
     automation.runEvent("taskcreated", {
       id: taskdata.id,
-      username: await fetchusername(req.session.userid),
+      username: await cacheEngine.fetchusername(req.session.userid),
       name: taskdata.name,
       details: taskdata.description,
     });
@@ -119,7 +117,7 @@ const erouter = (
     console.log(task.completed);
     automation.runEvent("taskcompleted", {
       id: task.id,
-      username: await fetchusername(req.session.userid),
+      username: await cacheEngine.fetchusername(req.session.userid),
       name: task.name,
       details: task.description,
     });

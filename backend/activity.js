@@ -7,7 +7,7 @@ const router = express.Router();
 
 let activews = [];
 
-const erouter = (usernames, pfps, settings, permissions, automation) => {
+const erouter = (cacheEngine, settings, permissions, automation) => {
   let perms = permissions.perms;
   let checkPerm = permissions.checkPerm;
 
@@ -62,7 +62,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       start: new Date(),
       uid: req.body.userid,
     });
-    let fpfp = await fetchpfp(req.body.userid);
+    let fpfp = await cacheEngine.fetchpfp(req.body.userid);
 
     activews.forEach((ws) => {
       ws.send(
@@ -94,7 +94,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     let s = [];
     for (ia of ias) {
       let e = ia.toObject();
-      let username = await fetchusername(ia.uid);
+      let username = await cacheEngine.fetchusername(ia.uid);
       e.username = username;
       s.push(e);
       if (ias.indexOf(ia) == ias.length - 1) {
@@ -168,7 +168,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
     automation.runEvent("staffleave", {
       id: req.body.userid,
-      username: fetchusername(req.body.userid),
+      username: cacheEngine.fetchusername(req.body.userid),
     });
 
     res.status(200).json({ message: "Successfully ended session!" });
@@ -228,8 +228,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     let sorted = arr.sort((a, b) => b.l - a.l).slice(0, 10);
     let s = [];
     for (user of sorted) {
-      let uname = await fetchusername(user.uid);
-      let pfp = await fetchpfp(user.uid);
+      let uname = await cacheEngine.fetchusername(user.uid);
+      let pfp = await cacheEngine.fetchpfp(user.uid);
       user.pfp = pfp;
       user.username = uname;
       s.push(user);
@@ -250,7 +250,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       for (session of sessions) {
         let e = session.toObject();
         let userinfo = await noblox.getPlayerInfo(session.uid);
-        let pfp = await fetchpfp(session.uid);
+        let pfp = await cacheEngine.fetchpfp(session.uid);
         e.pfp = pfp;
         e.username = userinfo.username;
         s.push(e);
@@ -309,8 +309,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
     for (ia of e) {
       let g = ia.toObject();
-      let uname = await fetchusername(ia.uid);
-      let pfp = await fetchpfp(ia.uid);
+      let uname = await cacheEngine.fetchusername(ia.uid);
+      let pfp = await cacheEngine.fetchpfp(ia.uid);
       g.pfp = pfp;
       g.username = uname;
       s.push(g);
@@ -320,28 +320,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     }
   });
 
-  async function fetchusername(uid) {
-    if (usernames.get(uid)) {
-      return usernames.get(uid);
-    }
-    let userinfo = await noblox.getUsernameFromId(uid);
-    usernames.set(parseInt(uid), userinfo, 10000);
 
-    return userinfo;
-  }
 
-  async function fetchpfp(uid) {
-    if (pfps.get(uid)) {
-      return pfps.get(uid);
-    }
-    let pfp = await noblox.getPlayerThumbnail({
-      userIds: uid,
-      cropType: "headshot",
-    });
-    pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-    return pfp[0].imageUrl;
-  }
 
   return router;
 };

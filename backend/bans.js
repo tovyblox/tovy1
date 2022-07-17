@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("./db/db");
 const noblox = require("noblox.js");
 
-const erouter = (usernames, pfps, settings, permissions, logging) => {
+const erouter = (cacheEngine, settings, permissions, logging) => {
   const perms = permissions.perms;
   router.get("/bans", async (req, res) => {
     let bans = await db.ban.find({});
