@@ -11,6 +11,7 @@ const history = require('connect-history-api-fallback');
 const ora = require('ora');
 const CacheEngineLoader = require('./util/cacheEngine');
 const cacheEngine = new CacheEngineLoader();
+const crypto = require('crypto');
 let package = require('../package.json');
 const fs = require('fs');
 const twofactor = require('node-2fa');
@@ -49,10 +50,11 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-
+const randomkey = crypto.randomBytes(48).toString('hex');
+const randomkey2 = crypto.randomBytes(32).toString('hex');
 app.use(cookieSession({
     name: 'session',
-    keys: ['key1', 'key2'],
+    keys: [randomkey, randomkey2],
     domain: false,
     httpOnly: false
 }));
