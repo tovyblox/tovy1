@@ -286,7 +286,7 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
  
-    if (!settings.get('roles').find(role => role.id === user.role)) {
+    if(user.role !== 0 && !settings.get('roles').find(role => role.id === user.role)) {
         res.status(403).json({ message: 'Not a member' });
         return
     }
