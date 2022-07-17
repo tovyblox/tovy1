@@ -715,7 +715,7 @@
           <v-card-title class="text-h5">
             Please solve the captcha to continue.
           </v-card-title>
-          <iframe id="arkoseFrame" :src="captcha.url"></iframe>
+          <iframe id="arkose-iframe" :src="captcha.url"></iframe>
           <v-card-actions>
             <v-spacer></v-spacer>
             <v-btn
