@@ -56,7 +56,8 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     });
 
     if (session) return res.status(400).json({ message: "Active session!!" });
-    let userinfo = await noblox.getPlayerInfo(req.body.userid);
+    let userinfo = await noblox.getPlayerInfo(req.body.userid).catch(e => null);
+    if (!userinfo) return res.status(400).json({ message: "User not found!" });
     await db.session.create({
       active: true,
       start: new Date(),
