@@ -35,7 +35,7 @@
                 <v-btn elevation="0" class="mt-3 ml-auto" @click="dog" color="success">
                   Login
                 </v-btn>
-                 <v-btn elevation="0" class="ml-3 mt-3" plain @click="finish2fa" color="info">
+                 <v-btn elevation="0" class="ml-3 mt-3" plain @click="signup" color="info">
                   Sign UP
                 </v-btn>
               </v-form>
