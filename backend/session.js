@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings, permissions, automation) => {
+const erouter = (cacheEngine, settings, permissions, automation) => {
     const perms = permissions.perms;
 
     router.use((req, res, next) => {
@@ -36,7 +36,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
             automation.runEvent('sessionstarted', {
                 type: ssession.type.name,
                 id: ssession.id,
-                username: await fetchusername(ssession.uid),
+                username: await cacheEngine.fetchusername(ssession.uid),
                 game: ssession.type.gname,
             });
             await ssession.save();
@@ -45,18 +45,22 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
     async function sendlog(data) {
         if (!settings.get('sessions')?.discohook) return null;
+        let games = settings.get('sessions').games;
+        console.log(games)
+        console.log(data.type)
+        let game = games.find(g => g.id == data.type.id);
         let webhook = settings.get('sessions').discohook;
 
-        let webhookc = new discord.WebhookClient({ url: webhook });
-        let username = await fetchusername(data.uid);
-        let pfp = await fetchpfp(data.uid);
+        let webhookc = new discord.WebhookClient({ url: game?.woverride || webhook });
+        let username = await cacheEngine.fetchusername(data.uid);
+        let pfp = await cacheEngine.fetchpfp(data.uid);
 
         let embed = new discord.MessageEmbed()
-            .setTitle(`${data.type.name} is now being hosted and will commence shortly!`)
+            .setTitle(gmsg(game?.embedtitle|| `%TYPE% is now being hosted and will commence shortly!`))
             .setColor('GREEN')
             .setTimestamp()
             .setAuthor(username, pfp, `https://www.roblox.com/users/${data.uid}`)
-            .setDescription(`A ${data.type.name} is now being hosted by ${username}! Join the game below to attend this session.`)
+            .setDescription(gmsg(game?.embedbody || `A %TYPE% is now being hosted by %HOST%! Join the game below to attend this session.`))
             .addField('Gamelink', `https://www.roblox.com/games/${data.type.gid}/-`, true)
             .setImage(data.thumbnail)
             .setFooter({ text: `Tovy Sessions` });
@@ -65,23 +69,41 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
             .addComponents(
                 new discord.MessageButton({ style: 'LINK', label: 'Join', url: `https://www.roblox.com/games/${data.type.gid}/-` })
             );
+
+        let ping = game.prefix || settings.get('sessions').discoping || null
         
 
-        let msg = await webhookc.send({ content: settings.get('sessions').discoping.length ? settings.get('sessions').discoping : null, embeds: [embed], components: [components] }).catch(err => {
+        let msg = await webhookc.send({ content: ping, embeds: [embed], components: [components] }).catch(err => {
         });
+
+        function gmsg(text) {
+            let replacements = {};
+            replacements[`%TYPE%`] = data.type.name;
+            replacements[`%HOST%`] = username;
+            replacements[`%GAME%`] = data.type.gid;
+        
+            return text.replace(/%\w+%/g, (all) => {
+              return typeof replacements[all] !== "undefined" ? replacements[all] : all;
+            });
+          }
         
         return msg?.id;
+
+        
     }
 
     async function unsendlog(data) {
         if (!settings.get('sessions')?.discohook) return null;
         if (!data?.did) return null;
+        let games = settings.get('sessions').games;
+        let game = games.find(g => g.id == data.type.id);
+
 
         let webhook = settings.get('sessions').discohook;
 
-        let webhookc = new discord.WebhookClient({ url: webhook });
-        let username = await fetchusername(data.uid);
-        let pfp = await fetchpfp(data.uid);
+        let webhookc = new discord.WebhookClient({ url: game?.woverride || webhook });
+        let username = await cacheEngine.fetchusername(data.uid);
+        let pfp = await cacheEngine.fetchpfp(data.uid);
 
         let embed = new discord.MessageEmbed()
             .setTitle(`${data.type.name} ended`)
@@ -108,7 +130,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         automation.runEvent('sessionended', {
             type: session.type.name,
             id: session.id,
-            username: await fetchusername(session.uid),
+            username: await cacheEngine.fetchusername(session.uid),
             game: session.type.gname,
         });
 
@@ -126,8 +148,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         let data = {
             ...session._doc,
             user: {
-                username: await fetchusername(session.uid),
-                pfp: await fetchpfp(session.uid),
+                username: await cacheEngine.fetchusername(session.uid),
+                pfp: await cacheEngine.fetchpfp(session.uid),
             },
         };
         res.send({ success: true, data });
@@ -139,8 +161,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
             return {
                 ...m._doc,
                 user: {
-                    username: await fetchusername(m.uid),
-                    pfp: await fetchpfp(m.uid),
+                    username: await cacheEngine.fetchusername(m.uid),
+                    pfp: await cacheEngine.fetchpfp(m.uid),
                 },
             };
         }));
@@ -190,7 +212,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         if (data.now) automation.runEvent('sessionstarted', {
             type: dbdata.type.name,
             id: dbdata.id,
-            username: await fetchusername(dbdata.uid),
+            username: await cacheEngine.fetchusername(dbdata.uid),
             game: dbdata.type.gname,
         });
 
@@ -201,33 +223,15 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         res.send({
             ...dbdata,
             user: {
-                username: await fetchusername(req.session.userid),
-                pfp: await fetchpfp(req.session.userid),
+                username: await cacheEngine.fetchusername(req.session.userid),
+                pfp: await cacheEngine.fetchpfp(req.session.userid),
             },
         })
     })
 
 
 
-    async function fetchusername(uid) {
-        if (usernames.get(uid)) {
-            return usernames.get(uid);
-        }
-        let userinfo = await noblox.getUsernameFromId(uid);
-        usernames.set(parseInt(uid), userinfo, 10000);
-
-        return userinfo;
-    }
-
-    async function fetchpfp(uid) {
-        if (pfps.get(uid)) {
-            return pfps.get(uid);
-        }
-        let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
-        pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-        return pfp[0].imageUrl
-    }
+    
 
     return router;
 }

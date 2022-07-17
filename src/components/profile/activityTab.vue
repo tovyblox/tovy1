@@ -66,7 +66,7 @@
 
       <v-dialog v-model="prompt.visible" max-width="400">
         <v-card v-if="prompt.type == 'reset'" :loading="prompt.loading">
-          <v-card-title>Reset actvity </v-card-title>
+          <v-card-title>Reset activity </v-card-title>
           <v-card-text class="mt-n3">
             Are you sure you want to reset the activity of the selected users? This action
             is irrvesible
@@ -95,7 +95,7 @@
         <v-card v-else :loading="prompt.loading">
           <v-card-title
             >{{ prompt.type.charAt(0).toUpperCase() + prompt.type.slice(1) }}
-            actvity
+            activity
           </v-card-title>
 
           <v-form ref="form" class="mt-n1 mx-6" v-model="prompt.valid" lazy-validation>

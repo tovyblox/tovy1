@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings, permissions, automation) => {
+const erouter = (cacheEngine, settings, permissions, automation) => {
     console.log('running')
     let perms = permissions.perms;
     let checkPerm = permissions.checkPerm
@@ -39,8 +39,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
         await db.message.create(dbata);
 
-        let pfp = await fetchpfp(dbata.author);
-        let username = await fetchusername(dbata.author);
+        let pfp = await cacheEngine.fetchpfp(dbata.author);
+        let username = await cacheEngine.fetchusername(dbata.author);
         sendlog(dbata, username, pfp);
         let send = {
             ...dbata,
@@ -73,9 +73,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     }
 
     router.ws('/socket', async (ws, req) => {
-        console.log(req.session.userid)
         let cp = await checkPerm(req.session.userid);
-        console.log(cp)
         
         if (!cp) {
             ws.close();
@@ -100,8 +98,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
         let u = await Promise.all(messages.map(async m => {
             let d = m._doc;
-            let p = await fetchpfp(d.author);
-            let u = await fetchusername(d.author)
+            let p = await cacheEngine.fetchpfp(d.author);
+            let u = await cacheEngine.fetchusername(d.author)
             return {
                 ...d,
                 pfp: p,
@@ -145,8 +143,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
 
         await db.message.create(data);
 
-        let pfp = await fetchpfp(data.author);
-        let username = await fetchusername(data.author);
+        let pfp = await cacheEngine.fetchpfp(data.author);
+        let username = await cacheEngine.fetchusername(data.author);
         sendlog(data, username, pfp);
         let send = {
             ...data,
@@ -167,38 +165,9 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         })
     });
 
-    async function fetchusername(uid) {
-        if (usernames.get(uid)) {
-            return usernames.get(uid);
-        }
-        let userinfo = await noblox.getUsernameFromId(uid);
-        usernames.set(parseInt(uid), userinfo, 10000);
+    
 
-        return userinfo;
-    }
-
-    function chooseRandom(arr, num) {
-        const res = [];
-        for (let i = 0; i < num;) {
-            const random = Math.floor(Math.random() * arr.length);
-            if (res.indexOf(arr[random]) !== -1) {
-                continue;
-            };
-            res.push(arr[random]);
-            i++;
-        };
-        return res;
-    }
-
-    async function fetchpfp(uid) {
-        if (pfps.get(uid)) {
-            return pfps.get(uid);
-        }
-        let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
-        pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-        return pfp[0].imageUrl
-    }
+    
 
     return router;
 }

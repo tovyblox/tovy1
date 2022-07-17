@@ -34,6 +34,15 @@
             <v-list-item-title>Logout</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item @click="twofa = true" link class="mt-2">
+          <v-list-item-icon>
+            <v-icon>{{!$store.state.user['2fa'] ? 'mdi-lock' : 'mdi-lock-open'}}</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{$store.state.user['2fa'] ? 'Disable 2FA' : 'Enable 2FA'}}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        
         <v-list-item @click="darkmode" link class="mt-2">
           <v-list-item-icon>
             <v-icon>mdi-theme-light-dark</v-icon>
@@ -152,14 +161,18 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
+    <tfasetup @close="twofa = false" v-model="twofa"></tfasetup>
   </div>
 </template>
 
 <script>
+import tfasetup from '@/components/tfasetup'
 export default {
+  components: {tfasetup},
   data: () => ({
     drawer: false,
     mini: true,
+    twofa: false,
     pages: [
       {
         name: "Activity",
@@ -190,7 +203,8 @@ export default {
       {
         name: 'Ban',
         path: '/ban',
-        icon: 'mdi-gavel'
+        icon: 'mdi-gavel',
+        permission: "manage_bans",
       },
       {
         name: "View staff",

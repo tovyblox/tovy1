@@ -9,8 +9,11 @@ const db = require('./db/db');
 const noblox = require('noblox.js');
 const history = require('connect-history-api-fallback');
 const ora = require('ora');
+const CacheEngineLoader = require('./util/cacheEngine');
+const cacheEngine = new CacheEngineLoader();
 let package = require('../package.json');
 const fs = require('fs');
+const twofactor = require('node-2fa');
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
 let backendonly = false;
 
@@ -27,14 +30,11 @@ const logging = new LoggingEngine();
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const NodeCache = require("node-cache");
 const permissionsManager = require('./util/permissionsManager');
 const settingsManager = require('./util/settingsManager');
 const settings = new settingsManager();
 const automation = new automationEngine(logging, settings, noblox);
 const permissions = new permissionsManager(settings);
-const usernames = new NodeCache();
-const pfps = new NodeCache();
 const ews = require('express-ws')(app);
 let activews = [];
 
@@ -74,7 +74,7 @@ app.use(cookieSession({
             settings.settings.ranking = {
                 username: u.UserName,
                 uid: u.UserID,
-                pfp: await fetchpfp(u.UserID),
+                pfp: await cacheEngine.fetchpfp(u.UserID),
                 apikey: configforranking.hash,
             };
         }
@@ -86,14 +86,14 @@ app.use(cookieSession({
 
 async function runload() {
     console.log('Running tovy!')
-    app.use('/api/activity/', require('./activity')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/tasks/', require('./tasks')(usernames, pfps, settings, permissions, logging, automation));
-    app.use('/api/wall/', require('./wall')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/staff', require('./staff')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/settings/', require('./settings')(usernames, pfps, settings, permissions, logging));
-    app.use('/api/sessions/', require('./session')(usernames, pfps, settings, permissions, automation));
-    app.use('/api/bans/', require('./bans')(usernames, pfps, settings, permissions, logging, automation));
-    app.use('/api/ranking/', require('./ranking')(usernames, pfps, settings, permissions, automation));
+    app.use('/api/activity/', require('./activity')(cacheEngine, settings, permissions, automation));
+    app.use('/api/tasks/', require('./tasks')(cacheEngine, settings, permissions, logging, automation));
+    app.use('/api/wall/', require('./wall')(cacheEngine, settings, permissions, automation));
+    app.use('/api/staff', require('./staff')(cacheEngine, settings, permissions, automation));
+    app.use('/api/settings/', require('./settings')(cacheEngine, settings, permissions, logging));
+    app.use('/api/sessions/', require('./session')(cacheEngine, settings, permissions, automation));
+    app.use('/api/bans/', require('./bans')(cacheEngine, settings, permissions, logging, automation));
+    app.use('/api/ranking/', require('./ranking')(cacheEngine, settings, permissions, automation));
 }
 
 
@@ -134,7 +134,7 @@ app.get('/info', (req, res) => {
         success: true,
         version: package.version,
     })
-    
+
 });
 
 app.patch('/api/webhooks/:id/:secret/messages/:msg', async (req, res) => {
@@ -183,49 +183,49 @@ app.post('/api/finishSignup', async (req, res) => {
     res.status(200).json({ message: 'Successfully created user!' });
     await settings.set('roles', [
         {
-          "name": "Member",
-          "permissions": [
-            "view_staff_activity"
-          ],
-          "id": 1
+            "name": "Member",
+            "permissions": [
+                "view_staff_activity"
+            ],
+            "id": 1
         },
         {
-          "name": "HR",
-          "permissions": [
-            "view_staff_activity",
-            "host_sessions",
-            "post_on_wall"
-          ],
-          "id": 2
+            "name": "HR",
+            "permissions": [
+                "view_staff_activity",
+                "host_sessions",
+                "post_on_wall"
+            ],
+            "id": 2
         },
         {
-          "name": "Manager",
-          "permissions": [
-            "view_staff_activity",
-            "manage_notices",
-            "manage_bans",
-            "update_shout",
-            "post_on_wall",
-            "host_sessions"
-          ],
-          "id": 3
+            "name": "Manager",
+            "permissions": [
+                "view_staff_activity",
+                "manage_notices",
+                "manage_bans",
+                "update_shout",
+                "post_on_wall",
+                "host_sessions"
+            ],
+            "id": 3
         },
         {
-          "name": "Admin",
-          "permissions": [
-            "view_staff_activity",
-            "admin",
-            "manage_bans",
-            "manage_notices",
-            "manage_staff_activity",
-            "update_shout",
-            "post_on_wall",
-            "host_sessions",
-            "manage_tasks",
-          ],
-          "id": 4
+            "name": "Admin",
+            "permissions": [
+                "view_staff_activity",
+                "admin",
+                "manage_bans",
+                "manage_notices",
+                "manage_staff_activity",
+                "update_shout",
+                "post_on_wall",
+                "host_sessions",
+                "manage_tasks",
+            ],
+            "id": 4
         }
-      ])
+    ])
     await db.message.create({
         id: 1,
         author: 469981094,
@@ -286,13 +286,14 @@ app.get('/api/profile', async (req, res) => {
         return;
     };
 
-    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall','manage_bans', 'manage_tasks'];
+    let role = user.role != 0 ? settings.get('roles').find(role => role.id === user.role).permissions : ["view_staff_activity", "admin", "manage_notices", "update_shout", 'manage_staff_activity', 'host_sessions', 'post_on_wall', 'manage_bans', 'manage_tasks'];
     info.perms = role;
     info.id = req.session.userid;
 
     let pfp = await noblox.getPlayerThumbnail({ userIds: req.session.userid, cropType: "headshot" });
     res.status(200).json({
         pfp: pfp[0].imageUrl,
+        '2fa': !!user['2fa'],
         info: info,
         group: {
             color: color || 'grey lighten-2',
@@ -397,7 +398,7 @@ app.get('/api/pfp/name/:name', async (req, res) => {
         res.status(404).json({ message: 'No such user!' });
         return;
     });
-    const pfp = await fetchpfp(uid);
+    const pfp = await cacheEngine.fetchpfp(uid);
     res.status(200).json({
         pfp: pfp
     });
@@ -406,7 +407,7 @@ app.get('/api/pfp/name/:name', async (req, res) => {
 app.get('/api/pfp/id/:id', async (req, res) => {
     if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
     if (!req.params.id) return res.status(400).json({ message: 'No id specified' });
-    const pfp = await fetchpfp(Number(req.params.id));
+    const pfp = await cacheEngine.fetchpfp(Number(req.params.id));
     res.status(200).json({
         pfp: pfp
     });
@@ -425,33 +426,94 @@ app.post('/api/login', async (req, res) => {
         res.status(401).json({ message: 'User not found' });
         return;
     };
+    if (user['2fa']) {
+        const newToken = twofactor.generateToken(user['2fa']);
 
+        req.session['2fa'] = {
+            userid: user.userid,
+            code: newToken,
+            awaiting: true,
+        }
+        res.status(401).json({ message: '2fa required' });
+        return;
+    }
     req.session.userid = target;
     res.status(200).json({ message: 'Successfully logged in!' });
+});
+
+app.post('/api/finish2fa', async (req, res) => {
+    if (!req.session['2fa']) return res.status(400).json({ message: 'No 2fa code!' });
+    let user = await db.user.findOne({ userid: req.session['2fa'].userid });
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    
+
+    let delta = twofactor.verifyToken(user['2fa'], req.body.code);
+    if (delta?.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
+    req.session.userid = req.session['2fa'].userid;
+    res.status(200).json({ message: 'Successfully logged in!' });
+});
+
+app.post('/api/setup2fa', async (req, res) => {
+    if (!req.session.userid) return res.status(401).json({ message: 'Not logged in' });
+    let user = await db.user.findOne({ userid: req.session.userid });
+    if (user['2fa'] ) {
+        return res.status(400).json({ message: '2fa already setup!' });
+    }
+    
+    let new2fa = twofactor.generateSecret({ name: "Tovy", account: await noblox.getUsernameFromId(req.session.userid) });
+    let code = twofactor.generateToken(new2fa);
+    //user['2fa'] = new2fa;
+    //await user.save();
+    req.session['2fasetup'] = {
+        secret: new2fa,
+        code: code,
+    }
+    res.status(200).json({ qr: new2fa.qr, secret: new2fa.secret });
 })
 
-async function fetchpfp(uid) {
-    if (pfps.get(uid)) {
-        return pfps.get(uid);
-    }
-    let pfp = await noblox.getPlayerThumbnail({ userIds: uid, cropType: "headshot" });
-    pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
+app.post('/api/confirm2fa', async (req, res) => {
+    if (!req.session['2fasetup']) return res.status(400).json({ message: 'No 2fa code!' });
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    let user = await db.user.findOne({ userid: req.session.userid });   
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    let session = req.session['2fasetup']
 
-    return pfp[0].imageUrl
-};
+    let delta = twofactor.verifyToken(session.secret.secret, `${req.body.code}`);
+    if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
 
-async function fetchusername(uid) {
-    if (usernames.get(uid)) {
-        return usernames.get(uid);
-    }
-    let userinfo = await noblox.getUsernameFromId(uid);
-    usernames.set(parseInt(uid), userinfo, 10000);
+    user['2fa'] = session.secret.secret;
+    await user.save();
+    req.session['2fasetup'] = undefined;
+    res.status(200).json({ message: 'Set up 2fa!' });
+})
 
-    return userinfo;
-}
+app.post('/api/turnoff2fa', async (req, res) => {
+    if (!req.body.code) return res.status(400).json({ message: 'No code!' });
+    if (typeof req.body.code !== 'string') return res.status(400).json({ message: 'Invalid code!' });
+    let user = await db.user.findOne({ userid: req.session.userid });   
+    if (!user) return res.status(401).json({ message: 'User not found' });
+    if (!user['2fa']) return res.status(400).json({ message: 'No 2fa code!' });
 
 
-module.exports = {fetchpfp, fetchusername};
+    let delta = twofactor.verifyToken(user['2fa'], `${req.body.code}`);
+    if (!delta || delta.delta !== 0) return res.status(401).json({ message: 'Invalid code!' });
+
+    user['2fa'] = undefined;
+    await user.save();
+    res.status(200).json({ message: 'Disabled 2fa!' });
+})
+
+
+
+
+
+
+
+
+module.exports = { cacheEngine };
 
 
 function chooseRandom(arr, num) {

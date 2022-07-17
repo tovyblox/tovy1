@@ -8,7 +8,7 @@ const router = express.Router();
 
 let activews = [];
 
-const erouter = (usernames, pfps, settings, permissions, automation) => {
+const erouter = (cacheEngine, settings, permissions, automation) => {
   let perms = permissions.perms;
   router.get("/gmembers", perms("manage_staff_activity"), async (req, res) => {
     if (!req.query.role) {
@@ -27,7 +27,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       .catch((err) => res.status(500).json({ message: "Server error!" }));
     let mx = await Promise.all(
       members.map(async (m) => {
-        m.pfp = await fetchpfp(m.userId);
+        m.pfp = await cacheEngine.fetchpfp(m.userId);
         m.selected = false;
 
         let sessions = await db.session.find({ uid: m.userId, active: false });
@@ -80,7 +80,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       res.status(200).json({
         username: ruser.username,
         info: ruser,
-        pfp: await fetchpfp(user),
+        pfp: await cacheEngine.fetchpfp(user),
       });
     }
   );
@@ -127,7 +127,6 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     perms("manage_staff_activity"),
     async (req, res) => {
       let userid = parseInt(req.params.user);
-      console.log(userid);
       if (!userid) return res.status(404).json({ message: "No user!" });
       let books = await db.book.find({ userid: userid, deleted: { $ne: true } });
       res.status(200).json({ success: true, books });
@@ -181,8 +180,8 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
       logs.map(async (m) => {
         if (!m.automation)
           user = {
-            username: await fetchusername(m.userId),
-            pfp: await fetchpfp(m.userId),
+            username: await cacheEngine.fetchusername(m.userId),
+            pfp: await cacheEngine.fetchpfp(m.userId),
           };
         else user = undefined;
 
@@ -247,7 +246,7 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
         return {
           username: e.name,
           id: e.id,
-          pfp: await fetchpfp(e.id),
+          pfp: await cacheEngine.fetchpfp(e.id),
           displayName: e.displayName,
         };
       })
@@ -267,15 +266,6 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     }
   );
 
-  async function fetchusername(uid) {
-    if (usernames.get(uid)) {
-      return usernames.get(uid);
-    }
-    let userinfo = await noblox.getUsernameFromId(uid);
-    usernames.set(parseInt(uid), userinfo, 10000);
-
-    return userinfo;
-  }
 
   function chooseRandom(arr, num) {
     const res = [];
@@ -290,18 +280,6 @@ const erouter = (usernames, pfps, settings, permissions, automation) => {
     return res;
   }
 
-  async function fetchpfp(uid) {
-    if (pfps.get(uid)) {
-      return pfps.get(uid);
-    }
-    let pfp = await noblox
-      .getPlayerThumbnail({ userIds: uid, cropType: "headshot" })
-      .catch((err) => null);
-    if (!pfp) return null;
-    pfps.set(parseInt(uid), pfp[0].imageUrl, 10000);
-
-    return pfp[0].imageUrl;
-  }
 
   return router;
 };
