@@ -22,9 +22,14 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
         return null;
       });
     if (!role) return;
-    let members = await noblox
-      .getPlayers(settings.get("group"), role.id)
-      .catch((err) => res.status(500).json({ message: "Server error!" }));
+    let groupreq = await axios.get(`https://groups.roblox.com/v1/groups/${settings.get("group")}/roles/${role.id}/users?limit=10${req.query.cursor ? `&cursor=${req.query.cursor}` : ''}`, {})
+    let members = groupreq.data.data
+    if (groupreq.data.nextPageCursor) {
+      let groupreq2 = await axios.get(`https://groups.roblox.com/v1/groups/${settings.get("group")}/roles/${role.id}/users?limit=10&cursor=${groupreq.data.nextPageCursor}`, {})
+      groupreq2.data.data.forEach(async m => {
+        await cacheEngine.fetchpfp(m.userId);
+      })
+    }
     let mx = await Promise.all(
       members.map(async (m) => {
         m.pfp = await cacheEngine.fetchpfp(m.userId);
@@ -62,7 +67,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
       })
     );
 
-    res.status(200).json({ members: await mx });
+    res.status(200).json({ members: await mx, nextcursor: groupreq.data.nextPageCursor, previouscursor: groupreq.data.previousPageCursor });
   });
 
   router.get(

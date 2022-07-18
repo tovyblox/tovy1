@@ -80,7 +80,7 @@
         <v-select
           :items="groles"
           v-model="srole"
-          @change="updatemembers"
+          @change="newsearch"
           dense
           class="my-auto mt-2"
           style="max-width: 200px"
@@ -95,8 +95,12 @@
       <v-data-iterator
         v-if="srole && !loading"
         :items="data"
-        :footer-props="{ 'items-per-page-options': [24, 48, -1] }"
-        :items-per-page="24"
+        :footer-props="{ 'items-per-page-options': [10] }"
+        :items-per-page="10"
+        :page="page"
+        @update:page="nextpage"
+        :server-items-length="groles.find(i => i.rank == srole).memberCount"
+        
       >
         <template v-slot:default="{ items }">
           <v-row align="center">
@@ -293,7 +297,9 @@ export default {
       visible: false,
     },
     susers: [],
-
+    cursor: '',
+    prevcursor: '',
+    page: 1,
     data: [],
   }),
   components: {},
@@ -369,12 +375,38 @@ export default {
           this.prompt.visible = false;
         });
     },
-    updatemembers: function () {
+    nextpage: function (page) {
+      console.log(page)
+      if (page < this.page) {
+        this.page = page;
+        this.$http
+        .get(`/staff/gmembers?role=${this.srole}${this.prevcursor ? `&cursor=${this.prevcursor}` : ''}`, { withCredentials: true })
+        .then((response) => {
+          this.data = response.data.members
+          this.cursor = response.data.nextcursor;
+          this.prevcursor = response.data.previouscursor;
+          this.loading = false;
+        });
+        return;
+      }
+      this.$http
+        .get(`/staff/gmembers?role=${this.srole}${this.cursor ? `&cursor=${this.cursor}` : ''}`, { withCredentials: true })
+        .then((response) => {
+          this.page++
+          this.data = response.data.members
+          this.cursor = response.data.nextcursor;
+          this.prevcursor = response.data.previouscursor;
+          this.loading = false;
+        });
+    },
+    newsearch: function () {
       this.loading = true;
       this.$http
-        .get("/staff/gmembers?role=" + this.srole, { withCredentials: true })
+        .get(`/staff/gmembers?role=${this.srole}`, { withCredentials: true })
         .then((response) => {
+          this.page = 1
           this.data = response.data.members;
+          this.cursor = response.data.nextcursor;
           this.loading = false;
         });
     },
