@@ -17,7 +17,7 @@ let activews = [];
 
 
 
-const erouter = (usernames, pfps, settings) => {
+const erouter = (cacheEngine, settings) => {
     router.use((req, res, next) => {
         if (req.headers['api'] !== settings.get('ranking').apikey) return res.status(401).send('Unauthorized');
         next();
