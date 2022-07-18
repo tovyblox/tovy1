@@ -536,5 +536,25 @@ function chooseRandom(arr, num) {
     return res;
 }
 
+process.on('exit', () => {
+    db.session.find({ active: true }).then(sessions => {
+        sessions.forEach(session => {
+            session.active = false;
+            session.end = new Date();
+            session.save();
+        });
+    });
+    console.log('Exiting...');
+});
+
+process.on('uncaughtException', function(e) {
+    if (!process.env.preventCrash) {
+        console.log('uncaughtException', e);
+        process.exit(1);
+    }
+    console.log(e);
+})
+
+
 console.log('running on http://localhost:' + process.env.PORT || process.env.port || 8080);
 app.listen(process.env.PORT || process.env.port || 8080)
