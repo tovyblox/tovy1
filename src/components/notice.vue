@@ -113,7 +113,7 @@ export default {
       //get time in date
       let time = date.getMinutes();
       let hour = date.getHours();
-      return `${hour}:${time > 10 ? time : "0" + time}`;
+      return `${hour > 10 ? hour : "0" + hour}:${time > 10 ? time : "0" + time}`;
     },
     getDate: function (d) {
       let date = new Date(d);
