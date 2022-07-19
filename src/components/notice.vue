@@ -113,7 +113,7 @@ export default {
       //get time in date
       let time = date.getMinutes();
       let hour = date.getHours();
-      return `${hour}:${time}`;
+      return `${hour}:${time > 10 ? time : "0" + time}`;
     },
     getDate: function (d) {
       let date = new Date(d);
@@ -135,8 +135,8 @@ export default {
       let date = new Date(d);
       let date2 = new Date(d2);
       var diffMs = date2 - date;
-      var diffHrs = Math.floor((diffMs % 86400000) / 3600000); 
-      var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000); 
+      var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+      var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
       if (!diffHrs) {
         return `${diffMins} minutes`;
       } else {
