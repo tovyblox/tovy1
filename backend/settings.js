@@ -119,19 +119,19 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
             'content-type': 'application/json;charset=UTF-8',
             'accept': 'application/json, text/plain, */*'
         }
-        
+
         const data = await axios.post('https://auth.roblox.com/v2/signup', {}, {
             headers: headers,
         }).catch(e => e.response)
-    
+
         const json = data.data;
         if (data.status === 429) {
             throw 'ratelimoted'
-        
+
         }
         return json['failureDetails'][0]['fieldData']
     }
-    
+
     router.post('/getcaptcha', perms('admin'), async (req, res) => {
         let { username, password } = req.body;
         let data= await getFieldData(username, password)
@@ -148,7 +148,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         })
 
         let s = new fun.Session(token, { userAgent: UA });
-        
+
         req.session.captcha = {
             username: username,
             password:   password,
@@ -156,10 +156,10 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
             id: data.split(',')[0]
         }
         res.json({ url: s.getEmbedUrl() });
-        
+
     });
 
- 
+
 
     router.post('/login', perms('admin'), async (req, res) => {
         //if (!req.body?.cookie) return res.status(400).json({ success: false, message: 'No cookie previded' });
@@ -172,8 +172,8 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         let csrf = await axios.post(`https://auth.roblox.com/v2/login`).catch(e => e.response)
         let csfrtoken = csrf.headers['x-csrf-token'];
 
-        let loginreq = await axios.post('https://auth.roblox.com/v2/login', { 
-            ctype: "Username", 
+        let loginreq = await axios.post('https://auth.roblox.com/v2/login', {
+            ctype: "Username",
             cvalue: capcha.username,
             password: capcha.password,
             captchaToken: capcha.token.token,
@@ -191,8 +191,8 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         let cookie = cookieParser.parse(loginreq.headers[`set-cookie`], {
             map: true
         })['.ROBLOSECURITY'].value;
-        
-        
+
+
         let user;
         try {
             user = await noblox.setCookie(cookie);
@@ -432,7 +432,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
 
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
-        let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `http://${req.headers.host}/api`);
+        let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `${req.protocol}://${req.headers.host}/api`);
 
         res.type('rbxmx')
         res.send(xx);
@@ -441,7 +441,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     router.get('/bloader', perms('admin'), async (req, res) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'TovyBans.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=TovyBans.rbxmx');
-        let xx = xml_string.replace('<url>', `http://${req.headers.host}`);
+        let xx = xml_string.replace('<url>', `${req.protocol}://${req.headers.host}`);
         res.type('rbxmx')
         res.send(xx);
     })
@@ -449,7 +449,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     router.get('/rloader', perms('admin'), async (req, res) => {
         let xml_string = fs.readFileSync(path.join(__dirname, 'Tovy_RankingLoader.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=Tovy_RankingLoader.rbxmx');
-        let xx = xml_string.replace('<key>', settings.get('ranking').apikey).replace('<url>', `http://${req.headers.host}/api/ranking`);
+        let xx = xml_string.replace('<key>', settings.get('ranking').apikey).replace('<url>', `${req.protocol}://${req.headers.host}/api/ranking`);
 
         res.type('rbxmx')
         res.send(xx);
