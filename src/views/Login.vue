@@ -25,8 +25,8 @@
                 <v-text-field
                   v-model="password"
                   outlined
-                  label="Password (not roblox password)"
-                  hint="Not your roblox password, the password for this site"
+                  label="Password (not Roblox password)"
+                  hint="Not your Roblox password, the password for this site"
                   class="mt-3"
                   hide-details="auto"
                   :rules="[(v) => !!v || 'Password is required']"
@@ -42,7 +42,7 @@
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Enter your 2fa pin
+                Enter your 2FA pin
               </v-card-text>
               <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 That code isn't valid</v-alert

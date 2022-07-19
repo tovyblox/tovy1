@@ -32,7 +32,7 @@
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Now lets verify its actually you and not some sussy inpasta
+                We just need to verify your identity
               </v-card-text>
                <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 I could not find the code in your profile </v-alert
@@ -156,7 +156,7 @@ export default {
           "/signup/finish",
           {
             username: this.username,
-            password: this.password, 
+            password: this.password,
             invite: this.$route.query.invite || undefined
           },
           { withCredentials: true }

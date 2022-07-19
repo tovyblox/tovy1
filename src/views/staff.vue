@@ -100,7 +100,7 @@
         :page="page"
         @update:page="nextpage"
         :server-items-length="groles.find(i => i.rank == srole).memberCount"
-        
+
       >
         <template v-slot:default="{ items }">
           <v-row align="center">
@@ -282,7 +282,7 @@ export default {
     headers: [
       { text: "Username", value: "username" },
       { text: "Status", value: "status" },
-      { text: "Minuites in game", value: "min" },
+      { text: "Minutes in game", value: "min" },
     ],
     prompt: {
       type: "",

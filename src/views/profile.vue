@@ -23,7 +23,7 @@
         </div></v-layout
       >
       <v-tabs class="mt-7 mb-n3" v-model="tab" color="red darken-2">
-        <v-tab href="#tab-1">Acivity</v-tab>
+        <v-tab href="#tab-1">Activity</v-tab>
         <v-tab href="#tab-2">Bans</v-tab>
         <v-tab href="#tab-3">Book</v-tab>
       </v-tabs>
@@ -52,7 +52,7 @@
           <bookTab class="mx-1"/>
         </v-tab-item>
         </v-tabs-items>
-      
+
 
       <!-- <v-data-table :headers="headers" :items="data" :items-per-page="5">
         <template v-slot:item="{}" class="pt-5">
@@ -89,7 +89,7 @@ export default {
     tab: 1,
     reason: "",
     ban: null,
-  
+
     resetting: false,
     banp: {
       visible: false,
@@ -132,7 +132,7 @@ export default {
     firsu: function (str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
     },
-    
+
   },
 };
 </script>
