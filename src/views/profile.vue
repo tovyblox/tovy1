@@ -127,7 +127,7 @@ export default {
       //get time in date
       let time = date.getMinutes();
       let hour = date.getHours();
-      return `${hour}:${time}`;
+      return `${hour}:${time > 10 ? time : "0" + time}`;
     },
     firsu: function (str) {
       return str.charAt(0).toUpperCase() + str.slice(1);
