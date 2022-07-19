@@ -8,9 +8,6 @@
     "backend": "node backend/index.js -b",
     "start": "node backend/index.js"
   },
-  "engines": {
-    "node": "16.x"
-  },
   "dependencies": {
     "@chenfengyuan/vue-countdown": "^1.1.5",
     "@hipsjs/flowy-vue": "^1.0.13",
