@@ -178,7 +178,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
             password: capcha.password,
             captchaToken: capcha.token.token,
             captchaId: capcha.id,
-            captchaProvider: "PROVIDER_AKOSE_LABS",
+            captchaProvider: "PROVIDER_ARKOSE_LABS",
         }, {
             headers: {
                 'x-csrf-token': csfrtoken,
