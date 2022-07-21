@@ -46,7 +46,7 @@
             class="mt-n3 mx-6 mb-6"
             color="red"
           >
-            Dates for your IA are required</v-alert
+            Dates for your inactivity is required</v-alert
           >
           <v-form ref="form" class="mt-n3 mx-6" v-model="dialog.valid" lazy-validation>
             <v-progress-linear
