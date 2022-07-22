@@ -3,7 +3,7 @@
     <v-sheet color="grey lighten-2" height="200" style="width: 100%"> </v-sheet>
     <v-container class="mt-n10 mx-auto">
       <v-card min-width="200px" max-width="600px" outlined class="mt-n3 mx-auto">
-        <v-card-title class="mb-n5"> Lets get started! </v-card-title>
+        <v-card-title class="mb-n5"> Let's get started! </v-card-title>
         <v-stepper elevation="0" v-model="e1">
           <v-stepper-items>
             <v-stepper-content class="mx-n2 mt-n6" step="1">
@@ -32,13 +32,13 @@
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Now lets verify its actually you and not some sussy inpasta
+                Next, we need to make sure that you're actually {{ username }}
               </v-card-text>
                <v-alert type="error" v-if="error" class="mt-n2" color="red">
-                I could not find the code in your profile </v-alert
+                We couldn't find the code in your profile </v-alert
               >
               <v-progress-linear v-if="loading" indeterminate class="mb-3 rounded-xl"/>
-              <h3 class="text-center">Please paste the below into your Roblox blurb</h3>
+              <h3 class="text-center">Please paste the code below into your Roblox blurb</h3>
               <div class="text-h5 mb-10 text-center">
                 <code> {{ vstring }} </code>
               </div>

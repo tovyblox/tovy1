@@ -6,7 +6,7 @@
           Hi {{ this.$store.state.user.displayName }},
         </p>
         <p class="text-body-1 font-weight-bold mt-n5 gray">
-          Lets view some inactivity notices
+          Let's view some inactivity notices
         </p>
       </v-container>
     </v-sheet>
