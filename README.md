@@ -74,5 +74,5 @@
     </li>
   </ul>
   <h2>License</h2>
-  Tovy is licensed under the <a href="./LICENSE">Apache 2.0</a> license
+  Tovy is licensed under the <a href="./LICENSE">GNU General Public License v3.0.</a>
 </div>
