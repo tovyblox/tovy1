@@ -311,6 +311,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         let c = {
             noticetext: settings.get('noticetext'),
             role: settings.get('activity')?.role,
+            bestcount: settings.get('activity')?.bestcount,
             tovyr: settings.get('tovyr')?.enabled,
             proxy: settings.get('wproxy'),
             ranking: settings.get('ranking'),
@@ -407,6 +408,20 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         settings.set('activity', {
             key: curconfig.key,
             role: req.body.role
+        })
+        logging.newLog(`has updated acitvity settings`, req.session.userid);
+
+        res.status(200).json({
+            message: 'ok'
+        })
+    })
+
+    router.post('/setbestcount', perms('admin'), async (req, res) => {
+        let curconfig = settings.get('activity');
+        settings.set('activity', {
+            key: curconfig.key,
+            role: curconfig.role,
+            bestcount: req.body.count
         })
         logging.newLog(`has updated acitvity settings`, req.session.userid);
 

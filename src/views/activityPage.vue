@@ -34,7 +34,7 @@
         </div>
       </v-card>
       <v-row>
-        <v-col order="last">
+        <v-col order="last" sm="6" cols="12" >
           <v-card :loading="loading.best" outlined class="pb-1 mb-2">
             <v-card-title> Best </v-card-title>
             <v-card-text class="mt-n6">

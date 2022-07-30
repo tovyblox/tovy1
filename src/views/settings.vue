@@ -374,6 +374,15 @@
                         hide-details="auto"
                       >
                       </v-textarea>
+                      <v-textarea
+                        outlined
+                        label="End embed body"
+                        v-if="sessions.discohook.length"
+                        v-model="game.endbody"
+                        class="mt-2"
+                        hide-details="auto"
+                      >
+                      </v-textarea>
                     </div>
                   </v-card>
                 </div></div
@@ -640,7 +649,7 @@
             >
               mdi-timer
             </v-icon>
-            <v-expansion-panel-header> Tovy loader </v-expansion-panel-header>
+            <v-expansion-panel-header> Acitvity Settings & Loader </v-expansion-panel-header>
           </v-layout>
 
           <v-expansion-panel-content>
@@ -656,6 +665,16 @@
               item-text="name"
             >
             </v-select>
+            <v-slider
+              @change="() => setbest()"
+              v-model="bestcount"
+              outlined
+              label="Best count"
+              class="mt-2"
+              thumb-label
+              min="0"
+              max="30"
+            />
             <v-divider></v-divider>
             <v-btn @click="downlodloader" color="info mt-2">
               Download loader
@@ -764,6 +783,7 @@ export default {
         password: "",
       },
     },
+    bestcount: 1,
     roleconfig: {
       loading: false,
       arole: 1,
@@ -922,6 +942,7 @@ export default {
       .then((response) => {
         this.other = response.data.config;
         this.roleconfig.arole = response.data.config.role;
+        this.bestcount = response.data.config.bestcount || 10;
         this.games = response.data.config.groupgames;
         console.log(response.data.config);
         if (response.data.config.noticetext) {
@@ -1136,6 +1157,25 @@ export default {
     },
     isperm: function (role, perm) {
       return role.permissions.includes(perm.value);
+    },
+    setbest: function () {
+      this.$http
+        .post(
+          "/settings/setbestcount",
+          { count: this.bestcount }
+        )
+        .then(
+          (r) => {
+            r;
+            this.toast.message = "Set count!";
+            this.toast.visible = true;
+          },
+          (err) => {
+            err;
+            this.toast.message = "Error setting count!";
+            this.toast.visible = true;
+          }
+        );
     },
     setgrole: function (role) {
       this.$http

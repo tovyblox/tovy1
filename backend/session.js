@@ -30,6 +30,11 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     });
     essions.forEach(async (session) => {
       let ssession = await db.gsession.findOne({ id: session.id });
+      if (ssession.end) {
+        ssession.started = true;
+        ssession.save();
+        return;
+      }
       ssession.started = true;
       ssession.did = await sendlog(session);
       automation.runEvent("sessionstarted", {
@@ -130,9 +135,22 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
       .setTimestamp()
       .setAuthor(username, pfp, `https://www.roblox.com/users/${data.uid}`)
       .setDescription(
-        `The ${data.type.name} hosted by ${username} has ended! We will host more very soon don't worry`
+        gmsg(game?.endbody || `The %TYPE% hosted by %HOST% has ended! We will host more very soon don't worry`)
       )
       .setFooter({ text: `Tovy sessions` });
+
+      function gmsg(text) {
+        let replacements = {};
+        replacements[`%TYPE%`] = data.type.name;
+        replacements[`%HOST%`] = username;
+        replacements[`%GAME%`] = data.type.gid;
+  
+        return text.replace(/%\w+%/g, (all) => {
+          return typeof replacements[all] !== "undefined"
+            ? replacements[all]
+            : all;
+        });
+      }
 
     let msg = await webhookc
       .editMessage(data.did, { content: null, embeds: [embed], components: [] })

@@ -3,6 +3,7 @@ const noblox = require("noblox.js");
 const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const express = require("express");
+const { config } = require("dotenv");
 const router = express.Router();
 
 let activews = [];
@@ -34,8 +35,9 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
   router.post("/createsession", async (req, res) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
-      if (!req.body.userid) return res.status(400).json({ error: "no userid" });
-      if (typeof req.body.userid !== 'number') return res.status(400).json({ error: "userid is not a number" });
+    if (!req.body.userid) return res.status(400).json({ error: "no userid" });
+    if (typeof req.body.userid !== "number")
+      return res.status(400).json({ error: "userid is not a number" });
     if (settings.get("activity")?.role) {
       let userrank = await noblox
         .getRankInGroup(settings.get("group"), req.body.userid)
@@ -140,7 +142,8 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
   router.post("/endsession", async (req, res) => {
     if (req.headers.authorization !== settings.get("activity").key)
       return res.status(401);
-      if (typeof req.body.userid !== 'number') return res.status(400).json({ error: "userid is not a number" });
+    if (typeof req.body.userid !== "number")
+      return res.status(400).json({ error: "userid is not a number" });
 
     if (typeof req.body.userid !== "number")
       return res.status(400).json({ message: "Userid must be a number!" });
@@ -221,15 +224,34 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
   });
 
   router.get("/best", perms("view_staff_activity"), async (req, res) => {
-    let sessions = await db.session.find({});
-    if (!sessions.length) return res.status(200).json([]);
-    let e = _.groupBy(sessions, (i) => i.uid);
-    let arr = Object.values(e).map((c) => ({ uid: c[0].uid, l: c.length }));
-    let sorted = arr.sort((a, b) => b.l - a.l).slice(0, 10);
+    let result = await db.session.aggregate([
+      {
+        $group: {
+          _id: "$uid",
+          mins: {
+            $sum: {
+              $divide: [
+                {
+                  $subtract: ["$end", "$start"],
+                },
+                60000,
+              ],
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          mins: -1,
+        },
+      },
+    ]);
+    let config = await settings.get("activity")?.bestcount || 10;
+    let sorted = result.slice(0, config);
     let s = [];
     for (user of sorted) {
-      let uname = await cacheEngine.fetchusername(user.uid);
-      let pfp = await cacheEngine.fetchpfp(user.uid);
+      let uname = await cacheEngine.fetchusername(user._id);
+      let pfp = await cacheEngine.fetchpfp(user._id);
       user.pfp = pfp;
       user.username = uname;
       s.push(user);
@@ -244,7 +266,12 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     perms("view_staff_activity"),
     async (req, res) => {
       let sessions = await db.session.find({ active: true });
+      let date = new Date();
       if (!sessions.length) return res.status(200).json([]);
+      let nowdate = new Date()
+      //get ms between both dates
+      let ms = nowdate.getTime() - date.getTime();
+      console.log(`Got all sessions in ${ms}ms`)
       let s = [];
 
       for (session of sessions) {
@@ -262,32 +289,35 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
   );
 
   router.get("/stats", perms("view_staff_activity"), async (req, res) => {
-    let sessions = await db.session.find({});
-    let des = await db.session.distinct("uid")
-    let e = _.groupBy(sessions, (i) => i.uid);
-    let arr = sessions.map((e) => {
-      let time;
-      if (!e.mins) {
-        const d2 = new Date(e.start);
-        const d1 = new Date(e.end);
-        const diffMs = d1.getTime() - d2.getTime();
-        const diffMins = diffMs / 1000 / 60;
-        time = Math.round(diffMins);
-      } else time = e.mins;
-
-      return { ...e._doc, time: time, type: e.type || "session" };
-    });
-    let sorted = arr.sort((a, b) => b.l - a.l).slice(0, 10);
-    let s = [];
-    let grouped = _.groupBy(sorted, (i) => i.uid);
+    let des = await db.session.distinct("uid");
+    console.log('loaded all users')
+    let arr = await db.session.aggregate([
+      {
+        '$addFields': {
+          'mins': {
+            '$ifNull': [
+              '$mins', {
+                '$divide': [
+                  {
+                    '$subtract': [
+                      '$end', '$start'
+                    ]
+                  }, 60000
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ])
 
     res.status(200).json({
       staff: des.length,
       sessions: arr.length,
       mins: Math.floor(
         _.sumBy(arr, function (i) {
-          if (!isNaN(i.time)) {
-            return i.time;
+          if (!isNaN(i.mins)) {
+            return i.mins;
           } else {
             return 0;
           }
@@ -320,9 +350,6 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
       }
     }
   });
-
-
-
 
   return router;
 };

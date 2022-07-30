@@ -17,7 +17,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
       return res.status(400).json({ error: "No username provided." });
     if ((!until && perm == false) || perm == null)
       return res.status(400).json({ error: "No date provided." });
-    const id = await noblox.getIdFromUsername(username);
+    const id = await noblox.getIdFromUsername(username).catch(e => null);
     if (!id) {
       res.status(400).json({ message: "No such user!" });
       return;
