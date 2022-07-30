@@ -64,7 +64,7 @@
               prefix="I'm inactive for"
               required
               class="mb-3"
-              :rules="[(v) => !!v || 'Username is required']"
+              :rules="[(v) => !!v || 'Reason is required']"
             ></v-text-field>
             <v-date-picker
               :min="getcur()"
