@@ -98,6 +98,8 @@
           </v-stepper-items>
         </v-stepper>
       </v-card>
+      <p class="text-center grey--text mt-2"> ©Tovy 2022 </p>
+
     </v-container>
   </div>
 </template>

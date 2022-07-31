@@ -160,6 +160,7 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <p class="grey--text text-caption ml-2"> ©️Tovy 2022 </p>
     </v-navigation-drawer>
     <tfasetup @close="twofa = false" v-model="twofa"></tfasetup>
   </div>
