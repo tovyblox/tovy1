@@ -52,15 +52,18 @@ end
 	Queues the requested player to begin their session
 ]]--
 local function createSession(player)
-	
-	table.insert(queuedJoins, player.UserId)
+	if isUserTracked(player) then
+		table.insert(queuedJoins, player.UserId)
+	end
 end
 
 --[[
 	Queues the requested player to end their session
 ]]--
-local function endSession(player)	
-	table.insert(queuedLeaves ,player.UserId)
+local function endSession(player)
+	if isUserTracked(player) then
+		table.insert(queuedLeaves ,player.UserId)
+	end
 end
 
 --[[
