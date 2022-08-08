@@ -265,7 +265,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
         const body = req.body;
 
         res.status(200).json({ message: 'Updated!' });
-    });
+    }); 
 
     router.post('/setsessions', perms('admin'), async (req, res) => {
         const body = req.body;
@@ -447,7 +447,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
 
         let xml_string = fs.readFileSync(path.join(__dirname, 'Script.rbxmx'), "utf8");
         res.setHeader('Content-Disposition', 'attachment; filename=tovy_activity.rbxmx');
-        let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `http://${req.headers.host}/api`);
+        let xx = xml_string.replace('<api>', settings.get('activity').key).replace('<ip>', `${req.connection.encrypted ? 'https' : 'http'}://${req.headers.host}/api`).replace('<groupId>', settings.get('group'));
 
         res.type('rbxmx')
         res.send(xx);

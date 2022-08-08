@@ -2,79 +2,190 @@
 	<Meta name="ExplicitAutoJoints">true</Meta>
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Script" referent="RBX046E2B5D402B445297798827394C79A1">
+	<Item class="Script" referent="RBX1985458984FA41118580BA5BD794F3FE">
 		<Properties>
 			<BinaryString name="AttributesSerialize"></BinaryString>
 			<bool name="Disabled">false</bool>
 			<Content name="LinkedSource"><null></null></Content>
-			<string name="Name">Script</string>
-			<string name="ScriptGuid">{844F5DF7-9291-472A-AAC2-1A0E555F826A}</string>
-			<ProtectedString name="Source"><![CDATA[local httpservice = game:GetService('HttpService')
+			<string name="Name">TovyActivity</string>
+			<token name="RunContext">0</token>
+			<string name="ScriptGuid">{0484A838-F6C2-4EA2-B475-FAAEC2EA78DF}</string>
+			<ProtectedString name="Source"><![CDATA[local httpService = game:GetService('HttpService')
 local players = game:GetService('Players')
+
 local config = {
 	url = "<ip>",
-	auth = '<api>'
+	auth = "<api>",
+	
+	bansEnabled = true, --// Set to false if you do not want Tovy to handle bans (This will use less HTTP requests)
+	
+	batchSendDataOnServerClose = true, --// Whether or not this script should bulk send leave data once this server has shutdown (This may cause issues with SoftShutdown scripts which relocate players)
+	bulkDataSendInterval = 30, --// The interval (seconds) at which join/leave data will be sent to Tovy
+	
+	rankChecking = true, --// Enables rank checking on player join/leave to ensure only relevant data is sent to Tovy
+	groupId = <groupId>, --// The group ID to perform activity tracking for
+	minTrackedRank = 0	 --// The minimum rank ID to perform activity tracking for (This value is retrieved from your Tovy instance on game launch)
 }
 
-local function createsession  (player)
-	print(player.UserId)
-	local request = httpservice:RequestAsync({
-		Url =  config.url .. '/activity/createsession',
-		Method = "POST",
-		Body = httpservice:JSONEncode({ userid = player.UserId }),
-		Headers = {
-			["Content-Type"] = "application/json",
+local queuedJoins = {}
+local queuedLeaves = {}
+
+--[[
+	Determines if a user should or should not be tracked based on the Tovy configuration
+]]--
+local function isUserTracked(player)
+	if not config.rankChecking then
+		return true
+		
+	--[[
+		If you're a large group, you may want to swap this :GetRankInGroup call with a GroupService request instead. (This bypasses the Roblox built-in cache and provides up-to-date rank information)
+		If using GroupService, you may want to consider implementing a module which can perform these GroupService requests and cache them as appropriate. (Else you may encounter a Too Many Requests error)
+	]]--
+	elseif player:GetRankInGroup(config.groupId) >= config.minTrackedRank then
+		return true
+	end
+	
+	return false
+end
+
+--[[
+	Queues the requested player to begin their session
+]]--
+local function createSession(player)
+	
+	table.insert(queuedJoins, player.UserId)
+end
+
+--[[
+	Queues the requested player to end their session
+]]--
+local function endSession(player)	
+	table.insert(queuedLeaves ,player.UserId)
+end
+
+--[[
+	Checks whether or not a player is banned through Tovy (if enabled)
+]]--
+local function checkBan(player)
+	if config.bansEnabled then
+		local response = httpService:GetAsync(config.url..'/bans/gbanned/'.. player.UserId, false, {
 			['authorization'] = config.auth
-		}
-	})
-	
-	if (request.status == 400)  then
-		print('already session')
-	end
-	
-	local rdata = httpservice:JSONDecode(request.Body);
-	print(rdata)
-end
+		})
 
-local function endsession  (player)
-	print(player.UserId)
-	local request = httpservice:RequestAsync({
-		Url =  config.url .. '/activity/endsession',
-		Method = "POST",
-		Body = httpservice:JSONEncode({ userid = player.UserId }),
-		Headers = {
-			["Content-Type"] = "application/json",
-			['authorization'] = config.auth-- When sending JSON, set this!
-		}
-	})
+		local data = httpService:JSONDecode(response)
 
-	if (request.status == 400)  then
-		print('no session')
-	end
-
-	local rdata = httpservice:JSONDecode( request.Body);
-	print(rdata)
-end
-
-players.PlayerAdded:Connect(createsession)
-players.PlayerRemoving:Connect(endsession)
-
-game.Players.PlayerAdded:Connect(function(plr)
-	local response = httpservice:GetAsync(config.url..'/bans/gbanned/'.. plr.UserId, false, {
-		['authorization'] = config.auth
-	})
-	local data = httpservice:JSONDecode(response)
-	if data.banned == true then
-		if data.reason == nil then
-			plr:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
-		else
-			plr:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
+		if data.banned == true then
+			if data.reason == nil then
+				player:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
+			else
+				player:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
+			end
 		end
 	end
-end)
+end
+
+--[[
+	Retrieve Tovy tracking configuration
+]]--
+while true do
+	local success, data = pcall(function()
+		return httpService:GetAsync(config.url..'/activity/activityconfig', false, {
+			['authorization'] = config.auth
+		})
+	end)
+	
+	if success then
+		-- Decode and set appropriate configuration items
+		data = httpService:JSONDecode(data)
+		config.minTrackedRank = data.mintrackedrank
+		
+		break
+	else
+		-- On failure, wait 2 seconds and try again
+		print("Failed to retrieve Tovy configuration data:", tostring(data))
+		task.wait(2)
+	end
+end
+
+--[[
+	Hook player added/removing events
+]]--
+players.PlayerAdded:Connect(checkBan)
+players.PlayerAdded:Connect(createSession)
+
+players.PlayerRemoving:Connect(endSession)
+
+--[[
+	Ensure all data is sent off before a server is shut down
+]]--
+
+if config.batchSendDataOnServerClose then
+	game:BindToClose(function()
+		for _, player in pairs(players:GetPlayers()) do
+			endSession(player)
+		end
+
+		-- Disregard join data, server has shutdown so we only need to mark people as left, not joined
+		local leaveData = httpService:JSONEncode({ players = queuedLeaves})
+		queuedLeaves = {}
+
+		-- Send leave data
+		httpService:RequestAsync({
+			Url =  config.url .. '/activity/bulkendsession',
+			Method = "POST",
+			Body = leaveData,
+			Headers = {
+				["Content-Type"] = "application/json",
+				['authorization'] = config.auth
+			}
+		})
+	end)
+end
 
 
-]]></ProtectedString>
+--[[
+	Track all players who were in the game before events were hooked
+]]--
+for _, player in pairs(players:GetPlayers()) do
+	checkBan(player)
+	createSession(player)
+end
+
+--[[
+	Runtime queue handling loop
+]]--
+task.spawn(function()
+	while true do
+		task.wait(config.bulkDataSendInterval)
+		local joinData = httpService:JSONEncode({players = queuedJoins})
+		queuedJoins = {}
+		
+		local leaveData = httpService:JSONEncode({players = queuedLeaves})
+		queuedLeaves = {}
+		
+		-- Send join data
+		httpService:RequestAsync({
+			Url =  config.url .. '/activity/bulkcreatesession',
+			Method = "POST",
+			Body = joinData,
+			Headers = {
+				["Content-Type"] = "application/json",
+				['authorization'] = config.auth
+			}
+		})
+		
+		-- Send leave data
+		httpService:RequestAsync({
+			Url =  config.url .. '/activity/bulkendsession',
+			Method = "POST",
+			Body = leaveData,
+			Headers = {
+				["Content-Type"] = "application/json",
+				['authorization'] = config.auth
+			}
+		})
+	end
+end)]]></ProtectedString>
 			<int64 name="SourceAssetId">-1</int64>
 			<BinaryString name="Tags"></BinaryString>
 		</Properties>

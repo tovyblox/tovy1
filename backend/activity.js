@@ -12,8 +12,12 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
   let perms = permissions.perms;
   let checkPerm = permissions.checkPerm;
 
-  router.ws("/socket", (ws, req) => {
-    if (!checkPerm(req.user.sessionid)) return;
+  router.ws("/socket", async (ws, req) => {
+    let check = await checkPerm(req.session.userid)
+    if (!check) {
+      ws.close();
+      return;
+    };
     if (!req.session.userid) {
       ws.close();
       return;
@@ -87,6 +91,144 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     res.status(200).json({ message: "Successfully created session!" });
   });
 
+  router.post("/bulkcreatesession", async (req, res) => {
+    if (req.headers.authorization !== settings.get("activity").key)
+      return res.status(401);
+    if (!req.body.players) return res.status(400).json({ error: "no userid" });
+    if (!Array.isArray(req.body.players))
+      return res.status(400).json({ error: "userid is not a number" });
+    for (player of req.body.players) {
+      if (typeof player !== "number") continue;
+      if (settings.get("activity")?.role) {
+        let userrank = await noblox
+          .getRankInGroup(settings.get("group"), player)
+          .catch((err) => null);
+        if (!userrank)
+          continue;
+        if (userrank < settings.get("activity").role) {
+          continue;
+        }
+      }
+
+
+      let session = await db.session.findOne({
+        uid: player,
+        active: true,
+      });
+
+      if (session) continue;
+
+      let fpfp = await cacheEngine.fetchpfp(player);
+      let username = await cacheEngine.fetchusername(player);
+      await db.session.create({
+        active: true,
+        start: new Date(),
+        uid: player,
+      });
+
+      activews.forEach((ws) => {
+        ws.send(
+          JSON.stringify({
+            type: "playadd",
+            data: {
+              uid: player,
+              pfp: fpfp,
+              username: username,
+            },
+          })
+        );
+      });
+      automation.runEvent("staffjoin", {
+        id: player,
+        username: username,
+      })
+    }
+
+  });
+
+  router.post("/endsession", async (req, res) => {
+    if (req.headers.authorization !== settings.get("activity").key)
+      return res.status(401);
+    if (typeof req.body.userid !== "number")
+      return res.status(400).json({ error: "userid is not a number" });
+
+    if (typeof req.body.userid !== "number")
+      return res.status(400).json({ message: "Userid must be a number!" });
+    let session = await db.session.findOne({
+      uid: req.body.userid,
+      active: true,
+    });
+
+    if (!session)
+      return res.status(400).json({ message: "No active session found!" });
+    session.end = new Date();
+    session.active = false;
+    await session.save();
+
+    activews.forEach((ws) => {
+      ws.send(
+        JSON.stringify({
+          type: "playrm",
+          data: {
+            uid: req.body.userid,
+          },
+        })
+      );
+    });
+
+    automation.runEvent("staffleave", {
+      id: req.body.userid,
+      username: cacheEngine.fetchusername(req.body.userid),
+    });
+
+    res.status(200).json({ message: "Successfully ended session!" });
+  });
+
+  router.post("/bulkendsession", async (req, res) => {
+    if (req.headers.authorization !== settings.get("activity").key)
+      return res.status(401);
+    if (!req.body.players) return res.status(400).json({ error: "no userid" });
+    if (!Array.isArray(req.body.players))
+      return res.status(400).json({ error: "players is not a number" });
+    for (player of req.body.players) {
+      if (typeof player !== "number") continue;
+      let session = await db.session.findOne({
+        uid: player,
+        active: true,
+      });
+      if (!session) continue;
+      session.end = new Date();
+      session.active = false;
+      await session.save();
+      activews.forEach((ws) => {
+        ws.send(
+          JSON.stringify({
+            type: "playrm",
+            data: {
+              uid: player,
+            },
+          })
+        );
+      }
+      );
+      automation.runEvent("staffleave", {
+        id: player,
+        username: cacheEngine.fetchusername(player),
+      });
+    }
+    res.status(200).json({ message: "Successfully ended sessions!" });
+  });
+
+  router.get('/activityconfig', async (req, res) => {
+    if (req.headers.authorization !== settings.get("activity").key)
+      return res.status(401);
+    let activity = settings.get("activity");
+    res.status(200).json({
+      success: true,
+      mintrackedrank: activity.role
+    });
+  });
+
   router.get("/ias/unaprooved", perms("manage_notices"), async (req, res) => {
     let uid = req.session.userid;
 
@@ -139,43 +281,7 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     res.status(200).json({ message: "Successfully denied ia!" });
   });
 
-  router.post("/endsession", async (req, res) => {
-    if (req.headers.authorization !== settings.get("activity").key)
-      return res.status(401);
-    if (typeof req.body.userid !== "number")
-      return res.status(400).json({ error: "userid is not a number" });
 
-    if (typeof req.body.userid !== "number")
-      return res.status(400).json({ message: "Userid must be a number!" });
-    let session = await db.session.findOne({
-      uid: req.body.userid,
-      active: true,
-    });
-
-    if (!session)
-      return res.status(400).json({ message: "No active session found!" });
-    session.end = new Date();
-    session.active = false;
-    await session.save();
-
-    activews.forEach((ws) => {
-      ws.send(
-        JSON.stringify({
-          type: "playrm",
-          data: {
-            uid: req.body.userid,
-          },
-        })
-      );
-    });
-
-    automation.runEvent("staffleave", {
-      id: req.body.userid,
-      username: cacheEngine.fetchusername(req.body.userid),
-    });
-
-    res.status(200).json({ message: "Successfully ended session!" });
-  });
 
   router.get("/@me", async (req, res) => {
     let userid = req.session.userid;
@@ -290,7 +396,6 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
 
   router.get("/stats", perms("view_staff_activity"), async (req, res) => {
     let des = await db.session.distinct("uid");
-    console.log('loaded all users')
     let arr = await db.session.aggregate([
       {
         '$addFields': {

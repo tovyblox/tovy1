@@ -243,7 +243,7 @@ export default {
       });
     let { protocol} = location;
     let connection = new WebSocket(
-      `${protocol=== 'https' ? `wss` : 'ws' }://${this.$http.defaults.baseURL}/socket`
+      `${protocol=== 'https' ? `wss` : 'ws' }://${this.$http.defaults.baseURL}/activity/socket`
     );
 
     connection.onopen = () => {
