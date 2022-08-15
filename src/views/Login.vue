@@ -8,7 +8,7 @@
           <v-stepper-items>
             <v-stepper-content class="mx-n2 mt-n6" step="1">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Login to tovy with your tovy credentials
+                Login with your Tovy credentials
               </v-card-text>
               <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 We could not find an account with that username and password</v-alert
@@ -25,8 +25,8 @@
                 <v-text-field
                   v-model="password"
                   outlined
-                  label="Password (not roblox password)"
-                  hint="Not your roblox password, the password for this site"
+                  label="Password (not Roblox password)"
+                  hint="Not your Roblox password, the password for this site"
                   class="mt-3"
                   hide-details="auto"
                   :rules="[(v) => !!v || 'Password is required']"
@@ -36,13 +36,13 @@
                   Login
                 </v-btn>
                  <v-btn elevation="0" class="ml-3 mt-3" plain @click="signup" color="info">
-                  Sign UP
+                  Sign Up
                 </v-btn>
               </v-form>
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Enter your 2fa pin
+                Enter your 2FA pin
               </v-card-text>
               <v-alert type="error" v-if="error" class="mt-n2" color="red">
                 That code isn't valid</v-alert

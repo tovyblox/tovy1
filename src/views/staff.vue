@@ -46,7 +46,7 @@
           elevation="0"
           color="success"
         >
-          Deslect all
+          Deselect all
         </v-btn>
         <v-btn
           class="my-auto mr-2 mt-2"
@@ -282,7 +282,7 @@ export default {
     headers: [
       { text: "Username", value: "username" },
       { text: "Status", value: "status" },
-      { text: "Minuites in game", value: "min" },
+      { text: "Minutes in game", value: "min" },
     ],
     prompt: {
       type: "",

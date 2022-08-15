@@ -49,7 +49,7 @@
         <template v-if="item.type == 'session'">
           <v-timeline-item icon="mdi-clock">
             <v-row class="my-auto">
-              <v-col cols="7"> {{ getTimeRange(item.start, item.end) }} ingame </v-col>
+              <v-col cols="7"> {{ getTimeRange(item.start, item.end) }} in-game </v-col>
               <v-col class="text-right" cols="5">
                 {{ getTime(item.start) }} to {{ getTime(item.end) }} on
                 {{ getDate(item.start) }}

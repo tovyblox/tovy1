@@ -5,7 +5,7 @@
       <v-card min-width="200px" max-width="600px" outlined class="mt-n3 mx-auto">
         <v-card-title class="mb-n6"> No permissions! </v-card-title>
         <v-card-text class="mt-n4">
-          Looks like you dont have permission to use Tovy in this group!
+          Looks like you don't have permission to use Tovy in this group!
         </v-card-text>
         <v-img src="../assets/no-perms.png" class="mx-auto mt-7" max-width="400"></v-img>
         <v-row class="mb-3">
@@ -17,7 +17,7 @@
           <v-dialog v-model="dialog.active" max-width="600px">
             <v-card>
               <v-card-title>Invite code </v-card-title>
-              <v-card-text class="mt-n5">Enter please </v-card-text>
+              <v-card-text class="mt-n5">Enter your invite code to continue </v-card-text>
               <v-alert
                 type="error"
                 v-if="dialog.incorrect"

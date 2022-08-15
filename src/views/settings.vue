@@ -192,7 +192,7 @@
 
           <v-expansion-panel-content>
             <p class="">
-              Tovy group wall is a customisable wall that can be used to display
+              Tovy group wall is a customizable wall that can be used to display
               information about your group.
             </p>
 
@@ -203,8 +203,7 @@
               label="Sync with group shout"
             ></v-switch>
             <p class="" v-if="wall.enabled">
-              The Discord webhook synces the wall with a Discord webhook leave
-              blank if you want to disable
+              The Discord webhook syncs the wall with a Discord webhook. Leave this blank if you want to disable it.
             </p>
             <v-text-field
               v-model="wall.discordhook"

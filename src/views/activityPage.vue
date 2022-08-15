@@ -6,14 +6,14 @@
           Hi {{ this.$store.state.user.displayName }},
         </p>
         <p class="text-body-1 font-weight-bold mt-n5 gray">
-          Lets track some activity!
+          Let's track some activity!
         </p>
       </v-container>
     </v-sheet>
     <v-container class="mt-n16 mx-auto">
       <v-card :loading="loading.igame" outlined class="mx-auto mb-2 pb-2">
         <v-card-title> Activity </v-card-title>
-        <v-card-text class="mt-n6"> Currently ingame </v-card-text>
+        <v-card-text class="mt-n6"> Currently in-game </v-card-text>
 
         <p class="ml-4 mt-n4" v-if="!active.length">No data</p>
         <div v-if="!loading.igame" class="mt-n2 ml-4 mb-3">
@@ -38,7 +38,7 @@
           <v-card :loading="loading.best" outlined class="pb-1 mb-2">
             <v-card-title> Best </v-card-title>
             <v-card-text class="mt-n6">
-              The staff who spent the most time ingame since the last reset
+              The staff who spent the most time in-game since the last reset
             </v-card-text>
 
             <p class="ml-4 mb-6 mt-n4" v-if="!best.length">No data</p>

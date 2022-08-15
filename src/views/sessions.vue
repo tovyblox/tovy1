@@ -21,7 +21,7 @@
             max-width="400"
           ></v-img>
           <v-card-text class="text-center mt-n5 mb-n4">
-            There are no sessions planned or ongoing
+            There are no planned or ongoing sessions
           </v-card-text>
         </v-row></v-card
       >
@@ -72,7 +72,7 @@
             max-width="400"
           ></v-img>
           <v-card-text class="text-center mt-n5 mb-n4">
-            Sadly this module isnt enabled!
+            Sadly, this module isn't enabled!
           </v-card-text>
         </v-row></v-card
       >

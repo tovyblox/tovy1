@@ -3,12 +3,12 @@
     <v-sheet color="grey lighten-2" height="200" style="width: 100%"> </v-sheet>
     <v-container class="mt-n10 mx-auto">
       <v-card min-width="200px" max-width="600px" outlined class="mt-n3 mx-auto">
-        <v-card-title class="mb-n5"> Lets get started! </v-card-title>
+        <v-card-title class="mb-n5"> Let's get started! </v-card-title>
         <v-stepper elevation="0" v-model="e1">
           <v-stepper-items>
             <v-stepper-content class="mx-n2 mt-n6" step="1">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Lets start with your login info
+                Let's start with your login info
               </v-card-text>
               <v-form ref="form" @submit.prevent="next" v-model="valid" lazy-validation>
                 <v-text-field
@@ -33,7 +33,7 @@
             </v-stepper-content>
             <v-stepper-content  class="mx-n2 mt-n6" step="2">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Next some info about your group
+                Next, some info about your group
               </v-card-text>
               <v-form ref="frm" @submit.prevent="next" v-model="valid" lazy-validation>
                 <v-text-field
@@ -58,7 +58,7 @@
             </v-stepper-content>
             <v-stepper-content class="mx-n2 mt-n6" step="3">
               <v-card-text class="mt-n5 ml-n4 mt-n2 mt-n2 grey--text">
-                Would you like your group to be enrolled with tovy?
+                Would you like your group to be enrolled with Tovy?
               </v-card-text>
               <v-form ref="frm" v-model="valid" lazy-validation>
                 <v-row class="mx-auto mb-5 mt-n5">
@@ -68,9 +68,9 @@
                     max-width="30"
                   ></v-img>
                   <v-card-text class="text-center mt-2 mb-1">
-                    Enroll your group with tovy to allow support staff to easily pull up
-                    data about your instance and let us know who uses tovy (we log instance url, version, owner, and group). If you want to
-                    reenable this you can in serttings
+                    Enroll your group with Tovy to allow support staff to easily pull up
+                    data about your instance and let us know who uses Tovy (we log instance url, version, owner, and group). If you want to
+                    enable or disable this later, you can do so in settings
                   </v-card-text>
                 </v-row>
                 <v-btn elevation="0" class="mt-n4 ml-auto" @click="e1 = 1" plain>
@@ -106,7 +106,7 @@
                   indeterminate
                 ></v-progress-circular>
                 <v-card-text class="text-center mt-2 mb-n5">
-                  Finishing up setup... (this can take up to a minute)
+                  Finishing setup... (this can take up to a minute)
                 </v-card-text>
               </v-row>
             </v-stepper-content>

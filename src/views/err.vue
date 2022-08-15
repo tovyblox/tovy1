@@ -10,7 +10,7 @@
         <v-img src="../assets/conifer-access-denied.png" class="mx-auto mt-7" max-width="400"></v-img>
         <v-row class="mb-3">
           <v-btn @click="reload" class="mx-auto mb-1 mt-3 info">
-            Refersh
+            Refresh
           </v-btn>
         </v-row>
       </v-card>
