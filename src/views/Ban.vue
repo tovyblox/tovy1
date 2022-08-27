@@ -104,12 +104,6 @@ export default {
     goto: function (url) {
       this.$router.push(url);
     },
-    look() {
-      this.$http.get("/getuser/" + this.username).then((response) => {
-        this.user.id = response.data.user.userid;
-        this.goto("/profile/" + this.user.id);
-      });
-    },
     getcur: function () {
       let current = new Date();
       return current.toISOString().substring(0, 10);
