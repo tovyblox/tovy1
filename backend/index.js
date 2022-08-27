@@ -254,21 +254,6 @@ Here are some links that may help you in the future
  
  */
 
-app.get('/api/getuser/:name', async (req, res) => {
-    if (!req.params.name) return res.status(500).send({ success: false, message: 'no name' });
-    let uid = await noblox.getIdFromUsername(req.params.name);
-    if (!uid) return res.status(500).send({ success: false, message: 'user not found' });
-    let user = await db.user.findOne({
-        where: {
-            userid: uid
-        }
-    });
-    if (!user) return res.status(500).send({ success: false, message: 'user not found' });
-    res.send({
-        success: true,
-        user: user
-    })
-})
 
 app.get('/api/profile', async (req, res) => {
     if (!await db.config.findOne({ name: 'group' })) return res.status(400).json({ message: 'NGS' });
