@@ -18,6 +18,7 @@ local config = {
 	auth = "<api>",
 	
 	bansEnabled = true, --// Set to false if you do not want Tovy to handle bans (This will use less HTTP requests)
+	banCheckRate = 5, --// The interval (seconds) at which Tovy will check for new bans
 	
 	batchSendDataOnServerClose = true, --// Whether or not this script should bulk send leave data once this server has shutdown (This may cause issues with SoftShutdown scripts which relocate players)
 	bulkDataSendInterval = 30, --// The interval (seconds) at which join/leave data will be sent to Tovy
@@ -119,32 +120,34 @@ players.PlayerAdded:Connect(createSession)
 players.PlayerRemoving:Connect(endSession)
 
 --[[ 
-Check for changes to the ban status of players
+	Check for changes to the ban status of in-game players
 ]]--
+task.spawn(function()
+	while true do
+		local success, data = pcall(function()
+			return httpService:GetAsync(config.url..'/bans/bulkcheck', false, {
+				['authorization'] = config.auth
+			})
+		end)
 
-while true do
-	local success, data = pcall(function()
-		return httpService:GetAsync(config.url..'/activity/bancheck', false, {
-			['authorization'] = config.auth
-		})
-	end)
-	
-	if success then
-		-- Decode and check each player
-		data = httpService:JSONDecode(data)
-		for _, player in pairs(data) do
-			local player = players:FindFirstChild(player.userid)
-			if player then
-				checkBan(player)
+		if success then
+			-- Decode and check each player
+			data = httpService:JSONDecode(data).newbans
+			for _, playerid in pairs(data) do
+				local player = players:GetPlayerByUserId(playerid)
+				if player then
+					checkBan(player)
+				end
 			end
+		else
+			-- On failure, wait 10 seconds and try again
+			print("Failed to retrieve Tovy ban data. Waiting 10 seconds before reattempting.", tostring(data))
+			wait(10)
 		end
-	else
-		-- On failure, wait 2 seconds and try again
-		print("Failed to retrieve Tovy ban data:", tostring(data))
-		task.wait(2)
+		wait(config.banCheckRate)
 	end
-	wait(1)
-end
+end)
+
 --[[
 	Ensure all data is sent off before a server is shut down
 ]]--
