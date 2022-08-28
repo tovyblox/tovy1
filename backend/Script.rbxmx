@@ -118,6 +118,33 @@ players.PlayerAdded:Connect(createSession)
 
 players.PlayerRemoving:Connect(endSession)
 
+--[[ 
+Check for changes to the ban status of players
+]]--
+
+while true do
+	local success, data = pcall(function()
+		return httpService:GetAsync(config.url..'/activity/bancheck', false, {
+			['authorization'] = config.auth
+		})
+	end)
+	
+	if success then
+		-- Decode and check each player
+		data = httpService:JSONDecode(data)
+		for _, player in pairs(data) do
+			local player = players:FindFirstChild(player.userid)
+			if player then
+				checkBan(player)
+			end
+		end
+	else
+		-- On failure, wait 2 seconds and try again
+		print("Failed to retrieve Tovy ban data:", tostring(data))
+		task.wait(2)
+	end
+	wait(1)
+end
 --[[
 	Ensure all data is sent off before a server is shut down
 ]]--
