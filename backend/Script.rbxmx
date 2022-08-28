@@ -79,9 +79,9 @@ local function checkBan(player)
 
 		if data.banned == true then
 			if data.reason == nil then
-				player:Kick('You are banned from this place.\nBan Reason: No reason provided!\n\nTovy')
+				player:Kick('You are banned from this place.\n Ban Reason: No reason provided!\n \n Tovy')
 			else
-				player:Kick('You are banned from this place.\nBan Reason:\n'..data.reason..'\n\nTovy')
+				player:Kick('You are banned from this place.\n Ban Reason:\n '..data.reason..'\n \n Tovy')
 			end
 		end
 	end
