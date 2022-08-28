@@ -45,9 +45,9 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     if (!userid) return res.status(400).json({ error: "No userid provided." });
     const username = await noblox.getUsernameFromId(userid);
     await db.ban.deleteOne({ userid });
-    const index = recentbans1.indexOf(userid);
+    const index = newbans.indexOf(userid);
     console.log("Searching");
-    if (index) recentbans1.splice(index, 1);
+    if (index) newbans.splice(index, 1);
     logging.newLog(`has unbanned ${username}`, req.session.userid);
     res.status(200).json({ success: true });
   });
