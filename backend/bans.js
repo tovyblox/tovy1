@@ -46,7 +46,6 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     const username = await noblox.getUsernameFromId(userid);
     await db.ban.deleteOne({ userid });
     const index = newbans.indexOf(userid);
-    console.log("Searching");
     if (index) newbans.splice(index, 1);
     logging.newLog(`has unbanned ${username}`, req.session.userid);
     res.status(200).json({ success: true });
