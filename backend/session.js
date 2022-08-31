@@ -230,7 +230,9 @@ const erouter = (cacheEngine, settings, permissions, automation) => {
     let games = settings.get("sessions").games;
     let game = await noblox.getUniverseInfo(
       games.filter((m) => m.id).map((m) => m.id)
-    );
+    ).catch(err => {
+      return res.status(500).send({ success: false, error: err.message })
+    });
 
     res.send(
       games.map((m) => {
