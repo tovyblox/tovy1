@@ -60,7 +60,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
     );
     res.status(200).json({ success: true, message: "Ban updated.", b });
   });
-  router.get("/banned/:userid", perms('view_staff_activity'), async (req, res) => {
+  router.get("/banned/:userid", async (req, res) => {
     const { userid } = req.params;
     let banned = await db.ban.findOne({ userid });
     if (banned == null) return res.status(200).json({banned: false});
