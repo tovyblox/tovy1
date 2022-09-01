@@ -41,7 +41,7 @@
         <v-col order="last">
           <v-card
             min-width="300"
-            @click.stop="goto('/activity')"
+            @click.stop="goto('/youractivity')"
             ripple
             outlined
             class="mb-n4"
