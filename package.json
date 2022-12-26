@@ -20,7 +20,7 @@
     "bcrypt": "^5.0.1",
     "connect-history-api-fallback": "^1.6.0",
     "cookie-session": "^2.0.0",
-    "core-js": "^3.6.5",
+    "core-js": "^3.27.0",
     "cors": "^2.8.5",
     "discord.js": "^13.6.0",
     "dotenv": "^8.6.0",
