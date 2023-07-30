@@ -55,7 +55,7 @@ const erouter = (cacheEngine, settings, permissions, logging) => {
             e.username = username;
             s.push(e)
             if (users.indexOf(u) == users.length - 1) {
-                res.status(200).json({ message: 'Successfully fetched unaprooved ias!', users: s });
+                res.status(200).json({ message: 'Successfully fetched unapproved ias!', users: s });
             }
         }
     });
